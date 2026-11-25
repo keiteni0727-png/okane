@@ -14,10 +14,15 @@ const KMS = "kakeibo.master.v1"; // マスタ
 const KB = "kakeibo.backup.v1"; // 取り消し用の直前の状態
 const KNOWN = "kakeibo.known.v2"; // クラウドにあると分かっている月（他の端末で消された月を見分ける）
 const KTAB = "kakeibo.tab"; // 最後に開いた画面（文字列のまま保存）
-const KAN = "okane.an"; // 分析の中で最後に開いた画面
+const KAN = "okane.an"; // 旧「分析」の中で最後に開いた画面（移行用）
 const KSBC = "okane.sbc"; // PC の左メニューを折りたたんでいるか
-const KANF = "okane.anfold"; // 左メニューの「分析」の項目をたたんでいるか
-const AN = ["graph", "balance"]; // 分析にまとめた画面
+const KANF = "okane.anfold"; // 左メニューの「家計簿」の項目をたたんでいるか
+const KPF = "okane.payfold"; // 左メニューの「支払い管理」の項目をたたんでいるか
+const AN = ["graph", "balance"]; // 旧「分析」にまとめていた画面（移行用）
+const KBV = ["list", "graph"]; // 家計簿の画面
+const PAYV = ["home", "balance"]; // 支払い管理の画面
+const KKB = "okane.kb"; // 家計簿の中で最後に開いた画面
+const KPAY = "okane.pay"; // 支払い管理の中で最後に開いた画面
 
 /* ---------- 決まった数字 ---------- */
 const TOMB_LIMIT = 40; // 月の文書の削除の印がこれを超えたら、丸ごと書き直す
