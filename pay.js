@@ -698,8 +698,9 @@
 
   /* ---------- 支払い：アラート・次の引き落とし・集計 ---------- */
   function renderHome() {
-    $("cNote").textContent =
-      `集計期間は給料日（毎月${S.cfg.payday || DEFAULT_PAYDAY}日、土日の場合は直前の平日）から次の給料日の前日までです。家計簿の明細のうち支払い方法が「${FIN.CASH}」のものは、残るお金から引いています。`;
+    document.querySelectorAll(".pay .cnote").forEach(n => {
+      n.textContent = `集計期間は給料日（毎月${S.cfg.payday || DEFAULT_PAYDAY}日、土日の場合は直前の平日）から次の給料日の前日までです。家計簿の明細のうち支払い方法が「${FIN.CASH}」のものは、残るお金から引いています。`;
+    });
     $("hNext").innerHTML = nextHTML();
     $("hStats").innerHTML = statsHTML(periodStats(S.period));
     renderCycle();
@@ -787,6 +788,58 @@
       $("cList").innerHTML = h;
     }
     $("cFlow").innerHTML = flowHTML(st);
+    /* PC向け：上部の集計は1行に、支払一覧は表で、お金の流れは横帯で出す */
+    $("tRange").textContent = `${md(st.s)}(${wd(st.s)})〜${md(st.e)}(${wd(st.e)})`;
+    $("tPer").textContent = periodLabel(S.period) + (S.period === periodOf(today()) ? "（いまの期間）" : "");
+    $("cTable").innerHTML = tableHTML(its);
+    $("cFlowPc").innerHTML = flowHTML(st);
+  }
+  /* PC向けの表：日付の見出し行（その日の合計と、未払分の支払方法ごとの額）＋支払い1件＝1行 */
+  function tableHTML(its) {
+    const head = `<thead><tr><th class="c-date">日付</th><th>支払い</th><th>区分</th><th>支払方法</th><th class="r">金額</th><th class="r">元金</th><th class="r">利息</th><th>状態</th><th></th></tr></thead>`;
+    if (!its.length)
+      return head + `<tbody><tr><td colspan="9" class="tempty">${S.filter !== "all" ? "条件に合う支払はありません" : "この期間の支払はまだありません"}</td></tr></tbody>`;
+    let h = head + "<tbody>",
+      cur = null;
+    its.forEach(i => {
+      if (i.date !== cur) {
+        cur = i.date;
+        const day = its.filter(x => x.date === cur && x.status !== "deferred");
+        const sum = day.reduce((s, x) => s + amtOf(x), 0);
+        const byM = {};
+        day.filter(x => x.status === "planned").forEach(x => {
+          const m = x.method || "未設定";
+          byM[m] = (byM[m] || 0) + (x.amount || 0);
+        });
+        const need = Object.entries(byM).sort((a, b) => b[1] - a[1]);
+        h += `<tr class="grp"><td colspan="6">${md(cur)}（${wd(cur)}）</td><td class="r gnote">${need.length ? need.map(([m, v]) => `${esc(m)} ${yen(v)}`).join(" ・ ") : day.length ? "✓ 支払済" : ""}</td><td class="r">${yen(sum)}</td><td></td></tr>`;
+      }
+      h += trowHTML(i);
+    });
+    const live = its.filter(i => i.status !== "deferred");
+    const tA = live.reduce((s, i) => s + amtOf(i), 0);
+    const tP = live.reduce((s, i) => s + (i.accountId ? i.principal || 0 : 0), 0);
+    const tI = live.reduce((s, i) => s + (i.accountId ? i.interest || 0 : 0), 0);
+    const un = its.filter(i => i.status === "planned").reduce((s, i) => s + amtOf(i), 0);
+    h += `</tbody><tfoot><tr><td colspan="4">合計（${live.length}件）</td><td class="r">${yen(tA)}</td><td class="r">${yen(tP)}</td><td class="r">${yen(tI)}</td><td class="tunpaid">未払 ${yen(un)}</td><td></td></tr></tfoot>`;
+    return h;
+  }
+  function trowHTML(i) {
+    const c = catOf(i);
+    const late = i.kind === "late";
+    const over = i.status === "planned" && i.date < today();
+    const lbl = stLbl(i, over, late);
+    const cls = i.status === "paid" ? "done" : i.status === "deferred" ? "def" : over || late ? "warn" : "unpaid";
+    return `<tr class="trow${i.status === "paid" ? " paid" : ""}" data-edit="${i.id}" role="button" tabindex="0">
+      <td></td>
+      <td class="tname">${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}</td>
+      <td>${CAT[c]?.s || ""}</td>
+      <td>${i.method ? esc(i.method) : "—"}</td>
+      <td class="r">${yen(amtOf(i))}</td>
+      <td class="r">${i.accountId ? yen(i.principal || 0) : "—"}</td>
+      <td class="r">${i.accountId ? yen(i.interest || 0) : "—"}</td>
+      <td><span class="tst ${cls}">${lbl}</span></td>
+      <td class="r">${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</td></tr>`;
   }
   /* 一覧の絞り込み：状態（未払・延滞分） */
   const FILTER_FN = { unpaid: i => i.status === "planned", late: i => i.kind === "late" || i.status === "deferred" };
@@ -840,6 +893,16 @@
     const need = Object.entries(byM).sort((a, b) => b[1] - a[1]);
     return `<div class="dayhead"><span class="dh-d">${md(cur)}（${wd(cur)}）</span><span class="dh-m">${need.length ? need.map(([m, v]) => `<span class="mtag">${esc(m)} <b>${yen(v)}</b></span>`).join("") : day.length ? `<span class="dh-done">✓ 支払済</span>` : ""}</span><span class="dh-t num">${yen(sum)}</span></div>`;
   }
+  /* 状態の表示名（カード表示と表表示で共用） */
+  function stLbl(i, over, late) {
+    if (i.status === "paid") return `支払済 ${i.paidDate ? md(i.paidDate) : ""}`;
+    if (i.status === "deferred") {
+      const l = i.deferredTo && findItem(i.deferredTo);
+      return `延滞 → ${l ? md(l.it.date) + "に支払" : "翌月へ"}`;
+    }
+    if (late) return over ? "延滞中・期日超過" : "延滞分・要支払";
+    return over ? "期日超過" : "未払";
+  }
   /* 支払の行：状態（支払済・延滞→翌月・延滞分・未払）で色と印を変える */
   function rowHTML(i) {
     const c = catOf(i);
@@ -847,13 +910,7 @@
     const over = i.status === "planned" && i.date < today();
     const st = i.status === "paid" ? "paid" : i.status === "deferred" ? "deferred" : late ? "late" : "planned";
     const ico = { paid: "✓", deferred: "→", late: "!", planned: "" }[st];
-    let lbl;
-    if (i.status === "paid") lbl = `支払済 ${i.paidDate ? md(i.paidDate) : ""}`;
-    else if (i.status === "deferred") {
-      const l = i.deferredTo && findItem(i.deferredTo);
-      lbl = `延滞 → ${l ? md(l.it.date) + "に支払" : "翌月へ"}`;
-    } else if (late) lbl = over ? "延滞中・期日超過" : "延滞分・要支払";
-    else lbl = over ? "期日超過" : "未払";
+    const lbl = stLbl(i, over, late);
     return `<div class="row st-${st}${over ? " over" : ""}" data-edit="${i.id}" role="button" tabindex="0">
       <span class="sico" aria-hidden="true">${ico}</span>
       <div class="rmain"><div class="nm">${esc(i.name)}${i.method ? `<span class="mtag">${esc(i.method)}</span>` : ""}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}</div>
@@ -2375,10 +2432,13 @@
     const h = e.target.closest(".fold-h");
     if (h && !e.target.closest("button,input,a")) toggleFold(h.dataset.fold);
     if (e.target.id === "scrim") closeSheet(); // シートの外側
-    if (e.target.id === "cNoteBtn") {
-      const n = $("cNote");
-      n.hidden = !n.hidden;
-      e.target.setAttribute("aria-expanded", String(!n.hidden));
+    const nfb = e.target.closest("[data-notefold]");
+    if (nfb) {
+      const n = nfb.parentElement.querySelector(".cnote");
+      if (n) {
+        n.hidden = !n.hidden;
+        nfb.setAttribute("aria-expanded", String(!n.hidden));
+      }
       return;
     }
     const sf = e.target.closest("[data-sheetfold]");
@@ -2390,7 +2450,7 @@
       }
       return;
     }
-    const t = e.target.closest("button,[data-editacc],[data-acc],.row[data-edit]");
+    const t = e.target.closest("button,[data-editacc],[data-acc],.row[data-edit],.trow[data-edit]");
     if (!t) return;
     const d = t.dataset;
     /* ヘッダー・通知・シート */
