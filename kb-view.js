@@ -2,7 +2,9 @@
 /* ---------- 画面の切り替え ---------- */
 let prevPay = false;
 function setTab(t) {
-  if (t === "an") t = AN.includes(lsRaw(KAN)) ? lsRaw(KAN) : "graph"; // 分析は前回の画面を開く
+  if (t === "kb") t = KBV.includes(lsRaw(KKB)) ? lsRaw(KKB) : "list"; // 家計簿は前回の画面を開く
+  if (t === "pay") t = PAYV.includes(lsRaw(KPAY)) ? lsRaw(KPAY) : "home"; // 支払い管理は前回の画面を開く
+  if (t === "an") t = AN.includes(lsRaw(KAN)) ? lsRaw(KAN) : "graph"; // 旧「分析」からの移行
   if (t === "rules") {
     openRules();
     return;
@@ -15,6 +17,8 @@ function setTab(t) {
   gearPressed(String(t === "rules"));
   if (t === "rules") renderRules();
   else lsSet(KTAB, t, true);
+  if (KBV.includes(t)) lsSet(KKB, t, true);
+  if (PAYV.includes(t)) lsSet(KPAY, t, true);
   if (AN.includes(t)) lsSet(KAN, t, true);
   const wasPay = prevPay;
   prevPay = t === "home" || t === "balance";
@@ -22,29 +26,38 @@ function setTab(t) {
   FIN.pay.show && FIN.pay.show(t === "home" || t === "balance" ? t : "none");
   if ($("month")) renderMonthBar();
 }
-/* 下のメニュー・左メニュー・分析の切り替えで、いまの画面に印をつける（分析の3画面では「分析」にも） */
+/* 下のメニュー・左メニュー・分類内の切り替えで、いまの画面に印をつける（分類のボタンにも） */
 function markTabs(t) {
   markCurrent(".tabbar [data-tab], .sb [data-tab], .anseg [data-tab]", "tab", t);
   /* スマホの上の帯：今いる画面のアイコン（左メニューと同じもの） */
-  const key = t === "rules" ? "gear" : AN.includes(t) ? "an" : t;
+  const key = t === "rules" ? "gear" : KBV.includes(t) ? "list" : "home";
   const ic = document.querySelector(`.sb .mic.${key}`);
   const hc = $("hcur");
   if (hc && ic) hc.innerHTML = `<span class="mic ${key}" aria-hidden="true">${ic.innerHTML}</span><span class="hname">${TAB_NAME[t] || ""}</span>`;
   document
-    .querySelectorAll('[data-tab="an"]')
-    .forEach(b => (AN.includes(t) ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
+    .querySelectorAll('[data-tab="kb"]')
+    .forEach(b => (KBV.includes(t) ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
+  document
+    .querySelectorAll('[data-tab="pay"]')
+    .forEach(b => (PAYV.includes(t) ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
 }
 /* 上の帯：今いる画面の名前（エンタメ管理と同じく、アイコンと名前を出す） */
-const TAB_NAME = { list: "家計簿", home: "支払い", graph: "グラフ", balance: "残高と計画", rules: "設定" };
+const TAB_NAME = { list: "家計簿", home: "支払い管理", graph: "グラフ", balance: "借入・返済", rules: "設定" };
 /* 家計簿の一番上の支出カード：総額の行だけ出して、内訳・件数などはたたむ（最初はたたむ。この端末に保存） */
 const KSUMF = "okane.sumfold";
 const sumFolded = () => lsRaw(KSUMF) !== "0";
-/* 左メニューの「分析」の項目（グラフ・残高と計画）をたたむ／開く。印はエンタメ管理と同じ「›」 */
+/* 左メニューの分類の項目（家計簿＝明細・グラフ／支払い管理＝今月の支払い・借入・返済）をたたむ／開く。印はエンタメ管理と同じ「›」 */
 function setAnFold(f) {
   $("sbpan").classList.toggle("folded", f);
   const b = $("anfold");
   b.setAttribute("aria-expanded", String(!f));
-  b.setAttribute("aria-label", f ? "分析の項目を開く" : "分析の項目をたたむ");
+  b.setAttribute("aria-label", f ? "家計簿の項目を開く" : "家計簿の項目をたたむ");
+}
+function setPayFold(f) {
+  $("sbppan").classList.toggle("folded", f);
+  const b = $("payfold");
+  b.setAttribute("aria-expanded", String(!f));
+  b.setAttribute("aria-label", f ? "支払い管理の項目を開く" : "支払い管理の項目をたたむ");
 }
 /* PC：左メニューの折りたたみ */
 function setSidebar(c) {
@@ -503,23 +516,22 @@ const SET_IC = {
 };
 const setIc = k => `<svg class="seti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SET_IC[k]}</svg>`;
 const SET_CV = `<svg class="setcv" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>`;
-const SET_PG = { home: "設定", rules: "分類ルール", cats: "分類", mets: "支払い方法", inc: "収入と給料日", paym: "引落口座", gen: "支払予定の作成" };
+const SET_PG = { home: "設定", rules: "自動分類ルール", cats: "分類", mets: "明細の支払い方法", inc: "収入と給料日", paym: "支払いの方法", gen: "支払予定の作成" };
 const SET_EDIT = { rules: "rules", cats: "master", mets: "master", paym: "paym" };
 const PAY_PG = ["inc", "paym", "gen"];
-/* 設定の一覧（表示・家計簿・支払い・データ・アカウント） */
+/* 設定の一覧（家計簿の設定・支払い管理の設定・共通） */
 function renderSetHome() {
   const th = U.theme();
   const cfg = (FIN.pay.cfg && FIN.pay.cfg()) || {};
   const row = (k, lab, val) => `<button type="button" class="setrow" data-stab="${k}">${setIc(k)}<span class="setl">${lab}</span><span class="setv">${val}</span>${SET_CV}</button>`;
   const sv = $("saveSt");
-  $("st-home").innerHTML = `<div class="setsec">表示</div>
-    <div class="setgrp"><div class="setrow static">${setIc("theme")}<span class="setl">テーマ</span><div class="seg thseg" role="group" aria-label="テーマ">${[["auto", "自動"], ["light", "ライト"], ["dark", "ダーク"]].map(([v, l]) => `<button type="button" data-theme="${v}"${th === v ? ' aria-current="page"' : ""}>${l}</button>`).join("")}</div></div></div>
-    <div class="setsec">家計簿</div>
-    <div class="setgrp">${row("rules", "分類ルール", `${rules.length}件`)}${row("cats", "分類", CATS.length)}${row("mets", "支払い方法", METHODS.length)}</div>
-    <div class="setsec">支払い</div>
-    <div class="setgrp">${row("inc", "収入と給料日", `${cfg.income ? yen(cfg.income) + "・" : ""}${FIN.paydayNum()}日`)}${row("paym", "引落口座", (cfg.methods || []).length)}${row("gen", "支払予定の作成", "作り直す・作成")}</div>
-    <div class="setsec">アカウント</div>
-    <div class="setgrp"><div class="setrow static">${setIc("save")}<span class="setl">保存</span><span class="setv"><span class="${sv ? sv.className : "savest"}">${sv ? esc(sv.textContent) : ""}</span></span></div><button type="button" class="setrow danger" data-logout="1">${setIc("out")}<span class="setl">ログアウト</span></button></div>`;
+  $("st-home").innerHTML = `<div class="setsec">家計簿の設定</div>
+    <div class="setgrp">${row("cats", "分類", CATS.length)}${row("mets", "明細の支払い方法", METHODS.length)}${row("rules", "自動分類ルール", `${rules.length}件`)}</div>
+    <div class="setsec">支払い管理の設定</div>
+    <div class="setgrp">${row("inc", "収入と給料日", `${cfg.income ? yen(cfg.income) + "・" : ""}${FIN.paydayNum()}日`)}${row("paym", "支払いの方法", (cfg.methods || []).length)}${row("gen", "支払予定の作成", "作り直す・作成")}</div>
+    <div class="setsec">共通</div>
+    <div class="setgrp"><div class="setrow static">${setIc("theme")}<span class="setl">テーマ</span><div class="seg thseg" role="group" aria-label="テーマ">${[["auto", "自動"], ["light", "ライト"], ["dark", "ダーク"]].map(([v, l]) => `<button type="button" data-theme="${v}"${th === v ? ' aria-current="page"' : ""}>${l}</button>`).join("")}</div></div>
+    <div class="setrow static">${setIc("save")}<span class="setl">保存と同期</span><span class="setv"><span class="${sv ? sv.className : "savest"}">${sv ? esc(sv.textContent) : ""}</span></span></div><button type="button" class="setrow danger" data-logout="1">${setIc("out")}<span class="setl">ログアウト</span></button></div>`;
 }
 function renderSettings() {
   const pg = SET_PG[setting.tab] ? setting.tab : "home";
