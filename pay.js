@@ -128,9 +128,9 @@
   const incomeOf = p => S.cfg.incomeBy?.[p] ?? S.cfg.income ?? 0;
   const typeLabel = a =>
     a.repayType === "principal"
-      ? `元金定額 ${yen(a.principalPay)}＋利息`
+      ? `元金は毎月 ${yen(a.principalPay)} ＋利息`
       : a.repayType === "level"
-        ? `元利定額 ${yen(a.payment)}`
+        ? `毎月 ${yen(a.payment)}（利息込み）`
         : "定額・利息なし";
 
   /* ---------- 利息と返済予定表 ---------- */
@@ -989,27 +989,22 @@
                 .join("、")}…</div>`
             : "");
   }
-  /* 利息に消えているお金：次の支払のうち利息の割合 */
+  /* 利息に消えているお金：完済の見通しの中に1行で出す（次の支払のうち利息の割合） */
   function renderInterest() {
+    const el = $("olInt");
+    if (!el) return;
     const rows = debtAccs()
       .filter(a => a.balance > 0)
       .map(a => {
         const r = (S.sched[a.id]?.rows || []).find(x => !x.fixed) || S.sched[a.id]?.rows?.[0];
         return r ? { a, int: r.interest, pay: r.payment } : null;
       })
-      .filter(Boolean)
-      .sort((x, y) => y.int / y.pay - x.int / x.pay);
+      .filter(Boolean);
     const ti = rows.reduce((t, x) => t + x.int, 0),
       tp = rows.reduce((t, x) => t + x.pay, 0);
-    $("pIntSum").textContent = `毎月 約${yen(ti)}（返済の${tp ? Math.round((ti / tp) * 100) : 0}%）`;
-    $("pInt").innerHTML =
-      rows
-        .map(x => {
-          const r = x.int / x.pay;
-          return `<div class="ib ${r >= 0.6 ? "hi" : ""}"><span class="in">${esc(x.a.name)}</span><span class="ibar"><i class="pi" style="width:${(1 - r) * 100}%"></i><i class="ii" style="width:${r * 100}%"></i></span><span class="iv num">${Math.round(r * 100)}%<small>利息${yen(x.int)}</small></span></div>`;
-        })
-        .join("") +
-      `<div class="legend int-legend"><span><i class="dot dot-ok"></i>元金が減る分</span><span><i class="dot dot-danger"></i>利息</span></div>`;
+    el.innerHTML = rows.length
+      ? `<span>利息に消えているお金</span><span class="num">毎月 約${yen(ti)}（返済の${tp ? Math.round((ti / tp) * 100) : 0}%）</span>`
+      : "";
   }
   /* 毎月の返済が軽くなっていく日：口座を完済するたびに毎月の返済額が下がるグラフと一覧 */
   function renderRoad() {
@@ -1189,7 +1184,7 @@
       ${first.map(x => row(x, x.after === 0 ? "final" : "")).join("")}
       ${rest.length ? `<tr class="gap"><td colspan="5">… ${rest.length}回（${ymLabel(ymOf(rest[0].date))}〜${ymLabel(ymOf(rest[rest.length - 1].date))}）・元金 ${yen(rest.reduce((t, x) => t + x.principal, 0))}・利息 ${yen(rest.reduce((t, x) => t + x.interest, 0))}</td></tr>` : ""}
       ${last ? row(last, "final") : ""}</tbody></table></div>
-      <div class="note">${a.extra ? `支払額には「それ以外の支払額」${yen(a.extra)}を含みます。` : ""}利息は 残高 × 年利${a.rate}% × 前月の日数 ÷ 365 で計算しています。</div>`;
+      <div class="note">${a.extra ? `支払額には「あわせて引かれる額」${yen(a.extra)}を含みます。` : ""}利息は 残高 × 年利${a.rate}% × 前月の日数 ÷ 365 で計算しています。</div>`;
   }
   function acctPlanHTML(a) {
     const w = S.ad;
@@ -1329,7 +1324,7 @@
     return `<div class="field full"><label for="${P}-tot">支払総額${m.late ? "（延滞手数料こみ）" : ""}</label><input type="number" id="${P}-tot" inputmode="numeric" value="${m.total ?? ""}"></div>
   <div class="field"><label for="${P}-pr">うち元金</label><input type="number" id="${P}-pr" inputmode="numeric" value="${m.principal ?? ""}"></div>
   <div class="field"><label for="${P}-in">うち利息（自動計算）</label><input type="number" id="${P}-in" inputmode="numeric" value="${m.interest ?? ""}"></div>
-  <div class="field"><label for="${P}-oth">うちそれ以外</label><input type="number" id="${P}-oth" inputmode="numeric" value="${m.other || ""}" placeholder="0"></div>
+  <div class="field"><label for="${P}-oth">うち、あわせて引かれる額</label><input type="number" id="${P}-oth" inputmode="numeric" value="${m.other || ""}" placeholder="0"></div>
   ${feeHTML(P, m)}
   <div class="sumline full"><span>リボ支払額（元金＋利息）</span><b class="num" id="${P}-revo"></b></div>
   <div class="diffbox full" id="${P}-diff" hidden></div>`;
@@ -1368,7 +1363,7 @@
         if (d) {
           const btn = (k, l) => `<button type="button" data-fix="${k}">${l}に入れる</button>`;
           box.innerHTML = `<div class="dmsg">内訳が支払総額より <b class="num">${yen(Math.abs(d))}</b> ${d > 0 ? "足りません" : "多いです"}</div>
-            <div class="dbtns">${btn("-in", "利息")}${btn("-pr", "元金")}${btn("-oth", "それ以外")}</div>`;
+            <div class="dbtns">${btn("-in", "利息")}${btn("-pr", "元金")}${btn("-oth", "あわせて引かれる額")}</div>`;
           box.querySelectorAll("[data-fix]").forEach(
             b =>
               (b.onclick = () => {
@@ -1473,8 +1468,65 @@
       $("p-save").onclick = e => moneyOk("p", e.currentTarget) && paySave(ctx);
       $("p-ok").onclick = e => moneyOk("p", e.currentTarget) && payDone(ctx);
       $("p-defer").onclick = () => openDefer(id);
-      $("p-del").onclick = e => armed(e.target, "もう一度押すと削除") && deleteItem(id);
+      $("u-del").onclick = e => armed(e.target, "もう一度押すと削除") && deleteItem(id);
+      $("u-acc").addEventListener("change", e => {
+        const na = S.accounts[e.target.value];
+        $("u-catf").hidden = !!na;
+        const note = $("u-note");
+        if (e.target.value !== (it.accountId || "")) {
+          note.hidden = false;
+          note.textContent = isDebt(na)
+            ? `口座を変更すると、この支払の金額は「${na.name}」の返済条件で計算し直されます（保存すると反映されます）`
+            : "口座を変更します。金額はそのままです（保存すると反映されます）";
+        } else note.hidden = true;
+      });
+      $("u-save").onclick = () => saveItemSettings(ctx);
     });
+  }
+  /* 「項目の設定」だけを保存する：金額・日付・支払方法・メモは上の欄のまま。口座を変えたときだけ、新しい口座の返済条件で金額を計算し直す */
+  async function saveItemSettings({ f, it }) {
+    const accountId = $("u-acc").value || null;
+    const a = accountId && S.accounts[accountId];
+    const accChanged = accountId !== (it.accountId || null);
+    const n = {
+      ...it,
+      name: $("u-name").value.trim() || (a ? a.name : it.name),
+      accountId,
+      category: a ? a.category : $("u-cat").value,
+      kind: $("u-late").checked ? "late" : "normal",
+      noBal: !!$("u-nobal").checked,
+    };
+    delete n._m;
+    if (n.kind !== "late") {
+      delete n.lateFee;
+      delete n.lateFeeManual;
+    }
+    if (accChanged && isDebt(a)) {
+      const int = interestFor(a.balance || 0, a.rate, it.date);
+      const pr = Math.max(0, a.repayType === "principal" ? a.principalPay || 0 : (a.payment || 0) - int);
+      n.principal = pr;
+      n.interest = int;
+      n.other = a.extra || 0;
+      n.amount = pr + int + (a.extra || 0);
+      n.balanceBefore = a.balance;
+      n.manual = true;
+    } else if (accChanged) {
+      n.principal = null;
+      n.interest = null;
+      n.other = null;
+      if (a && a.payment) n.amount = a.payment;
+    }
+    const sn = snapOf([f.ym], [it.accountId, accountId]);
+    const ym = putItem(n);
+    closeSheet();
+    render();
+    toast(
+      accChanged && isDebt(a)
+        ? `${esc(n.name)} の口座を変更し、金額を「${esc(a.name)}」の返済条件で計算し直しました`
+        : `${esc(n.name)} の設定を保存しました`,
+      sn,
+    );
+    await saveMonth(ym);
   }
   function payHTML({ it, a, debt }) {
     return `<div class="ad-top"><div><h3>${esc(it.name)}${it.kind === "late" ? ' <span class="chip late">⚠ 延滞分</span>' : ""}</h3><div class="note">予定 ${md(it.date)}（${wd(it.date)}）・${yen(it.amount)}</div></div><button class="u-btn icon sm soft xbtn" data-close="1" aria-label="閉じる">×</button></div>
@@ -1487,7 +1539,18 @@
   ${bankHTML(it, a)}
   ${debt ? `<div class="after" id="p-after"></div>` : ""}
   <div class="actions act-pay"><button class="warn" id="p-defer">払えない → 延滞</button><button id="p-save">変更を保存</button><button class="primary" id="p-ok">支払済にする</button></div>
-  <div class="subacts"><button class="ghost sm" data-edetail="${it.id}">名前・口座を変更</button><button class="ghost sm dangertxt" id="p-del">この支払を削除</button></div>`;
+  <button type="button" class="sheetfold-btn" data-sheetfold="p-set" aria-expanded="false"><b>項目の設定</b><span class="note">名前・口座・削除はこちら</span><span aria-hidden="true">▸</span></button>
+  <div id="p-set" hidden>
+    <div class="form">
+      <div class="field"><label for="u-acc">口座</label><select id="u-acc">${opt([["", "（口座なし）"], ...accList().map(x => [x.id, x.name])], it.accountId || "")}</select></div>
+      <div class="field"><label for="u-name">表示名</label><input id="u-name" value="${esc(it.name)}"></div>
+      <div class="field" id="u-catf" ${it.accountId ? "hidden" : ""}><label for="u-cat">区分</label><select id="u-cat">${opt(["card", "loan", "other"].map(c => [c, CAT[c].l]), it.category || "other")}</select></div>
+      <label class="cb"><input type="checkbox" id="u-late" ${it.kind === "late" ? "checked" : ""}>延滞分</label>
+      <label class="cb full nobal"><input type="checkbox" id="u-nobal" ${it.noBal ? "checked" : ""}>残高に反映しない<span class="note">（管理を始める前の延滞分など）</span></label>
+      <div class="full recalc-note" id="u-note" hidden></div>
+    </div>
+    <div class="actions"><div><button class="u-btn danger" id="u-del">この支払を削除</button></div><div><button class="primary" id="u-save">項目の設定を保存</button></div></div>
+  </div>`;
   }
   /* 延滞分の振込先（口座の設定で登録）。項目ごとにコピーできる */
   function bankHTML(it, a) {
@@ -1853,6 +1916,14 @@
           };
         } else m = { debt: false, amount: cur.amount || a?.payment || null, ...lt };
         mountMoney(m);
+        /* 口座を変えたら、金額を計算し直したことを黙らずに伝える */
+        const an = $("e-accnote");
+        if (an) {
+          an.hidden = false;
+          an.textContent = isDebt(a)
+            ? `口座を変更しました。金額は「${a.name}」の返済条件で計算し直しています（保存すると反映されます）`
+            : "口座を変更しました。金額はそのままです（保存すると反映されます）";
+        }
       });
       if (f) $("e-del").onclick = e => armed(e.target, "もう一度押すと削除") && deleteItem(it.id);
       $("e-save").onclick = e => moneyOk("e", e.currentTarget) && saveItem(ctx);
@@ -1866,21 +1937,26 @@
         : f && it.status === "deferred"
           ? `<div class="stbar deferred"><span>→ 延滞にして翌月へ回しました</span><button class="sm" data-undefer="${it.id}">延滞を取り消す</button></div>`
           : "";
-    return `<div class="ad-top"><h3>${f ? "支払を編集" : "支払を追加"}</h3><button class="u-btn icon sm soft xbtn" data-close="1" aria-label="閉じる">×</button></div>${stBar}
-  <div class="form">
+    const setFields = `<div class="form">
     <div class="field"><label for="e-acc">口座</label><select id="e-acc">${opt(accs, it.accountId || "")}</select></div>
     <div class="field"><label for="e-name">表示名</label><input id="e-name" value="${esc(it.name)}"></div>
-    <div class="field"><label for="e-date">支払日</label><input type="date" id="e-date" value="${esc(it.date)}"></div>
-    <div class="field"><label for="e-me">支払方法</label><select id="e-me">${mopt(it.method)}</select></div>
-    <div class="form full" id="e-money"></div>
     <div class="field" id="e-catf" ${it.accountId ? "hidden" : ""}><label for="e-cat">区分</label><select id="e-cat">${opt(
       ["card", "loan", "other"].map(c => [c, CAT[c].l]),
       it.category || "other",
     )}</select></div>
-    <div class="full memo-row"><div class="field"><label for="e-memo">メモ</label><input id="e-memo" value="${esc(it.memo)}"></div><label class="cb"><input type="checkbox" id="e-late" ${it.kind === "late" ? "checked" : ""}>延滞分</label></div>
+    <label class="cb"><input type="checkbox" id="e-late" ${it.kind === "late" ? "checked" : ""}>延滞分</label>
     <label class="cb full nobal"><input type="checkbox" id="e-nobal" ${it.noBal ? "checked" : ""}>残高に反映しない<span class="note">（管理を始める前の延滞分など）</span></label>
+    <div class="full recalc-note" id="e-accnote" hidden></div>
+  </div>${f ? '<div class="actions"><div><button class="u-btn danger" id="e-del">この支払を削除</button></div><div></div></div>' : ""}`;
+    return `<div class="ad-top"><h3>${f ? "支払を編集" : "支払を追加"}</h3><button class="u-btn icon sm soft xbtn" data-close="1" aria-label="閉じる">×</button></div>${stBar}
+  <div class="form">
+    <div class="field"><label for="e-date">支払日</label><input type="date" id="e-date" value="${esc(it.date)}"></div>
+    <div class="field"><label for="e-me">支払方法</label><select id="e-me">${mopt(it.method)}</select></div>
+    <div class="form full" id="e-money"></div>
+    <div class="field full"><label for="e-memo">メモ</label><input id="e-memo" value="${esc(it.memo)}"></div>
   </div>
-  <div class="actions"><div>${f ? '<button class="u-btn danger" id="e-del">削除</button>' : ""}</div><div><button class="ghost" data-close="1">キャンセル</button><button class="primary" id="e-save">保存</button></div></div>`;
+  ${f ? `<button type="button" class="sheetfold-btn" data-sheetfold="e-set" aria-expanded="false"><b>項目の設定</b><span class="note">口座・名前・削除はこちら</span><span aria-hidden="true">▸</span></button><div id="e-set" hidden>${setFields}</div>` : setFields}
+  <div class="actions"><div></div><div><button class="ghost" data-close="1">キャンセル</button><button class="primary" id="e-save">保存</button></div></div>`;
   }
   /* 保存：支払済の元金が変わったら、残高に反映済みの分を戻してから引き直す */
   async function saveItem(ctx) {
@@ -1983,35 +2059,50 @@
           toast(`${esc(a.name)} を削除しました`, sn);
           await guard(() => S.db.collection("accounts").doc(id).delete());
         };
+      /* 返済のしかたで使わない金額欄は出さない */
+      const typeTgl = () => {
+        const t = $("a-type").value;
+        $("a-ppf").hidden = t !== "principal";
+        $("a-payf").hidden = t === "principal";
+        $("a-rate").closest(".field").hidden = t === "none";
+      };
+      $("a-type").addEventListener("change", typeTgl);
+      typeTgl();
       $("a-save").onclick = () => saveAccount(id, a);
     });
   }
   function editAccountHTML(id, a) {
     return `<h3>${id ? esc(a.name) + " の設定" : "口座を追加"}</h3>
   <div class="form">
+    <div class="sec full">基本</div>
     <div class="field"><label for="a-name">口座名</label><input id="a-name" value="${esc(a.name)}"></div>
     <div class="field"><label for="a-cat">区分</label><select id="a-cat">${opt(
       Object.keys(CAT).map(c => [c, CAT[c].l]),
       a.category,
     )}</select></div>
     <div class="field"><label for="a-bal">いまの残高</label><input type="number" id="a-bal" inputmode="numeric" value="${a.balance ?? ""}"></div>
-    <div class="field"><label for="a-extra">それ以外の支払額／月</label><input type="number" id="a-extra" inputmode="numeric" value="${a.extra ?? ""}"></div>
-    <div class="field"><label for="a-rate">年利（%）</label><input type="number" id="a-rate" step="0.1" value="${a.rate ?? ""}"></div>
-    <div class="field"><label for="a-type">返済方式</label><select id="a-type">${opt(
+    <div class="field"><label for="a-day">支払日（31=末日）</label><input type="number" id="a-day" min="1" max="31" value="${a.payDay ?? ""}"></div>
+    <div class="field"><label for="a-me">支払いの方法</label><select id="a-me">${mopt(a.method)}</select></div>
+    <div class="sec full">返済の条件</div>
+    <div class="field"><label for="a-type">返済のしかた</label><select id="a-type">${opt(
       [
-        ["principal", "元金定額"],
-        ["level", "元利定額"],
+        ["principal", "毎月、元金を同じ額ずつ返す"],
+        ["level", "毎月、同じ額ずつ返す（利息込み）"],
         ["none", "定額・利息なし"],
       ],
       a.repayType,
     )}</select></div>
-    <div class="field"><label for="a-pp">毎月の元金</label><input type="number" id="a-pp" inputmode="numeric" value="${a.principalPay ?? ""}"></div>
-    <div class="field"><label for="a-pay">毎月の支払額</label><input type="number" id="a-pay" inputmode="numeric" value="${a.payment ?? ""}"></div>
-    <div class="field"><label for="a-day">支払日（31=末日）</label><input type="number" id="a-day" min="1" max="31" value="${a.payDay ?? ""}"></div>
-    <div class="field"><label for="a-me">支払方法</label><select id="a-me">${mopt(a.method)}</select></div>
-    <div class="field"><label for="a-lim">極度額</label><input type="number" id="a-lim" inputmode="numeric" value="${a.limit ?? ""}"></div>
-    <div class="field"><label for="a-lrate">遅延損害金（年率%）</label><input type="number" id="a-lrate" step="0.1" inputmode="decimal" placeholder="例 14.6" value="${a.lateRate ?? ""}"></div>
-    <div class="field full"><label for="a-memo">メモ</label><textarea id="a-memo" rows="2">${esc(a.memo)}</textarea></div>
+    <div class="field"><label for="a-rate">年利（%）</label><input type="number" id="a-rate" step="0.1" value="${a.rate ?? ""}"></div>
+    <div class="field" id="a-ppf"><label for="a-pp">毎月返す元金</label><input type="number" id="a-pp" inputmode="numeric" value="${a.principalPay ?? ""}"></div>
+    <div class="field" id="a-payf"><label for="a-pay">毎月の支払額（利息込み）</label><input type="number" id="a-pay" inputmode="numeric" value="${a.payment ?? ""}"></div>
+    <div class="field full"><label for="a-extra">毎月あわせて引かれる額（家賃など）</label><input type="number" id="a-extra" inputmode="numeric" value="${a.extra ?? ""}"><span class="note">返済とは別に、毎月この口座から一緒に引かれる額。なければ空で大丈夫です</span></div>
+    <div class="note full">利息は、残高と年利から自動で計算します。</div>
+  </div>
+  <button type="button" class="sheetfold-btn" data-sheetfold="a-set" aria-expanded="false"><b>詳細設定</b><span class="note">極度額・振込先・メモ</span><span aria-hidden="true">▸</span></button>
+  <div id="a-set" hidden>
+  <div class="form">
+    <div class="field"><label for="a-lim">利用できる上限（極度額）</label><input type="number" id="a-lim" inputmode="numeric" value="${a.limit ?? ""}"></div>
+    <div class="field"><label for="a-lrate">遅れたときの損害金（年率%）</label><input type="number" id="a-lrate" step="0.1" inputmode="decimal" placeholder="例 14.6" value="${a.lateRate ?? ""}"></div>
     <div class="sec full">延滞したときの振込先</div>
     <div class="field"><label for="a-bk">金融機関</label><input id="a-bk" placeholder="例 楽天銀行" value="${esc(a.bankName || "")}"></div>
     <div class="field"><label for="a-br">支店</label><input id="a-br" placeholder="例 第一営業支店" value="${esc(a.bankBranch || "")}"></div>
@@ -2025,8 +2116,9 @@
     <div class="field"><label for="a-bn">口座番号</label><input id="a-bn" inputmode="numeric" value="${esc(a.bankNo || "")}"></div>
     <div class="field full"><label for="a-bh">名義（カナ）</label><input id="a-bh" value="${esc(a.bankHolder || "")}"></div>
     <div class="field full"><label for="a-bm">振込のメモ</label><input id="a-bm" placeholder="例 振込名義の前に会員番号を入れる" value="${esc(a.bankMemo || "")}"></div>
+    <div class="field full"><label for="a-memo">メモ</label><textarea id="a-memo" rows="2">${esc(a.memo)}</textarea></div>
     <label class="cb full"><input type="checkbox" id="a-act" ${a.active !== false ? "checked" : ""}>有効（集計と支払予定の対象）</label>
-    <div class="note full">元金定額：毎月の元金＋利息を払う ／ 元利定額：毎月同じ額を払う（その中から利息を引いた分が元金）。「それ以外の支払額」は家賃や一括払いなど、リボ以外に毎月一緒に引き落とされる額です。</div>
+  </div>
   </div>
   <div class="actions"><div>${id ? '<button class="u-btn danger" id="a-del">削除</button>' : ""}</div><div><button class="ghost" data-close="1">キャンセル</button><button class="primary" id="a-save">保存</button></div></div>`;
   }
@@ -2283,6 +2375,21 @@
     const h = e.target.closest(".fold-h");
     if (h && !e.target.closest("button,input,a")) toggleFold(h.dataset.fold);
     if (e.target.id === "scrim") closeSheet(); // シートの外側
+    if (e.target.id === "cNoteBtn") {
+      const n = $("cNote");
+      n.hidden = !n.hidden;
+      e.target.setAttribute("aria-expanded", String(!n.hidden));
+      return;
+    }
+    const sf = e.target.closest("[data-sheetfold]");
+    if (sf) {
+      const box = document.getElementById(sf.dataset.sheetfold);
+      if (box) {
+        box.hidden = !box.hidden;
+        sf.setAttribute("aria-expanded", String(!box.hidden));
+      }
+      return;
+    }
     const t = e.target.closest("button,[data-editacc],[data-acc],.row[data-edit]");
     if (!t) return;
     const d = t.dataset;
@@ -2290,6 +2397,10 @@
     if (d.close) closeSheet();
     else if (d.goto) {
       FIN.kb.setTab(d.goto);
+      window.scrollTo(0, 0);
+    } else if (d.tab) {
+      /* 支払い管理の中の切り替え（今月の支払い／借入・返済） */
+      FIN.kb.setTab(d.tab);
       window.scrollTo(0, 0);
     } else if (d.inc) openIncome(d.inc);
     /* 支払い */
