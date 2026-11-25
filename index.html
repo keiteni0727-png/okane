@@ -73,8 +73,11 @@
     <div id="hNext"></div>
     <div class="pbox"><div class="prange"><span class="label">集計期間</span><b class="num" id="cRange"></b><span class="note" id="cPeriod"></span></div><div class="stats" id="hStats"></div></div>
     </div>
-    <div class="bar-row listbar">
-      <div id="cFbar"></div>
+    <div class="ptoolbar">
+      <span class="psum">集計期間 <b class="num" id="tRange"></b> <span class="note" id="tPer"></span></span>
+      <div class="bar-row listbar">
+        <div id="cFbar"></div>
+      </div>
     </div>
     <div id="cFsum"></div>
     <div class="cols cols-cycle">
@@ -84,8 +87,14 @@
           <div class="panel-h"><h2>この期間のお金の流れ</h2></div>
           <div class="cf" id="cFlow"></div>
         </div>
-        <div><button type="button" class="notefold" id="cNoteBtn" aria-expanded="false">ⓘ 集計のしかた（給料日〜翌月24日／現金支出の扱い）</button><div class="note" id="cNote" hidden></div></div>
+        <div><button type="button" class="notefold" data-notefold aria-expanded="false">ⓘ 集計のしかた（給料日〜翌月24日／現金支出の扱い）</button><div class="note cnote" hidden></div></div>
       </div>
+    </div>
+    <div class="panel pctable"><div class="tablewrap"><table class="ptable" id="cTable"></table></div></div>
+    <div class="panel pcflow">
+      <div class="panel-h"><h2>この期間のお金の流れ</h2></div>
+      <div class="cf" id="cFlowPc"></div>
+      <div class="pcnote"><button type="button" class="notefold" data-notefold aria-expanded="false">ⓘ 集計のしかた（給料日〜翌月24日／現金支出の扱い）</button><div class="note cnote" hidden></div></div>
     </div>
   </section>
 
