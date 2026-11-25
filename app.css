@@ -1735,3 +1735,44 @@ html.setopen,html.setopen body{overflow:hidden}
   .kb #rulepanel.setpanel:not([hidden]){left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));height:min(720px,calc(100% - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)))}
 }
 @media (min-width:900px){.kb #rulepanel.setpanel:not([hidden]){left:calc(var(--sbw) + 12px)}}
+
+/* ---------- 今月の支払い：PC向けの表表示（スマホは従来のカード表示） ---------- */
+.pay .ptoolbar .psum{display:none}
+.pay .pctable,.pay .pcflow{display:none}
+@media (min-width:900px){
+  .pay .ptoolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .pay .ptoolbar .psum{display:inline;font-size:var(--fs-s);color:var(--u-sub)}
+  .pay .ptoolbar .psum b{color:var(--u-ink)}
+  .pay .ptoolbar .bar-row{margin-left:auto}
+  .pay .ptop{display:none}
+  .pay .ptop>#cAlert:has(.okline){display:none}
+  .pay .cols-cycle{display:none}
+  .pay .pctable{display:block}
+  .pay .pcflow{display:block;margin-top:14px}
+  .pay #cFlowPc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .pay #cFlowPc .kv{flex-direction:column;align-items:flex-start;gap:1px;border-top:0;border-left:1px solid var(--u-soft);padding:8px 12px}
+  .pay .pcnote{margin-top:10px}
+}
+.pay .ptable{display:table;width:100%;border-collapse:collapse;font-size:var(--fs-base)}
+.pay .ptable tr{display:table-row}
+.pay .ptable th,.pay .ptable td{display:table-cell;text-align:left;white-space:nowrap;vertical-align:middle}
+.pay .ptable th{font-size:var(--fs-xs);color:var(--u-sub);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--u-line)}
+.pay .ptable td{padding:7px 10px;border-bottom:1px solid var(--u-soft)}
+.pay .ptable .r{text-align:right;font-family:var(--u-num)}
+.pay .ptable th.r{text-align:right}
+.pay .ptable tr.grp td{background:var(--u-bg);font-weight:700;border-bottom:1px solid var(--u-line)}
+.pay .ptable tr.grp .gnote{font-weight:400;font-size:var(--fs-xs);color:var(--u-sub)}
+.pay .ptable tr.trow{cursor:pointer}
+.pay .ptable tr.trow:hover td{background:var(--u-accent2)}
+.pay .ptable tr.paid td{color:var(--u-sub)}
+.pay .ptable .tname{font-weight:700}
+.pay .ptable tr.paid .tname{font-weight:400}
+.pay .ptable .tnote{font-size:var(--fs-xs);color:var(--u-sub);font-weight:400;margin-left:8px}
+.pay .ptable .tst{font-size:var(--fs-s);font-weight:700}
+.pay .ptable .tst.unpaid{color:var(--u-warn)}
+.pay .ptable .tst.done{color:var(--u-ok)}
+.pay .ptable .tst.warn{color:var(--u-danger)}
+.pay .ptable .tst.def{color:var(--u-sub)}
+.pay .ptable tfoot td{font-weight:700;border-top:2px solid var(--u-line);border-bottom:0}
+.pay .ptable tfoot .tunpaid{color:var(--u-danger)}
+.pay .ptable .tempty{text-align:center;color:var(--u-sub);padding:22px 10px;white-space:normal}
