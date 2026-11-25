@@ -18,9 +18,8 @@
   <div class="sb-top"><button type="button" class="sb-ham" id="sbtog" aria-label="メニューを折りたたむ" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><svg class="sb-logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--u-accent)"/><rect x="7.5" y="6.5" width="17" height="19" rx="2.6" fill="#fff"/><rect x="7.5" y="6.5" width="3.2" height="19" rx="1.2" fill="var(--u-accent)" opacity=".22"/><path d="M13.6 10.6 17.6 15.6 21.6 10.6M17.6 15.6v6.4M14.6 17h6M14.6 19.8h6" fill="none" stroke="var(--u-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b class="lbl">おかね手帳</b></div>
   <button type="button" class="sb-add" id="sbAdd" aria-label="追加">＋<span class="lbl"> 追加</span></button>
   <div class="sb-sec lbl">メニュー</div>
-  <div class="sbp"><div class="sb-row"><button type="button" class="sb-it" data-tab="list" title="家計簿"><i aria-hidden="true" class="mic list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></i><span class="lbl">家計簿</span></button></div></div>
-  <div class="sbp"><div class="sb-row"><button type="button" class="sb-it" data-tab="home" title="支払い"><i aria-hidden="true" class="mic home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg></i><span class="lbl">支払い</span></button></div></div>
-  <div class="sbp" id="sbpan"><div class="sb-row"><button type="button" class="sb-it" data-tab="an" title="分析"><i aria-hidden="true" class="mic an"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg></i><span class="lbl">分析</span></button><button type="button" class="sb-fold lbl" id="anfold" aria-expanded="true" aria-label="分析の項目をたたむ"><svg class="fic" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div class="sb-sub"><button type="button" class="sb-it" data-tab="graph">グラフ</button><button type="button" class="sb-it" data-tab="balance">残高と計画</button></div></div>
+  <div class="sbp" id="sbpan"><div class="sb-row"><button type="button" class="sb-it" data-tab="kb" title="家計簿"><i aria-hidden="true" class="mic list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></i><span class="lbl">家計簿</span></button><button type="button" class="sb-fold lbl" id="anfold" aria-expanded="true" aria-label="家計簿の項目をたたむ"><svg class="fic" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div class="sb-sub"><button type="button" class="sb-it" data-tab="list">明細</button><button type="button" class="sb-it" data-tab="graph">グラフ</button></div></div>
+  <div class="sbp" id="sbppan"><div class="sb-row"><button type="button" class="sb-it" data-tab="pay" title="支払い管理"><i aria-hidden="true" class="mic home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg></i><span class="lbl">支払い管理</span></button><button type="button" class="sb-fold lbl" id="payfold" aria-expanded="true" aria-label="支払い管理の項目をたたむ"><svg class="fic" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div class="sb-sub"><button type="button" class="sb-it" data-tab="home">今月の支払い</button><button type="button" class="sb-it" data-tab="balance">借入・返済</button></div></div>
   <div class="sb-foot"><button type="button" class="sb-it" id="sbgear" title="設定"><i aria-hidden="true" class="mic gear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></i><span class="lbl">設定</span></button><div class="sb-st"><span id="sbSave" class="savest wait">接続中…</span></div></div>
 </aside>
 <header class="appbar"><div class="wrap abin">
@@ -36,7 +35,7 @@
   <div class="mnav"><button class="u-btn icon sm txt ib" id="mprev" aria-label="前の月度">‹</button><select id="month" aria-label="表示する月度"></select><button class="u-btn icon sm txt ib" id="mnext" aria-label="次の月度">›</button></div>
 </div>
 
-<div class="wrap anseg-w"><nav class="anseg" aria-label="分析の画面"><button data-tab="graph">グラフ</button><button data-tab="balance">残高と計画</button></nav></div>
+<div class="wrap anseg-w kbseg-w"><nav class="anseg kbseg" aria-label="家計簿の画面"><button data-tab="list">明細</button><button data-tab="graph">グラフ</button></nav></div>
 <div class="wrap layout">
   <section class="view" id="v-list">
     <div class="kbside">
@@ -64,6 +63,7 @@
 
 <div class="pay u-btns">
 <div class="wrap" id="payWrap">
+  <div class="anseg-w payseg-w"><nav class="anseg payseg" aria-label="支払い管理の画面"><button data-tab="home">今月の支払い</button><button data-tab="balance">借入・返済</button></nav></div>
   <div id="status" class="status" hidden></div>
 
   <!-- 支払い（概要＋毎月の支払い） -->
@@ -84,24 +84,30 @@
           <div class="panel-h"><h2>この期間のお金の流れ</h2></div>
           <div class="cf" id="cFlow"></div>
         </div>
-        <div class="note" id="cNote"></div>
+        <div><button type="button" class="notefold" id="cNoteBtn" aria-expanded="false">ⓘ 集計のしかた（給料日〜翌月24日／現金支出の扱い）</button><div class="note" id="cNote" hidden></div></div>
       </div>
     </div>
   </section>
 
-  <!-- 残高と計画（残高と口座＋返済計画） -->
+  <!-- 借入・返済（残高と口座＋返済計画） -->
   <section id="v-balance">
     <div class="stats" id="bStats"></div>
-    <div class="panel outlook" data-foldbox="outlook">
-      <div class="panel-h fold-h" data-fold="outlook" role="button" tabindex="0"><h2>完済の見通し</h2><span class="note">いまの返済条件のまま</span></div>
+    <div class="panel outlook">
+      <div class="panel-h"><h2>完済の見通し</h2><span class="note">いまの返済条件のまま</span></div>
       <div id="olTop"></div>
+      <div class="ol-int" id="olInt"></div>
+    </div>
+    <div class="panel" data-foldbox="road">
+      <div class="panel-h fold-h" data-fold="road" role="button" tabindex="0"><h2>毎月の返済が軽くなっていく日</h2><span class="note">いまの返済条件のまま（家賃などは除く）</span></div>
+      <div class="chartbox" id="pChart"></div>
+      <div class="timeline" id="pRoad"></div>
     </div>
     <div class="grp-h"><h2>口座</h2></div>
     <div class="note acc-hint">口座を押すと、履歴・今後の予定・その口座の返済計画が見られます。</div>
     <div id="bGroups" class="stack14"></div>
-    <div class="grp-h plan-h"><h2>返済の計画</h2></div>
-    <div class="panel" data-foldbox="once">
-      <div class="panel-h fold-h" data-fold="once" role="button" tabindex="0"><h2>1回だけ繰上げするなら</h2><span class="note">今期に1回だけ繰上げした場合</span></div>
+    <div class="grp-h plan-h"><h2>繰上げ返済の相談</h2></div>
+    <div class="panel">
+      <div class="panel-h"><h2>1回だけ繰上げするなら</h2><span class="note">今期に1回だけ繰上げした場合</span></div>
       <div class="boost-h">
         <div class="field"><label for="pAmt">繰上げに回す額</label>
           <div class="amtbox"><span>¥</span><input type="number" id="pAmt" inputmode="numeric" step="1000" value="10000"></div>
@@ -109,17 +115,6 @@
         <div class="quick" id="pQuick"><button data-qa="5000">5千</button><button data-qa="10000">1万</button><button data-qa="30000">3万</button><button data-qa="50000">5万</button></div>
       </div>
       <div id="pRank"></div>
-    </div>
-
-    <div class="panel" data-foldbox="int">
-      <div class="panel-h fold-h" data-fold="int" role="button" tabindex="0"><h2>利息に消えているお金</h2><span class="note" id="pIntSum"></span></div>
-      <div id="pInt"></div>
-    </div>
-
-    <div class="panel" data-foldbox="road">
-      <div class="panel-h fold-h" data-fold="road" role="button" tabindex="0"><h2>毎月の返済が軽くなっていく日</h2><span class="note">いまの返済条件のまま（家賃などは除く）</span></div>
-      <div class="chartbox" id="pChart"></div>
-      <div class="timeline" id="pRoad"></div>
       <div class="whatif">
         <div class="bar-row"><label for="sExtra" class="label">毎月あと少し返せたら</label><b class="num" id="sExtraV"></b></div>
         <input type="range" id="sExtra" min="0" max="50000" step="1000" value="0">
@@ -135,9 +130,8 @@
 
 <div class="kb u-app u-btns">
 <div class="tbwrap"><nav class="tabbar" aria-label="画面の切り替え">
-  <button data-tab="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>家計簿</button>
-  <button data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>支払い</button>
-  <button data-tab="an"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>分析</button>
+  <button data-tab="kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>家計簿</button>
+  <button data-tab="pay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg>支払い管理</button>
 </nav></div>
 
 <div id="selbar" hidden><div class="in">
@@ -195,12 +189,12 @@
     <div id="mmsg" class="mu"></div>
   </div>
   <div id="st-pay" hidden>
-    <div data-pg="inc"><div class="mu st-desc">月度（給料日から次の給料日の前日まで。土日は直前の平日）は、家計簿・支払い・分析のすべてで使います。</div>
+    <div data-pg="inc"><div class="mu st-desc">月度（給料日から次の給料日の前日まで。土日は直前の平日）は、家計簿・支払い管理の両方で使います。</div>
       <div class="setgrp setform"><div class="rv pset"><label>標準の手取り（毎月）<input type="number" id="mIncome" inputmode="numeric"></label><label>給料日<input type="number" id="mPayday" min="1" max="28" inputmode="numeric"></label></div>
       <button class="pri" id="mSaveCfg">保存</button></div></div>
-    <div data-pg="paym"><div class="mu st-desc">支払いの「支払方法」に出す口座です。⠿での並び替えは支払いの入力欄の並びに反映されます。右上の「編集」で削除ができます。</div>
+    <div data-pg="paym"><div class="mu st-desc">支払い管理の「支払いの方法」に出す選択肢です。⠿での並び替えは支払いの入力欄の並びに反映されます。右上の「編集」で削除ができます。</div>
       <div class="setgrp"><div class="pml" id="mMethods"></div></div>
-      <form id="mMethodForm" class="pmadd setadd"><input type="text" id="mMethodIn" placeholder="追加する口座（例：楽天銀行）" aria-label="新しい引落口座"><button>＋ 追加</button></form></div>
+      <form id="mMethodForm" class="pmadd setadd"><input type="text" id="mMethodIn" placeholder="追加する方法（例：楽天銀行）" aria-label="新しい支払いの方法"><button>＋ 追加</button></form></div>
     <div data-pg="gen"><div class="mu st-desc">返済中の口座は、次の給料日以降の支払予定を いまの残高・年利・返済条件 から作り直せます（3年分）。延滞分・支払済・口座なしの支払はそのまま残ります。口座の設定を保存したときも、その口座の分は自動で作り直します。</div>
       <div class="setgrp setform"><button class="pri" id="mRegen">今後の支払予定を作り直す</button></div>
       <div class="mu st-desc mt12">奨学金などの定額の支払は、月を指定してまとめて作れます（同じ月にすでにある口座はとばします）。</div>
