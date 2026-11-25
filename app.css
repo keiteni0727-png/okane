@@ -1756,12 +1756,16 @@ html.setopen,html.setopen body{overflow:hidden}
 .pay .ptable{display:table;width:100%;border-collapse:collapse;font-size:var(--fs-base)}
 .pay .ptable tr{display:table-row}
 .pay .ptable th,.pay .ptable td{display:table-cell;text-align:left;white-space:nowrap;vertical-align:middle}
-.pay .ptable th{font-size:var(--fs-xs);color:var(--u-sub);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--u-line)}
+.pay .ptable th{font-size:var(--fs-m);color:var(--u-ink);font-weight:700;padding:8px 10px;background:var(--u-chip);border-bottom:2px solid var(--u-line)}
 .pay .ptable td{padding:7px 10px;border-bottom:1px solid var(--u-soft)}
 .pay .ptable .r{text-align:right;font-family:var(--u-num)}
 .pay .ptable th.r{text-align:right}
-.pay .ptable tr.grp td{background:var(--u-bg);font-weight:700;border-bottom:1px solid var(--u-line)}
+.pay .ptable tr.grp td{background:var(--u-accent2);font-weight:700;border-top:2px solid var(--u-accent);border-bottom:1px solid var(--u-accent)}
 .pay .ptable tr.grp .gnote{font-weight:400;font-size:var(--fs-xs);color:var(--u-sub)}
+.pay .ptable .bd{font-size:var(--fs-m);color:var(--u-sub)}
+.pay .ptable .chip{background:color-mix(in srgb,currentColor 13%,transparent)}
+.pay .fchip3{border:1px solid var(--u-line);background:var(--u-surface);color:var(--u-sub);border-radius:999px;padding:5px 14px;font:inherit;font-size:var(--fs-m);cursor:pointer}
+.pay .fchip3.on{background:var(--u-chip);color:var(--u-ink);font-weight:700;border-color:var(--u-strong)}
 .pay .ptable tr.trow{cursor:pointer}
 .pay .ptable tr.trow:hover td{background:var(--u-accent2)}
 .pay .ptable tr.paid td{color:var(--u-sub)}
