@@ -487,6 +487,10 @@ function clickHeader(t, d) {
     const f = !$("sbpan").classList.contains("folded");
     setAnFold(f);
     lsSet(KANF, f ? "1" : "", true);
+  } else if (t.id === "payfold") {
+    const f = !$("sbppan").classList.contains("folded");
+    setPayFold(f);
+    lsSet(KPF, f ? "1" : "", true);
   } else if (t.id === "sbtog") {
     const c = !document.body.classList.contains("sbc");
     setSidebar(c);
@@ -833,6 +837,7 @@ rkUpdate();
 }
 setSidebar(lsRaw(KSBC) === "1");
 setAnFold(lsRaw(KANF) === "1");
+setPayFold(lsRaw(KPF) === "1");
 paintTheme();
 setTab(view.tab);
 load();
