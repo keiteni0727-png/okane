@@ -766,10 +766,8 @@
     $("cRange").textContent = `${md(st.s)}(${wd(st.s)})〜${md(st.e)}(${wd(st.e)})`;
     let its = [...st.its].sort(byDateAmt).filter(FILTER_FN[S.filter] || Boolean);
     S.shownN = its.length;
-    const fl = S.filter !== "all" ? [FILTER_LAB[S.filter]] : [];
-    $("cFbar").innerHTML = `<div class="fline">${UI.filter.btn("pay", fl.length)}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
-    $("cFsum").innerHTML = UI.filter.sum("pay", fl);
-    if (UI.filter.isOpen("pay")) UI.filter.refresh();
+    $("cFbar").innerHTML = `<div class="fline fchips">${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
+    $("cFsum").innerHTML = "";
     if (!its.length)
       $("cList").innerHTML =
         S.filter !== "all"
@@ -796,9 +794,9 @@
   }
   /* PC向けの表：日付の見出し行（その日の合計と、未払分の支払方法ごとの額）＋支払い1件＝1行 */
   function tableHTML(its) {
-    const head = `<thead><tr><th class="c-date">日付</th><th>支払い</th><th>区分</th><th>支払方法</th><th class="r">金額</th><th class="r">元金</th><th class="r">利息</th><th>状態</th><th></th></tr></thead>`;
+    const head = `<thead><tr><th>支払い</th><th>区分</th><th>支払方法</th><th class="r">支払金額</th><th>内訳</th><th>支払い状況</th><th></th></tr></thead>`;
     if (!its.length)
-      return head + `<tbody><tr><td colspan="9" class="tempty">${S.filter !== "all" ? "条件に合う支払はありません" : "この期間の支払はまだありません"}</td></tr></tbody>`;
+      return head + `<tbody><tr><td colspan="7" class="tempty">${S.filter !== "all" ? "条件に合う支払はありません" : "この期間の支払はまだありません"}</td></tr></tbody>`;
     let h = head + "<tbody>",
       cur = null;
     its.forEach(i => {
@@ -812,7 +810,7 @@
           byM[m] = (byM[m] || 0) + (x.amount || 0);
         });
         const need = Object.entries(byM).sort((a, b) => b[1] - a[1]);
-        h += `<tr class="grp"><td colspan="6">${md(cur)}（${wd(cur)}）</td><td class="r gnote">${need.length ? need.map(([m, v]) => `${esc(m)} ${yen(v)}`).join(" ・ ") : day.length ? "✓ 支払済" : ""}</td><td class="r">${yen(sum)}</td><td></td></tr>`;
+        h += `<tr class="grp"><td colspan="3">${md(cur)}（${wd(cur)}）</td><td class="r">${yen(sum)}</td><td class="gnote">${need.length ? `（${need.map(([m, v]) => `${esc(m)} ${yen(v)}`).join(" ・ ")}）` : ""}</td><td colspan="2"></td></tr>`;
       }
       h += trowHTML(i);
     });
@@ -820,8 +818,10 @@
     const tA = live.reduce((s, i) => s + amtOf(i), 0);
     const tP = live.reduce((s, i) => s + (i.accountId ? i.principal || 0 : 0), 0);
     const tI = live.reduce((s, i) => s + (i.accountId ? i.interest || 0 : 0), 0);
+    const tO = live.reduce((s, i) => s + (i.accountId ? i.other || 0 : 0), 0);
+    const bd = tP || tI || tO ? [`元金 ${yen(tP)}`, `利息 ${yen(tI)}`, ...(tO ? [`その他 ${yen(tO)}`] : [])].join(" ・ ") : "—";
     const un = its.filter(i => i.status === "planned").reduce((s, i) => s + amtOf(i), 0);
-    h += `</tbody><tfoot><tr><td colspan="4">合計（${live.length}件）</td><td class="r">${yen(tA)}</td><td class="r">${yen(tP)}</td><td class="r">${yen(tI)}</td><td class="tunpaid">未払 ${yen(un)}</td><td></td></tr></tfoot>`;
+    h += `</tbody><tfoot><tr><td colspan="3">合計（${live.length}件）</td><td class="r">${yen(tA)}</td><td class="bd">${bd}</td><td class="tunpaid">未払 ${yen(un)}</td><td></td></tr></tfoot>`;
     return h;
   }
   function trowHTML(i) {
@@ -830,46 +830,18 @@
     const over = i.status === "planned" && i.date < today();
     const lbl = stLbl(i, over, late);
     const cls = i.status === "paid" ? "done" : i.status === "deferred" ? "def" : over || late ? "warn" : "unpaid";
+    const bd = i.accountId ? [`元金 ${yen(i.principal || 0)}`, `利息 ${yen(i.interest || 0)}`, ...(i.other ? [`その他 ${yen(i.other)}`] : [])].join(" ・ ") : "—";
     return `<tr class="trow${i.status === "paid" ? " paid" : ""}" data-edit="${i.id}" role="button" tabindex="0">
-      <td></td>
       <td class="tname">${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}</td>
-      <td>${CAT[c]?.s || ""}</td>
-      <td>${i.method ? esc(i.method) : "—"}</td>
+      <td><span class="chip ${c}">${CAT[c]?.s || ""}</span></td>
+      <td>${i.method ? `<span class="mtag">${esc(i.method)}</span>` : "—"}</td>
       <td class="r">${yen(amtOf(i))}</td>
-      <td class="r">${i.accountId ? yen(i.principal || 0) : "—"}</td>
-      <td class="r">${i.accountId ? yen(i.interest || 0) : "—"}</td>
+      <td class="bd">${bd}</td>
       <td><span class="tst ${cls}">${lbl}</span></td>
       <td class="r">${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</td></tr>`;
   }
-  /* 一覧の絞り込み：状態（未払・延滞分） */
+  /* 一覧の絞り込み：状態（未払・前月延滞分）。ボタンは一覧の上に常時表示（data-f で切り替え） */
   const FILTER_FN = { unpaid: i => i.status === "planned", late: i => i.kind === "late" || i.status === "deferred" };
-  const FILTER_LAB = { unpaid: "未払", late: "延滞分" };
-  UI.filter.define("pay", {
-    cfg() {
-      const all = periodStats(S.period).its;
-      return {
-        rows: [
-          {
-            k: "st",
-            label: "状態",
-            cur: S.filter === "all" ? "" : S.filter,
-            all: all.length,
-            opts: Object.keys(FILTER_FN).map(v => ({ v, label: FILTER_LAB[v], n: all.filter(FILTER_FN[v]).length })),
-          },
-        ],
-        n: S.shownN ?? 0,
-        unit: "件",
-      };
-    },
-    pick(k, v) {
-      S.filter = v || "all";
-      render();
-    },
-    reset() {
-      S.filter = "all";
-      render();
-    },
-  });
   /* 最初に出す月度：いまの月度の支払を全部処理し終えていたら（未払が残っていなければ）翌月度 */
   function autoPeriod() {
     const cur = periodOf(today());
