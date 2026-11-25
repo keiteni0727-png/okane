@@ -758,6 +758,12 @@ body.sel .kb .layout{padding-bottom:190px}
 .pay .ol-kpi .ok{color:var(--u-ok)}
 .pay .ol-warn{margin:0 16px}
 .pay .ol-next{padding:8px 16px 12px;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--u-soft)}
+.pay .ol-int{display:flex;justify-content:space-between;gap:10px;padding:8px 16px 12px;border-top:1px solid var(--u-soft);font-size:var(--fs-m)}
+.pay .ol-int .num{font-weight:600;white-space:nowrap}
+.pay .notefold{background:none;border:0;color:var(--u-sub);font-size:var(--fs-s);padding:4px 2px;cursor:pointer;text-align:left;font-family:inherit}
+.pay .sheetfold-btn{display:flex;align-items:center;gap:8px;width:100%;border:1px solid var(--u-line);background:var(--u-surface);border-radius:var(--u-r);padding:12px 14px;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.pay .sheetfold-btn .note{margin-left:auto}
+.pay .recalc-note{background:var(--u-warn2);color:var(--u-warn);border-radius:var(--r-m);padding:8px 10px;font-size:var(--fs-s)}
 .pay .ms{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-m)}
 .pay .ms .when{font-family:var(--u-num);color:var(--u-sub);white-space:nowrap}
 
@@ -1055,17 +1061,17 @@ body.sel .kb .totop{opacity:0;transform:translateY(10px);pointer-events:none}
 body[data-tab="home"] .kb .layout,body[data-tab="balance"] .kb .layout{display:none}
 .kb .seg button{white-space:nowrap;padding-left:4px;padding-right:4px}
 .kb input[type=month]{background:var(--u-bg);border:1px solid var(--u-line);border-radius:var(--r-m);padding:7px 8px;min-width:0;max-width:100%;font-size:var(--fs-l);-webkit-appearance:none;appearance:none;min-height:38px}
-/* ===== メニュー：家計簿・支払い・分析（グラフ／残高と計画／AI分析） ===== */
+/* ===== メニュー：家計簿（明細／グラフ）・支払い管理（今月の支払い／借入・返済） ===== */
 .kb .anseg-w{display:none}
+.pay .anseg-w{display:none}
 @media (max-width:899px){
-  /* 下のメニュー（3つ）と、その横の設定ボタン。エンタメ管理と同じ形 */
-  /* 分析の中の切り替え */
-  body[data-tab="graph"] .kb .anseg-w,body[data-tab="balance"] .kb .anseg-w{display:block;padding-top:12px}
+  /* 分類の中の切り替え */
+  body[data-tab="list"] .kb .kbseg-w,body[data-tab="graph"] .kb .kbseg-w{display:block;padding-top:12px}
+  body[data-tab="home"] .pay .payseg-w,body[data-tab="balance"] .pay .payseg-w{display:block;padding-top:12px}
   body[data-tab="graph"] .kb .layout{padding-top:12px}
-  .kb .anseg{display:flex;gap:2px;background:var(--u-chip);border-radius:var(--r-m);padding:3px}
-  .kb .anseg button{flex:1;border:0;background:none;color:var(--u-sub);padding:8px 4px;border-radius:var(--r-m);font-size:var(--fs-base);font-weight:700;white-space:nowrap}
-  .kb .anseg button[aria-current="page"]{background:var(--u-surface);color:var(--u-ink);box-shadow:0 1px 3px rgba(16,24,40,.12)}
-  body[data-tab="balance"] .pay section{padding-top:12px}
+  .kb .anseg,.pay .anseg{display:flex;gap:2px;background:var(--u-chip);border-radius:var(--r-m);padding:3px}
+  .kb .anseg button,.pay .anseg button{flex:1;border:0;background:none;color:var(--u-sub);padding:8px 4px;border-radius:var(--r-m);font-size:var(--fs-base);font-weight:700;white-space:nowrap}
+  .kb .anseg button[aria-current="page"],.pay .anseg button[aria-current="page"]{background:var(--u-surface);color:var(--u-ink);box-shadow:0 1px 3px rgba(16,24,40,.12)}
 }
 /* PC：左の折りたためるメニュー（エンタメ管理と同じ大きさ） */
 @media (min-width:900px){
@@ -1502,7 +1508,7 @@ body.sbc .u-app .sb .sbp .sb-row>.sb-it{justify-content:center;padding:10px 0}
 }
 @media (max-width:380px){.kb .brand .bname{display:none}}
 
-/* ---------- 下のメニュー（スマホ）：家計簿・支払い・分析 ---------- */
+/* ---------- 下のメニュー（スマホ）：家計簿・支払い管理 ---------- */
 @media (max-width:899px){
   .kb .tbwrap{display:flex!important}
   body{padding-bottom:calc(var(--u-navb) + var(--tbh) + 24px)!important}
