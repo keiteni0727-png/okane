@@ -2120,3 +2120,21 @@ body{background:var(--u-bg)}
 .pay .vbal .ol-next .ms{font-size:var(--fs-s);flex-wrap:wrap}
 .pay .vbal .ol-int{padding:8px 14px 10px;font-size:var(--fs-s);flex-wrap:wrap}
 .pay .vbal .tl{padding:6px 14px}
+
+/* ======================================================================
+   シート・入力欄・設定：PCは入力欄を少し低く、ラベルは小さく。押したときの枠は藍
+   ====================================================================== */
+.pay .sheet{gap:12px;border-radius:var(--r-l);border:1px solid var(--u-line)}
+.pay .sheet h3{font-size:var(--fs-l);font-weight:700}
+.pay .field label{font-size:var(--fs-xs);font-weight:600;letter-spacing:.04em}
+.pay .form{gap:10px 12px}
+.pay input,.pay select,.pay textarea{background:var(--u-surface);border-color:var(--u-strong)}
+.pay input:focus,.pay select:focus,.pay textarea:focus{outline:none;border-color:var(--u-accent);box-shadow:0 0 0 3px var(--u-accent2)}
+.pay .sheetfold-btn{padding:10px 12px;font-size:var(--fs-m);background:color-mix(in srgb,var(--u-bg) 60%,var(--u-surface))}
+@media (min-width:900px){
+  .pay .sheet input:not([type=checkbox]):not([type=range]),.pay .sheet select{height:38px;font-size:var(--fs-base)}
+  .kb .rv .fl input,.kb .rv .fl select{min-height:38px}
+  .kb .rv .yen input{font-size:var(--fs-l)}
+}
+.kb .setrow{min-height:44px}
+.kb .setsec{font-size:var(--fs-xs)!important;letter-spacing:.06em}
