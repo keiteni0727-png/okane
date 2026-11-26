@@ -170,6 +170,7 @@
   <div class="q"><select id="qc" aria-label="分類を変更"></select><select id="qm" aria-label="支払い方法を変更"></select></div>
   <div class="acts"><button class="pri" id="qmerge">1件に合算</button><button id="selpost">詳細編集</button><button id="qrule">ルールにする</button><button class="ghost" id="qdel">削除</button></div>
 </div></div>
+<div id="kbSheet" class="kbsheet" hidden></div>
 <button type="button" id="fab" class="fab" aria-label="追加"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="fab-l">追加</span></button>
 <button type="button" id="toTop" class="totop hide" aria-label="ページの先頭に戻る" tabindex="-1" aria-hidden="true"><span aria-hidden="true">↑</span>トップへ</button>
 <datalist id="memos"></datalist>
@@ -243,5 +244,6 @@
 <script src="kb.js"></script>
 <script src="kb-view.js"></script>
 <script src="kb-events.js"></script>
+<script src="kb-entry.js"></script>
 <script>if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(function(){});</script>
 </body></html>

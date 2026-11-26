@@ -408,17 +408,15 @@ function doAdd() {
     if (FIN.pay.add) FIN.pay.add(view.tab === "home" ? "pay" : "acc");
     return;
   }
-  if (view.tab !== "list") setTab("list");
-  /* 今日の行に入力欄を開く（金額欄にすぐ入力できる。スマホは電卓が出る） */
-  if (!inPeriod(today(), view.month)) view.month = thisPeriod();
-  openDayAdd(today());
+  /* 家計簿：入力シートを開く（日付は今日） */
+  openEntry(today());
 }
 function paintTheme() {
   markCurrent("[data-theme]", "theme", U.theme());
 }
 document.addEventListener("u-theme", paintTheme);
 document.addEventListener("click", e => {
-  if (e.target.closest(".pay, #st-pay")) return; // 支払いの部品は pay.js が受け持つ
+  if (e.target.closest(".pay, #st-pay, #kbSheet")) return; // 支払いの部品は pay.js、入力シートは kb-entry.js が受け持つ
   if (clickListCheck(e)) return;
   const t = e.target.closest("button,[data-edit],[data-day],[data-memo],[data-gm],[data-g],.pvr") || e.target;
   /* 画面全体（body）へのクリックは無視する（body の data-tab を画面の切り替えと取り違えないように） */
@@ -546,8 +544,7 @@ function saveDayAdd() {
 }
 function clickLedger(t, d) {
   if (d.dadd) {
-    UI.calcClose();
-    openDayAdd(d.dadd);
+    openEntry(d.dadd);
   } else if (d.dfold) {
     if (ledger.sel.size) {
       const ids = ledger.shown.filter(i => i.date === d.dfold),
@@ -587,14 +584,7 @@ function clickLedger(t, d) {
     view.armed = null;
     render();
   } else if (d.edit) {
-    const src = items.find(i => i.id === d.edit);
-    if (src) {
-      ledger.editId = d.edit;
-      ledger.dayAdd = null;
-      view.armed = null;
-      ledger.draft = { ...src };
-      render();
-    }
+    openEntry(null, d.edit);
   } else return false;
   return true;
 }
