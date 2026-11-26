@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <link rel="stylesheet" href="app.css">
 <div class="kb u-app u-btns">
 <aside class="sb" aria-label="メニュー">
@@ -67,34 +67,25 @@
   <div id="status" class="status" hidden></div>
 
   <!-- 支払い（概要＋毎月の支払い） -->
-  <section id="v-home">
-    <div class="ptop">
-    <div id="cAlert"></div>
-    <div id="hNext"></div>
-    <div class="pbox"><div class="prange"><span class="label">集計期間</span><b class="num" id="cRange"></b><span class="note" id="cPeriod"></span></div><div class="stats" id="hStats"></div></div>
-    </div>
-    <div class="ptoolbar">
-      <span class="psum">集計期間 <b class="num" id="tRange"></b> <span class="note" id="tPer"></span></span>
-      <div class="bar-row listbar">
-        <div id="cFbar"></div>
+  <section id="v-home" class="v2">
+    <div class="pk" id="cKpi"></div>
+    <div class="pgrid">
+      <div class="pmain">
+        <div id="cAlert"></div>
+        <div class="panel plist">
+          <div class="ptoolbar"><div id="cFbar"></div></div>
+          <div id="cList" class="pcards"></div>
+          <div class="tablewrap pctable"><table class="ptable" id="cTable"></table></div>
+        </div>
       </div>
-    </div>
-    <div id="cFsum"></div>
-    <div class="cols cols-cycle">
-      <div class="panel"><div id="cList"></div></div>
-      <div class="stack14">
-        <div class="panel">
+      <aside class="pside">
+        <div id="hNext"></div>
+        <div class="panel pflow">
           <div class="panel-h"><h2>この期間のお金の流れ</h2></div>
           <div class="cf" id="cFlow"></div>
+          <div class="pnote"><button type="button" class="notefold" data-notefold aria-expanded="false">ⓘ 集計のしかた</button><div class="note cnote" hidden></div></div>
         </div>
-        <div><button type="button" class="notefold" data-notefold aria-expanded="false">ⓘ 集計のしかた（給料日〜翌月24日／現金支出の扱い）</button><div class="note cnote" hidden></div></div>
-      </div>
-    </div>
-    <div class="panel pctable"><div class="tablewrap"><table class="ptable" id="cTable"></table></div></div>
-    <div class="panel pcflow">
-      <div class="panel-h"><h2>この期間のお金の流れ</h2></div>
-      <div class="cf" id="cFlowPc"></div>
-      <div class="pcnote"><button type="button" class="notefold" data-notefold aria-expanded="false">ⓘ 集計のしかた（給料日〜翌月24日／現金支出の扱い）</button><div class="note cnote" hidden></div></div>
+      </aside>
     </div>
   </section>
 

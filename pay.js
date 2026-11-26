@@ -702,7 +702,7 @@
       n.textContent = `集計期間は給料日（毎月${S.cfg.payday || DEFAULT_PAYDAY}日、土日の場合は直前の平日）から次の給料日の前日までです。家計簿の明細のうち支払い方法が「${FIN.CASH}」のものは、残るお金から引いています。`;
     });
     $("hNext").innerHTML = nextHTML();
-    $("hStats").innerHTML = statsHTML(periodStats(S.period));
+    $("cKpi").innerHTML = kpiHTML(periodStats(S.period));
     renderCycle();
   }
   function alertHTML() {
@@ -754,20 +754,35 @@
   }
   /* 家計簿の明細のうち、その月度に現金で払った額 */
   const cashOf = p => (FIN.kb.cashIn ? FIN.kb.cashIn(p) : 0);
-  function statsHTML(st) {
-    return `<div class="stat"><span class="label">支払予定</span><span class="v">${yen(st.t)}</span><span class="s">${st.n}件${st.def ? ` ・延滞へ ${yen(st.def)}` : ""}</span></div>`;
+  /* 手取り・現金の支出・残るお金（お金の流れと上の数字で共用） */
+  function moneyOf(st) {
+    const inc = incomeOf(st.p);
+    const cash = cashOf(st.p);
+    return { inc, cash, left: inc - st.t, rest: inc - st.t - cash, real: S.cfg.incomeBy?.[st.p] != null };
+  }
+  /* 一番上の数字の帯：集計期間・支払予定・支払済・未払・手元に残るお金と、支払いの進み具合 */
+  function kpiHTML(st) {
+    const m = moneyOf(st);
+    const cur = S.period === periodOf(today());
+    const rate = st.t ? Math.round((st.paid / st.t) * 100) : 0;
+    const c = (cls, lb, v, sub) => `<div class="pk-c ${cls}"><span class="lb">${lb}</span><b class="num">${v}</b><span class="s">${sub}</span></div>`;
+    return `<div class="pk-h"><b class="pk-per">${periodLabel(S.period)}</b>${cur ? '<span class="pk-now">いまの期間</span>' : ""}<span class="pk-rng num">${md(st.s)}(${wd(st.s)})〜${md(st.e)}(${wd(st.e)})</span></div>
+    <div class="pk-grid">
+      ${c("", "支払予定", yen(st.t), `${st.n}件${st.def ? `・延滞へ ${yen(st.def)}` : ""}`)}
+      ${c("ok", "支払済", yen(st.paid), `${st.np}件`)}
+      ${c(st.unpaid ? "warn" : "ok", "未払", yen(st.unpaid), `${st.n - st.np}件`)}
+      ${c(`main ${m.rest < 0 ? "neg" : ""}`, "手元に残るお金", yen(m.rest), `手取り ${yen(m.inc)} から`)}
+    </div>
+    <div class="pk-prog"><span class="pk-bar" role="img" aria-label="支払済 ${rate}%"><i style="width:${rate}%"></i></span><span class="pk-pct">支払済 <b class="num">${rate}%</b>（${st.np}/${st.n}件）</span></div>`;
   }
 
   /* ---------- 支払い：一覧とお金の流れ ---------- */
   function renderCycle() {
     $("cAlert").innerHTML = alertHTML();
     const st = periodStats(S.period);
-    $("cPeriod").textContent = periodLabel(S.period) + (S.period === periodOf(today()) ? "（いまの期間）" : "");
-    $("cRange").textContent = `${md(st.s)}(${wd(st.s)})〜${md(st.e)}(${wd(st.e)})`;
     let its = [...st.its].sort(byDateAmt).filter(FILTER_FN[S.filter] || Boolean);
     S.shownN = its.length;
     $("cFbar").innerHTML = `<div class="fline fchips">${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
-    $("cFsum").innerHTML = "";
     if (!its.length)
       $("cList").innerHTML =
         S.filter !== "all"
@@ -786,17 +801,14 @@
       $("cList").innerHTML = h;
     }
     $("cFlow").innerHTML = flowHTML(st);
-    /* PC向け：上部の集計は1行に、支払一覧は表で、お金の流れは横帯で出す */
-    $("tRange").textContent = `${md(st.s)}(${wd(st.s)})〜${md(st.e)}(${wd(st.e)})`;
-    $("tPer").textContent = periodLabel(S.period) + (S.period === periodOf(today()) ? "（いまの期間）" : "");
+    /* PC向け：支払一覧は表で出す（スマホはカード） */
     $("cTable").innerHTML = tableHTML(its);
-    $("cFlowPc").innerHTML = flowHTML(st);
   }
   /* PC向けの表：日付の見出し行（その日の合計と、未払分の支払方法ごとの額）＋支払い1件＝1行 */
   function tableHTML(its) {
-    const head = `<thead><tr><th>支払い</th><th>区分</th><th>支払方法</th><th class="r">支払金額</th><th>内訳</th><th>支払い状況</th><th></th></tr></thead>`;
+    const head = `<thead><tr><th>支払い</th><th>支払方法</th><th class="r">金額</th><th>内訳</th><th>状況</th><th></th></tr></thead>`;
     if (!its.length)
-      return head + `<tbody><tr><td colspan="7" class="tempty">${S.filter !== "all" ? "条件に合う支払はありません" : "この期間の支払はまだありません"}</td></tr></tbody>`;
+      return head + `<tbody><tr><td colspan="6" class="tempty">${S.filter !== "all" ? "条件に合う支払はありません" : "この期間の支払はまだありません"}</td></tr></tbody>`;
     let h = head + "<tbody>",
       cur = null;
     its.forEach(i => {
@@ -810,7 +822,7 @@
           byM[m] = (byM[m] || 0) + (x.amount || 0);
         });
         const need = Object.entries(byM).sort((a, b) => b[1] - a[1]);
-        h += `<tr class="grp"><td colspan="3">${md(cur)}（${wd(cur)}）</td><td class="r">${yen(sum)}</td><td class="gnote">${need.length ? `（${need.map(([m, v]) => `${esc(m)} ${yen(v)}`).join(" ・ ")}）` : ""}</td><td colspan="2"></td></tr>`;
+        h += `<tr class="grp"><td colspan="2">${md(cur)}（${wd(cur)}）</td><td class="r">${yen(sum)}</td><td class="gnote" colspan="3">${need.length ? `未払 ${need.map(([m, v]) => `${esc(m)} ${yen(v)}`).join(" ・ ")}` : "✓ 支払済"}</td></tr>`;
       }
       h += trowHTML(i);
     });
@@ -821,7 +833,7 @@
     const tO = live.reduce((s, i) => s + (i.accountId ? i.other || 0 : 0), 0);
     const bd = tP || tI || tO ? [`元金 ${yen(tP)}`, `利息 ${yen(tI)}`, ...(tO ? [`その他 ${yen(tO)}`] : [])].join(" ・ ") : "—";
     const un = its.filter(i => i.status === "planned").reduce((s, i) => s + amtOf(i), 0);
-    h += `</tbody><tfoot><tr><td colspan="3">合計（${live.length}件）</td><td class="r">${yen(tA)}</td><td class="bd">${bd}</td><td class="tunpaid">未払 ${yen(un)}</td><td></td></tr></tfoot>`;
+    h += `</tbody><tfoot><tr><td colspan="2">合計（${live.length}件）</td><td class="r">${yen(tA)}</td><td class="bd">${bd}</td><td class="tunpaid">未払 ${yen(un)}</td><td></td></tr></tfoot>`;
     return h;
   }
   function trowHTML(i) {
@@ -832,8 +844,7 @@
     const cls = i.status === "paid" ? "done" : i.status === "deferred" ? "def" : over || late ? "warn" : "unpaid";
     const bd = i.accountId ? [`元金 ${yen(i.principal || 0)}`, `利息 ${yen(i.interest || 0)}`, ...(i.other ? [`その他 ${yen(i.other)}`] : [])].join(" ・ ") : "—";
     return `<tr class="trow${i.status === "paid" ? " paid" : ""}" data-edit="${i.id}" role="button" tabindex="0">
-      <td class="tname">${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}</td>
-      <td><span class="chip ${c}">${CAT[c]?.s || ""}</span></td>
+      <td class="tname"><span class="chip ${c}">${CAT[c]?.s || ""}</span>${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}</td>
       <td>${i.method ? `<span class="mtag">${esc(i.method)}</span>` : "—"}</td>
       <td class="r">${yen(amtOf(i))}</td>
       <td class="bd">${bd}</td>
@@ -894,16 +905,12 @@
   function flowHTML(st) {
     const by = c =>
       st.its.filter(i => i.status !== "deferred" && colOf(i) === c).reduce((s, i) => s + (i.amount || 0), 0);
-    const inc = incomeOf(st.p);
-    const cash = cashOf(st.p);
-    const rest = inc - st.t - cash;
-    const real = S.cfg.incomeBy?.[st.p] != null;
+    const { inc, cash, rest, real } = moneyOf(st);
     return `<button class="kv kvbtn" data-inc="${st.p}"><span>手取り（${md(st.s)}）${real ? '<span class="pill done">実績</span>' : '<span class="note">標準</span>'}</span><span class="num">${yen(inc)} <span class="edit">✎</span></span></button>
   ${COLS.map(c => `<div class="kv"><span>− ${CAT[c].l}</span><span class="num">${yen(by(c))}</span></div>`).join("")}
   <div class="kv total"><span>残るお金</span><span class="num ${rest + cash < 0 ? "t-danger" : "t-ok"}">${yen(rest + cash)}</span></div>
   <div class="kv"><span>− 現金の支出（明細）</span><span class="num">${yen(cash)}</span></div>
-  <div class="kv total"><span>手元に残るお金</span><span class="num ${rest < 0 ? "t-danger" : "t-ok"}">${yen(rest)}</span></div>
-  ${st.unpaid ? `<div class="kv"><span>まだ払っていない額</span><span class="num t-danger">${yen(st.unpaid)}</span></div>` : ""}`;
+  <div class="kv total"><span>手元に残るお金</span><span class="num ${rest < 0 ? "t-danger" : "t-ok"}">${yen(rest)}</span></div>`;
   }
 
   /* ---------- 残高と計画：集計・口座 ---------- */
