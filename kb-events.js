@@ -483,14 +483,6 @@ function clickHeader(t, d) {
     $("summary").classList.toggle("folded", f);
     t.setAttribute("aria-expanded", String(!f));
     t.setAttribute("aria-label", f ? "支出の内訳を開く" : "支出の内訳をたたむ");
-  } else if (t.id === "anfold") {
-    const f = !$("sbpan").classList.contains("folded");
-    setAnFold(f);
-    lsSet(KANF, f ? "1" : "", true);
-  } else if (t.id === "payfold") {
-    const f = !$("sbppan").classList.contains("folded");
-    setPayFold(f);
-    lsSet(KPF, f ? "1" : "", true);
   } else if (t.id === "sbtog") {
     const c = !document.body.classList.contains("sbc");
     setSidebar(c);
@@ -812,6 +804,7 @@ Object.assign(FIN.kb, {
   render,
   setTab,
   settingsOpen,
+  dashSpend: () => dashSpendHTML(),
   /* その月度に現金で払った額（支払いの「残るお金」から引く） */
   cashIn: p => sumOf(items.filter(i => i.method === FIN.CASH && inPeriod(i.date, p))),
 });
@@ -832,12 +825,9 @@ if (!Array.isArray(rules)) rules = [];
 rules = rules.map(normRule).filter(Boolean);
 rkUpdate();
 {
-  const t = lsRaw(KTAB) || "list";
-  view.tab = t === "cats" ? "graph" : ["list", "graph", "home", "balance"].includes(t) ? t : "list"; // cats は以前の画面名
+  view.tab = "dash"; // 開いたときはいつもホーム（完済への道のり・今日やること）
 }
 setSidebar(lsRaw(KSBC) === "1");
-setAnFold(lsRaw(KANF) === "1");
-setPayFold(lsRaw(KPF) === "1");
 paintTheme();
 setTab(view.tab);
 load();

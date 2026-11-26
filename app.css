@@ -2210,3 +2210,103 @@ body{background:var(--u-bg)}
 .pay .vbal .ol-final,.pay .vbal .ol-kpi>div:first-child{display:none}
 .pay .vbal .ol-kpi{border-top:0;padding-top:0;grid-template-columns:1fr}
 .pay .vbal .bacc{order:1} .pay .vbal .outlook{order:2}
+
+/* ======================================================================
+   メニューを4つに：ホーム／支払い／返済／家計簿（明細・グラフ）
+   ====================================================================== */
+body:not([data-tab="dash"]) #v-dash{display:none}
+body[data-tab="dash"] #payWrap{display:block!important}
+body[data-tab="dash"] .kb .layout{display:none}
+/* 月度の切り替えは、月度で中身が変わる画面（支払い・明細・グラフ）だけに出す */
+body[data-tab="dash"] .kb .mbar,body[data-tab="balance"] .kb .mbar{display:none!important}
+.kb .mic.dash{color:var(--u-acct)} .kb .mic.repay{color:var(--g-b)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .kb .mic.repay{color:var(--g-b)}}
+/* 左メニュー（PC）：4つを平らに並べ、家計簿の下に明細・グラフ */
+@media (min-width:900px){
+  .u-app .sb .sbn{display:flex;flex-direction:column;gap:2px}
+  .u-app .sb .sbn>.sb-it{height:38px;padding:0 10px;border-radius:var(--r-m);font-size:var(--fs-base);font-weight:600;color:var(--u-ink);gap:10px}
+  .u-app .sb .sbn>.sb-it .mic{width:20px;height:20px;display:grid;place-items:center}
+  .u-app .sb .sbn>.sb-it .mic svg{width:19px;height:19px}
+  .u-app .sb .sbn>.sb-it[aria-current="page"]{background:var(--u-accent2);color:var(--u-acct);font-weight:700}
+  .u-app .sb .sbn .sb-sub{display:flex;flex-direction:column;gap:1px;margin:0 0 4px 0;padding:0;border:0}
+  .u-app .sb .sbn .sb-sub .sb-it{height:30px;padding-left:40px;font-size:var(--fs-m);font-weight:500;color:var(--u-sub);border-radius:var(--r-m);position:relative}
+  .u-app .sb .sbn .sb-sub .sb-it[aria-current="page"]{color:var(--u-acct);font-weight:700;background:none}
+  .u-app .sb .sbn .sb-sub .sb-it[aria-current="page"]::before{content:"";position:absolute;left:26px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:var(--u-accent)}
+  .u-app .sb .sbn .sb-it[data-tab="kb"][aria-current="page"]{background:none;color:var(--u-ink)}
+  body.sbc .u-app .sb .sbn>.sb-it{justify-content:center;padding:0}
+  body.sbc .u-app .sb .sbn .sb-sub{display:none}
+}
+@media (min-width:900px) and (hover:hover){.u-app .sb .sbn>.sb-it:not([aria-current]):hover,.u-app .sb .sbn .sb-sub .sb-it:not([aria-current]):hover{background:var(--u-chip)}}
+/* 下のメニュー（スマホ）：4つ */
+@media (max-width:899px){
+  .kb .tabbar{flex-basis:480px}
+  .kb .tabbar button{font-size:10.5px;font-weight:600;gap:1px}
+  .kb .tabbar svg{padding:3px 10px;width:22px;height:22px;box-sizing:content-box}
+}
+
+/* ======================================================================
+   ホーム：上に日付と給料日、左に道のりと今日やること、右に今月のお金と支出
+   ====================================================================== */
+.pay .vdash{gap:12px}
+.pay .d-hello{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;padding:2px 2px 0}
+.pay .d-hello .dh-date{font-size:var(--fs-xl);font-weight:700}
+.pay .d-hello .dh-pd{font-size:var(--fs-s);color:var(--u-sub)}
+.pay .d-hello .dh-pd b{color:var(--u-ink)}
+.pay .dgrid{display:flex;flex-direction:column;gap:12px}
+.pay .dcol{display:flex;flex-direction:column;gap:12px;min-width:0}
+@media (min-width:900px){.pay .dgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}}
+.pay .vdash .g-stats,.pay .vdash .g-note{display:none}
+.pay .vdash .g-msg{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pay .g-link{margin-left:auto;border:0;background:color-mix(in srgb,currentColor 16%,transparent);color:inherit;border-radius:var(--r-full);padding:4px 12px;font:inherit;font-size:var(--fs-s);font-weight:700;cursor:pointer;white-space:nowrap}
+.pay .vdash .lnk{border:0;background:none;color:var(--u-acct);font:inherit;font-size:var(--fs-s);font-weight:600;padding:2px 0;cursor:pointer}
+/* 今日やること */
+.pay .td-sum{padding:7px 14px;font-size:var(--fs-s);color:var(--u-sub);border-bottom:1px solid var(--u-soft)}
+.pay .td-sum b{color:var(--u-ink)}
+.pay .td-row{display:grid;grid-template-columns:5.6em minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:7px 14px;border-top:1px solid var(--u-soft)}
+.pay .td-sum+.td-row{border-top:0}
+.pay .td-d{display:flex;flex-direction:column;line-height:1.25}
+.pay .td-d b{font-size:var(--fs-s)}
+.pay .td-d em{font-style:normal;font-size:var(--fs-xs);color:var(--u-sub);font-weight:600}
+.pay .td-row.soon .td-d em{color:var(--u-warn)}
+.pay .td-row.warn{background:var(--u-danger2);box-shadow:inset 3px 0 0 var(--u-danger)}
+.pay .td-row.warn .td-d em,.pay .td-row.warn .td-a{color:var(--u-danger)}
+.pay .td-n{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:600;font-size:var(--fs-base);min-width:0}
+.pay .td-n small{font-size:var(--fs-xs);color:var(--u-sub);font-weight:500}
+.pay .td-late{font-size:10px;font-weight:700;color:var(--u-surface);background:var(--u-danger);border-radius:4px;padding:0 5px}
+.pay .td-a{font-size:var(--fs-base)}
+.pay .td-row button.primary{padding:3px 12px;font-size:var(--fs-xs);min-height:28px}
+.pay .td-row.warn button.primary{background:var(--u-danger);border-color:var(--u-danger);color:#fff}
+.pay .td-ok{display:flex;flex-direction:column;gap:4px;padding:14px;font-size:var(--fs-s);color:var(--u-sub)}
+.pay .td-ok>b{font-size:var(--fs-base);color:var(--u-ok)}
+.pay .td-ok span b{color:var(--u-ink)}
+/* 今月のお金 */
+.pay .dm-main{display:flex;flex-direction:column;gap:1px;margin:12px 14px 4px;padding:10px 12px;border-radius:var(--r-m);background:var(--u-accent2);color:var(--u-acct)}
+.pay .dm-main .lb{font-size:var(--fs-xs);font-weight:700}
+.pay .dm-main b{font-size:var(--fs-2xl);line-height:1.2;font-weight:600}
+.pay .dm-main .s{font-size:var(--fs-xs);color:var(--u-sub)}
+.pay .dm-main.neg{background:var(--u-danger2);color:var(--u-danger)}
+.pay .dm-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:8px 0 10px}
+.pay .dm-row>div{display:flex;flex-direction:column;padding:0 14px;border-left:1px solid var(--u-soft);min-width:0}
+.pay .dm-row>div:first-child{border-left:0}
+.pay .dm-row .lb{font-size:var(--fs-xs);color:var(--u-sub);font-weight:600}
+.pay .dm-row b{font-size:var(--fs-base);font-weight:600;white-space:nowrap}
+.pay .dm-row .ok b{color:var(--u-ok)} .pay .dm-row .warn b{color:var(--u-warn)}
+/* 今月の支出 */
+.pay .ds-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:12px 14px 8px;flex-wrap:wrap}
+.pay .ds-top>div{display:flex;flex-direction:column;min-width:0}
+.pay .ds-top .lb{font-size:var(--fs-xs);color:var(--u-sub);font-weight:600}
+.pay .ds-top>div:first-child b{font-size:var(--fs-xl);font-weight:600}
+.pay .ds-cmp{align-items:flex-end;text-align:right}
+.pay .ds-cmp b{font-size:var(--fs-base);font-weight:600}
+.pay .ds-cmp.up b{color:var(--u-danger)} .pay .ds-cmp.down b{color:var(--u-ok)}
+.pay .ds-cmp .s{font-size:var(--fs-xs);color:var(--u-sub)}
+.pay .ds-cats{display:flex;flex-direction:column;gap:6px;padding:4px 14px 10px}
+.pay .ds-c{display:grid;grid-template-columns:7.5em minmax(0,1fr) 5.5em;gap:10px;align-items:center;font-size:var(--fs-s)}
+.pay .ds-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pay .ds-b{height:6px;border-radius:var(--r-full);background:var(--u-soft);overflow:hidden}
+.pay .ds-b i{display:block;height:100%;border-radius:inherit}
+.pay .ds-c b{text-align:right;font-weight:600}
+.pay .ds-foot{display:flex;gap:6px 14px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--u-soft);font-size:var(--fs-xs);color:var(--u-sub)}
+.pay .ds-foot b{color:var(--u-ink)}
+.pay .ds-empty{padding:14px;font-size:var(--fs-s);color:var(--u-sub)}
+.pay .vdash .panel-h .note{font-size:var(--fs-s)}

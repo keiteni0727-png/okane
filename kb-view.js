@@ -3,7 +3,7 @@
 let prevPay = false;
 function setTab(t) {
   if (t === "kb") t = KBV.includes(lsRaw(KKB)) ? lsRaw(KKB) : "list"; // 家計簿は前回の画面を開く
-  if (t === "pay") t = PAYV.includes(lsRaw(KPAY)) ? lsRaw(KPAY) : "home"; // 支払い管理は前回の画面を開く
+  if (t === "pay") t = "home"; // 旧「支払い管理」からの移行
   if (t === "an") t = AN.includes(lsRaw(KAN)) ? lsRaw(KAN) : "graph"; // 旧「分析」からの移行
   if (t === "rules") {
     openRules();
@@ -21,44 +21,31 @@ function setTab(t) {
   if (PAYV.includes(t)) lsSet(KPAY, t, true);
   if (AN.includes(t)) lsSet(KAN, t, true);
   const wasPay = prevPay;
-  prevPay = t === "home" || t === "balance";
+  prevPay = PAYT.includes(t);
   if (prevPay && !wasPay && FIN.pay.enter) FIN.pay.enter();
-  FIN.pay.show && FIN.pay.show(t === "home" || t === "balance" ? t : "none");
+  FIN.pay.show && FIN.pay.show(PAYT.includes(t) ? t : "none");
+  scrollTo(0, 0);
   if ($("month")) renderMonthBar();
 }
 /* 下のメニュー・左メニュー・分類内の切り替えで、いまの画面に印をつける（分類のボタンにも） */
 function markTabs(t) {
   markCurrent(".tabbar [data-tab], .sb [data-tab], .anseg [data-tab]", "tab", t);
   /* スマホの上の帯：今いる画面のアイコン（左メニューと同じもの） */
-  const key = t === "rules" ? "gear" : KBV.includes(t) ? "list" : "home";
+  const key = t === "rules" ? "gear" : KBV.includes(t) ? "list" : t === "dash" ? "dash" : t === "balance" ? "repay" : "home";
   const ic = document.querySelector(`.sb .mic.${key}`);
   const hc = $("hcur");
   if (hc && ic) hc.innerHTML = `<span class="mic ${key}" aria-hidden="true">${ic.innerHTML}</span><span class="hname">${TAB_NAME[t] || ""}</span>`;
   document
     .querySelectorAll('[data-tab="kb"]')
     .forEach(b => (KBV.includes(t) ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
-  document
-    .querySelectorAll('[data-tab="pay"]')
-    .forEach(b => (PAYV.includes(t) ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
 }
 /* 上の帯：今いる画面の名前（エンタメ管理と同じく、アイコンと名前を出す） */
-const TAB_NAME = { list: "家計簿", home: "支払い管理", graph: "グラフ", balance: "借入・返済", rules: "設定" };
+const TAB_NAME = { dash: "ホーム", list: "家計簿", home: "支払い", graph: "家計簿のグラフ", balance: "返済", rules: "設定" };
 /* 家計簿の一番上の支出カード：総額の行だけ出して、内訳・件数などはたたむ（最初はたたむ。この端末に保存） */
 const KSUMF = "okane.sumfold";
 const sumFolded = () => lsRaw(KSUMF) !== "0";
 /* 左メニューの分類の項目（家計簿＝明細・グラフ／支払い管理＝今月の支払い・借入・返済）をたたむ／開く。印はエンタメ管理と同じ「›」 */
-function setAnFold(f) {
-  $("sbpan").classList.toggle("folded", f);
-  const b = $("anfold");
-  b.setAttribute("aria-expanded", String(!f));
-  b.setAttribute("aria-label", f ? "家計簿の項目を開く" : "家計簿の項目をたたむ");
-}
-function setPayFold(f) {
-  $("sbppan").classList.toggle("folded", f);
-  const b = $("payfold");
-  b.setAttribute("aria-expanded", String(!f));
-  b.setAttribute("aria-label", f ? "支払い管理の項目を開く" : "支払い管理の項目をたたむ");
-}
+/* （左メニューの分類のたたみは、メニューを4つに並べ直したのでなくした） */
 /* PC：左メニューの折りたたみ */
 function setSidebar(c) {
   document.body.classList.toggle("sbc", c);
@@ -124,7 +111,7 @@ function render(fromAll) {
   renderGraph();
   updateSel();
   fillMemos();
-  if (!fromAll && (view.tab === "home" || view.tab === "balance") && FIN.pay.render) FIN.pay.render(); // 現金の支出が変わる
+  if (!fromAll && PAYT.includes(view.tab) && FIN.pay.render) FIN.pay.render(); // 現金の支出が変わる（ホームの今月の支出も）
 }
 /* 月度の選択肢：明細・支払いのある月度から、いまの12か月度先まで（新しい順に最大120） */
 function periodChoices(shown) {
@@ -191,6 +178,31 @@ function renderSummary(mi, pi) {
       ? `<div class="meths">${meths.map(([k, v]) => `<span class="chip out" style="${hs(k)}">${emo(k)} ${esc(k)} <b class="num">${yen(v)}</b></span>`).join("")}</div>`
       : "") +
     `</div>`;
+}
+
+/* ---------- ホームの「今月の支出」：いまの月度の合計・前月比・多い分類・1日平均（家計簿のまとめ） ---------- */
+function dashSpendHTML() {
+  const m = thisPeriod();
+  const mi = items.filter(i => inPeriod(i.date, m)),
+    pi = items.filter(i => inPeriod(i.date, shiftM(m, -1)));
+  const sum = sumOf(mi),
+    psum = sumOf(pi);
+  const days = FIN.dayIndex(today(), m) + 1;
+  /* 前の月度の同じ日までと比べる（月の途中でも公平に） */
+  const [pps] = FIN.periodRange(shiftM(m, -1));
+  const pSame = sumOf(pi.filter(i => FIN.dayIndex(i.date, shiftM(m, -1)) < days));
+  const by = {};
+  mi.forEach(i => (by[i.category] = (by[i.category] || 0) + i.amount));
+  const top = Object.entries(by)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+  const mx = top.length ? top[0][1] : 1;
+  const d = sum - pSame;
+  if (!mi.length) return `<div class="ds-empty">この月度の明細はまだありません。右上の＋から記録できます。</div>`;
+  return `<div class="ds-top"><div><span class="lb">${FIN.periodLabel(m)}の支出</span><b class="num">${yen(sum)}</b></div>
+    <div class="ds-cmp ${d > 0 ? "up" : "down"}"><span class="lb">前の月度の同じ日まで</span><b class="num">${d > 0 ? "＋" : "−"}${yen(Math.abs(d))}</b><span class="s">${pps ? yen(pSame) : ""}</span></div></div>
+    <div class="ds-cats">${top.map(([c, v]) => `<div class="ds-c"><span class="ds-n">${emo(c)} ${esc(c)}</span><span class="ds-b"><i style="width:${(v / mx) * 100}%;background:${bcol(c)}"></i></span><b class="num">${yen(v)}</b></div>`).join("")}</div>
+    <div class="ds-foot"><span>1日平均 <b class="num">${yen(Math.round(sum / days))}</b></span><span>${mi.length}件</span><span>前の月度 合計 <b class="num">${yen(psum)}</b></span></div>`;
 }
 
 /* ---------- 明細一覧・編集フォーム・追加前の確認 ---------- */
@@ -527,7 +539,7 @@ function renderSetHome() {
   const sv = $("saveSt");
   $("st-home").innerHTML = `<div class="setsec">家計簿の設定</div>
     <div class="setgrp">${row("cats", "分類", CATS.length)}${row("mets", "明細の支払い方法", METHODS.length)}${row("rules", "自動分類ルール", `${rules.length}件`)}</div>
-    <div class="setsec">支払い管理の設定</div>
+    <div class="setsec">支払い・返済の設定</div>
     <div class="setgrp">${row("inc", "収入と給料日", `${cfg.income ? yen(cfg.income) + "・" : ""}${FIN.paydayNum()}日`)}${row("paym", "支払いの方法", (cfg.methods || []).length)}${row("gen", "支払予定の作成", "作り直す・作成")}</div>
     <div class="setsec">共通</div>
     <div class="setgrp"><div class="setrow static">${setIc("theme")}<span class="setl">テーマ</span><div class="seg thseg" role="group" aria-label="テーマ">${[["auto", "自動"], ["light", "ライト"], ["dark", "ダーク"]].map(([v, l]) => `<button type="button" data-theme="${v}"${th === v ? ' aria-current="page"' : ""}>${l}</button>`).join("")}</div></div>

@@ -18,8 +18,13 @@
   <div class="sb-top"><button type="button" class="sb-ham" id="sbtog" aria-label="メニューを折りたたむ" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><svg class="sb-logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--u-accent)"/><rect x="7.5" y="6.5" width="17" height="19" rx="2.6" fill="#fff"/><rect x="7.5" y="6.5" width="3.2" height="19" rx="1.2" fill="var(--u-accent)" opacity=".22"/><path d="M13.6 10.6 17.6 15.6 21.6 10.6M17.6 15.6v6.4M14.6 17h6M14.6 19.8h6" fill="none" stroke="var(--u-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b class="lbl">おかね手帳</b></div>
   <button type="button" class="sb-add" id="sbAdd" aria-label="追加">＋<span class="lbl"> 追加</span></button>
   <div class="sb-sec lbl">メニュー</div>
-  <div class="sbp" id="sbpan"><div class="sb-row"><button type="button" class="sb-it" data-tab="kb" title="家計簿"><i aria-hidden="true" class="mic list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></i><span class="lbl">家計簿</span></button><button type="button" class="sb-fold lbl" id="anfold" aria-expanded="true" aria-label="家計簿の項目をたたむ"><svg class="fic" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div class="sb-sub"><button type="button" class="sb-it" data-tab="list">明細</button><button type="button" class="sb-it" data-tab="graph">グラフ</button></div></div>
-  <div class="sbp" id="sbppan"><div class="sb-row"><button type="button" class="sb-it" data-tab="pay" title="支払い管理"><i aria-hidden="true" class="mic home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg></i><span class="lbl">支払い管理</span></button><button type="button" class="sb-fold lbl" id="payfold" aria-expanded="true" aria-label="支払い管理の項目をたたむ"><svg class="fic" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div class="sb-sub"><button type="button" class="sb-it" data-tab="home">今月の支払い</button><button type="button" class="sb-it" data-tab="balance">借入・返済</button></div></div>
+  <nav class="sbn" aria-label="画面">
+    <button type="button" class="sb-it" data-tab="dash" title="ホーム"><i aria-hidden="true" class="mic dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1z"/></svg></i><span class="lbl">ホーム</span></button>
+    <button type="button" class="sb-it" data-tab="home" title="支払い"><i aria-hidden="true" class="mic home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg></i><span class="lbl">支払い</span></button>
+    <button type="button" class="sb-it" data-tab="balance" title="返済"><i aria-hidden="true" class="mic repay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M14 7h4v4"/></svg></i><span class="lbl">返済</span></button>
+    <button type="button" class="sb-it" data-tab="kb" title="家計簿"><i aria-hidden="true" class="mic list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></i><span class="lbl">家計簿</span></button>
+    <div class="sb-sub lbl"><button type="button" class="sb-it" data-tab="list">明細</button><button type="button" class="sb-it" data-tab="graph">グラフ</button></div>
+  </nav>
   <div class="sb-foot"><button type="button" class="sb-it" id="sbgear" title="設定"><i aria-hidden="true" class="mic gear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></i><span class="lbl">設定</span></button><div class="sb-st"><span id="sbSave" class="savest wait">接続中…</span></div></div>
 </aside>
 <header class="appbar"><div class="wrap abin">
@@ -63,8 +68,22 @@
 
 <div class="pay u-btns">
 <div class="wrap" id="payWrap">
-  <div class="anseg-w payseg-w"><nav class="anseg payseg" aria-label="支払い管理の画面"><button data-tab="home">今月の支払い</button><button data-tab="balance">借入・返済</button></nav></div>
   <div id="status" class="status" hidden></div>
+
+  <!-- ホーム（開いて最初に出る画面）：完済への道のり・今日やること・今月のお金・今月の支出 -->
+  <section id="v-dash" class="v2 vdash">
+    <div class="d-hello" id="dHello"></div>
+    <div class="dgrid">
+      <div class="dcol">
+        <div id="dGoal"></div>
+        <div class="panel dtoday"><div class="panel-h"><h2>今日やること</h2><button type="button" class="lnk" data-tab="home">支払いを見る ›</button></div><div id="dToday"></div></div>
+      </div>
+      <div class="dcol">
+        <div class="panel dmoney"><div class="panel-h"><h2>今月のお金</h2><span class="note" id="dPer"></span></div><div id="dMoney"></div></div>
+        <div class="panel dspend"><div class="panel-h"><h2>今月の支出</h2><button type="button" class="lnk" data-tab="list">家計簿を見る ›</button></div><div id="dSpend"></div></div>
+      </div>
+    </div>
+  </section>
 
   <!-- 支払い（概要＋毎月の支払い） -->
   <section id="v-home" class="v2">
@@ -136,8 +155,10 @@
 
 <div class="kb u-app u-btns">
 <div class="tbwrap"><nav class="tabbar" aria-label="画面の切り替え">
-  <button data-tab="kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>家計簿</button>
-  <button data-tab="pay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg>支払い管理</button>
+  <button data-tab="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1z"/></svg>ホーム</button>
+  <button data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg>支払い</button>
+  <button data-tab="balance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M14 7h4v4"/></svg>返済</button>
+  <button data-tab="kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>家計簿</button>
 </nav></div>
 
 <div id="selbar" hidden><div class="in">
@@ -195,10 +216,10 @@
     <div id="mmsg" class="mu"></div>
   </div>
   <div id="st-pay" hidden>
-    <div data-pg="inc"><div class="mu st-desc">月度（給料日から次の給料日の前日まで。土日は直前の平日）は、家計簿・支払い管理の両方で使います。</div>
+    <div data-pg="inc"><div class="mu st-desc">月度（給料日から次の給料日の前日まで。土日は直前の平日）は、ホーム・支払い・家計簿のすべてで使います。</div>
       <div class="setgrp setform"><div class="rv pset"><label>標準の手取り（毎月）<input type="number" id="mIncome" inputmode="numeric"></label><label>給料日<input type="number" id="mPayday" min="1" max="28" inputmode="numeric"></label></div>
       <button class="pri" id="mSaveCfg">保存</button></div></div>
-    <div data-pg="paym"><div class="mu st-desc">支払い管理の「支払いの方法」に出す選択肢です。⠿での並び替えは支払いの入力欄の並びに反映されます。右上の「編集」で削除ができます。</div>
+    <div data-pg="paym"><div class="mu st-desc">支払いの「支払いの方法」に出す選択肢です。⠿での並び替えは支払いの入力欄の並びに反映されます。右上の「編集」で削除ができます。</div>
       <div class="setgrp"><div class="pml" id="mMethods"></div></div>
       <form id="mMethodForm" class="pmadd setadd"><input type="text" id="mMethodIn" placeholder="追加する方法（例：楽天銀行）" aria-label="新しい支払いの方法"><button>＋ 追加</button></form></div>
     <div data-pg="gen"><div class="mu st-desc">返済中の口座は、次の給料日以降の支払予定を いまの残高・年利・返済条件 から作り直せます（3年分）。延滞分・支払済・口座なしの支払はそのまま残ります。口座の設定を保存したときも、その口座の分は自動で作り直します。</div>

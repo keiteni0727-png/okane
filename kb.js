@@ -20,7 +20,8 @@ const KANF = "okane.anfold"; // 左メニューの「家計簿」の項目をた
 const KPF = "okane.payfold"; // 左メニューの「支払い管理」の項目をたたんでいるか
 const AN = ["graph", "balance"]; // 旧「分析」にまとめていた画面（移行用）
 const KBV = ["list", "graph"]; // 家計簿の画面
-const PAYV = ["home", "balance"]; // 支払い管理の画面
+const PAYV = ["home", "balance"]; // 支払い管理の画面（支払い・返済）
+const PAYT = ["dash", "home", "balance"]; // 支払いのデータ（pay.js）で描く画面：ホーム・支払い・返済
 const KKB = "okane.kb"; // 家計簿の中で最後に開いた画面
 const KPAY = "okane.pay"; // 支払い管理の中で最後に開いた画面
 

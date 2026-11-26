@@ -710,6 +710,7 @@
   function render() {
     computeSched();
     const view = {
+      dash: renderDash,
       home: renderHome,
       balance: () => {
         renderBalance();
@@ -740,6 +741,53 @@
   /* 通知は共通部品（U.toast）。undo に snapOf の結果を渡すと「元に戻す」で戻せる */
   function toast(html, undo) {
     U.toast(html, { html: true, undo: undo ? () => restoreSnap(undo) : null, });
+  }
+
+  /* ---------- ホーム：完済への道のり・今日やること・今月のお金・今月の支出 ---------- */
+  function renderDash() {
+    const t = today(),
+      cp = periodOf(t);
+    const [ps, pe] = periodRange(cp);
+    const np = periodRange(addMonths(cp, 1))[0];
+    const nd = Math.round((pd(np) - pd(t)) / 864e5);
+    const g = goalData();
+    $("dHello").innerHTML = `<b class="dh-date">${md(t)}（${wd(t)}）</b><span class="dh-pd">次の給料日 <b class="num">${md(np)}</b>（${nd === 0 ? "今日" : `あと${nd}日`}）</span>`;
+    $("dGoal").innerHTML = goalHTML(g, outlookData(), true);
+    $("dToday").innerHTML = todayHTML();
+    $("dPer").textContent = `${md(ps)}〜${md(pe)}`;
+    $("dMoney").innerHTML = dashMoneyHTML(periodStats(cp));
+    $("dSpend").innerHTML = FIN.kb.dashSpend ? FIN.kb.dashSpend() : "";
+  }
+  /* 今日やること：期日を過ぎた・延滞分・この先7日の支払。なければ次の支払を1件 */
+  function todayHTML() {
+    const t = today();
+    const wk = ds(new Date(pd(t).getTime() + 7 * 864e5));
+    const [, pe] = periodRange(periodOf(t));
+    const up = allItems()
+      .filter(i => i.status === "planned" && i.date >= MGMT_START)
+      .sort(byDateAmt);
+    const must = up.filter(i => i.date < t || (i.kind === "late" && i.date <= pe) || i.date <= wk);
+    const row = i => {
+      const over = i.date < t;
+      const days = Math.round((pd(i.date) - pd(t)) / 864e5);
+      const when = over ? "期日超過" : days === 0 ? "今日" : days === 1 ? "明日" : `あと${days}日`;
+      const cls = over || i.kind === "late" ? "warn" : days <= 2 ? "soon" : "";
+      return `<div class="td-row ${cls}"><span class="td-d"><b class="num">${md(i.date)}</b><em>${when}</em></span><button type="button" class="td-n linkbtn" data-edit="${i.id}">${esc(i.name)}${i.kind === "late" ? '<span class="td-late">延滞分</span>' : ""}<small>${esc(i.method || "")}</small></button><b class="td-a num">${yen(i.amount)}</b><button class="primary sm" data-pay="${i.id}">支払う</button></div>`;
+    };
+    if (must.length) {
+      const sum = must.reduce((x, i) => x + (i.amount || 0), 0);
+      return `<div class="td-sum">${must.length}件・合計 <b class="num">${yen(sum)}</b></div>${must.map(row).join("")}`;
+    }
+    const nx = up.find(i => i.date >= t);
+    return `<div class="td-ok"><b>✓ 今日やることはありません</b>${nx ? `<span>次の支払いは ${md(nx.date)}（${wd(nx.date)}）${esc(nx.name)} <b class="num">${yen(nx.amount)}</b></span>` : "<span>予定している支払いはありません</span>"}</div>`;
+  }
+  /* 今月のお金：手元に残るお金を大きく、支払いの進み具合を添える */
+  function dashMoneyHTML(st) {
+    const m = moneyOf(st);
+    const rate = st.t ? Math.round((st.paid / st.t) * 100) : 0;
+    return `<div class="dm-main ${m.rest < 0 ? "neg" : ""}"><span class="lb">手元に残るお金</span><b class="num">${yen(m.rest)}</b><span class="s">手取り ${yen(m.inc)} − 支払い ${yen(st.t)} − 現金の支出 ${yen(m.cash)}</span></div>
+    <div class="dm-row"><div><span class="lb">支払予定</span><b class="num">${yen(st.t)}</b></div><div class="ok"><span class="lb">支払済</span><b class="num">${yen(st.paid)}</b></div><div class="${st.unpaid ? "warn" : "ok"}"><span class="lb">未払</span><b class="num">${yen(st.unpaid)}</b></div></div>
+    <div class="pk-prog dm-prog"><span class="pk-bar"><i style="width:${rate}%"></i></span><span class="pk-pct">支払済 <b class="num">${rate}%</b>（${st.np}/${st.n}件）</span></div>`;
   }
 
   /* ---------- 支払い：アラート・次の引き落とし・集計 ---------- */
@@ -967,7 +1015,7 @@
   }
 
   /* ---------- 借入・返済：完済への道のり（いちばん上の大きな帯） ---------- */
-  function goalHTML(g, ol) {
+  function goalHTML(g, ol, link) {
     if (!g.start) return `<div class="goal empty-goal"><b>口座を登録すると、完済までの道のりがここに出ます</b></div>`;
     const pct = Math.round(g.rate * 1000) / 10;
     const mk = nextMark(g);
@@ -993,7 +1041,7 @@
       </div>
       <div class="g-bar"><span class="g-track"><i style="width:${Math.min(100, g.rate * 100)}%"></i>${[25, 50, 75].map(m => `<em class="${g.rate * 100 >= m ? "on" : ""}" style="left:${m}%"></em>`).join("")}</span>
         <div class="g-bl"><span>返した元金 <b class="num">${yen(g.paid)}</b></span><span>はじめの残高 <b class="num">${yen(g.start)}</b></span></div></div>
-      <div class="g-msg">${msg}</div>
+      <div class="g-msg"><span>${msg}</span>${link ? `<button type="button" class="g-link" data-tab="balance">返済を見る ›</button>` : ""}</div>
       <div class="g-stats">
         ${st("のこり", yen(g.left), `${g.per.filter(x => x.a.balance > 0).length}口座`)}
         ${st("繰上げで減らせた利息", yen(g.saved), g.saved ? `完済が約${g.savedM}ヶ月早まりました` : "繰上げするとここに貯まります", g.saved ? "hi" : "")}
@@ -2653,7 +2701,7 @@
     render,
     show,
     renderSettings: renderMaster,
-    /* 右上の＋：支払い画面は支払、残高と計画は口座を追加 */
+    /* 右上の＋：支払い画面は支払、返済は口座を追加 */
     add: k => (k === "acc" ? editAccount(null) : editItem(null)),
     enter,
     cfg: () => S.cfg,
