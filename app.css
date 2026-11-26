@@ -2757,3 +2757,66 @@ body[data-tab="list"] .kb #list .day.today .dd{color:var(--u-acct)}
 .pay .v2 .ptable .tname{width:100%}
 .pay .v2 .row .nm .rname{white-space:normal;overflow:visible;line-height:1.3}
 .pay .td-n{min-height:28px}
+
+/* ======================================================================
+   2026-11-26 実機（iPhone）で見つかった点：ホーム・家計簿
+   ====================================================================== */
+/* 入力欄・プルダウンの文字が大きすぎる → 本文と同じ大きさに */
+body[data-tab="list"] .kb input,body[data-tab="list"] .kb select,body[data-tab="graph"] .kb select,.kb .mbar .mnav select{font-size:var(--fs-base)!important}
+/* 家計簿：日付の行を色の帯にして、明細と区切る */
+body[data-tab="list"] .kb #list .day{background:var(--u-chip);border-top:0;margin:0 -16px;min-height:32px}
+body[data-tab="list"] .kb #list .day+.it{border-top:0}
+body[data-tab="list"] .kb #list .it3+.day{margin-top:0}
+body[data-tab="list"] .kb #list .day.today{background:var(--u-accent2)}
+/* 一覧の上（絞り込み）と最初の日付の行のあいだを空ける */
+body[data-tab="list"] .kb #lhead{margin-bottom:8px;border-bottom:0}
+body[data-tab="list"] .kb #list .day:first-child{border-radius:10px 10px 0 0}
+/* カレンダーのボタン：絵文字が枠からはみ出す → 線のアイコンに */
+.kb .st-calbtn{color:var(--u-acct);font-size:0}
+
+/* 入力シート：スワイプしなくても1画面に収まるように詰める（画面の高さに合わせて電卓の高さを変える） */
+@media (max-width:899px){
+  .kbsheet .es{max-height:calc(100dvh - env(safe-area-inset-top,0px) - 8px);border-radius:20px 20px 0 0}
+  .kbsheet .es-h{padding:8px 14px 0}
+  .kbsheet .es-h b{font-size:var(--fs-base)}
+  .kbsheet .es-x{width:30px;height:30px;font-size:17px}
+  .kbsheet .es-body{overflow:hidden;gap:7px;padding:4px 14px 6px}
+  .kbsheet .es-amt{min-height:0;padding:4px 12px;border-radius:14px}
+  .kbsheet .es-amt b{font-size:26px}
+  .kbsheet .es-ae{font-size:18px}
+  .kbsheet .es-pad{gap:4px;margin-top:5px}
+  .kbsheet .es-k{height:clamp(30px,4.4dvh,42px);font-size:17px;border-radius:10px}
+  .kbsheet .es-r{gap:7px}
+  .kbsheet .es-lb{font-size:10.5px}
+  .kbsheet .es-sc{gap:4px}
+  .kbsheet .es-cats{gap:4px}
+  .kbsheet .es-c{padding:3px 1px 2px;border-radius:10px;border-width:1.5px}
+  .kbsheet .es-ce{font-size:16px}
+  .kbsheet .es-cn{font-size:9.5px}
+  /* 支払い・日付は「見出し＋ボタン」を1行に、ボタンは横にスクロール */
+  .kbsheet .es-row{flex-direction:row;align-items:center;gap:8px}
+  .kbsheet .es-row .es-lb{flex:none;width:3em}
+  .kbsheet .es-row .es-mets,.kbsheet .es-row .es-days{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:5px;min-width:0}
+  .kbsheet .es-m{height:30px;padding:0 10px;font-size:var(--fs-s);flex:none}
+  .kbsheet .es-date{height:30px;font-size:var(--fs-s)!important}
+  /* メモ：欄と候補を詰める（候補は1行で横にスクロール） */
+  .kbsheet .es-mm{display:grid;grid-template-columns:3em minmax(0,1fr);align-items:center;gap:5px 8px}
+  .kbsheet .es-memo{height:34px;font-size:var(--fs-base)!important;border-radius:10px}
+  .kbsheet .es-mcs{grid-column:1/-1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:5px}
+  .kbsheet .es-mc{height:26px;font-size:var(--fs-xs);flex:none}
+  .kbsheet .es-f{padding:6px 14px calc(8px + env(safe-area-inset-bottom,0px))}
+  .kbsheet .es-save,.kbsheet .es-del{height:44px;font-size:var(--fs-base)}
+}
+@media (max-width:899px){.kbsheet .es-lb{white-space:nowrap}}
+/* 画面が低い端末（小さいiPhoneなど）：分類の名前を出さず絵文字だけ、電卓をさらに低く */
+@media (max-width:899px) and (max-height:640px){
+  .kbsheet .es-cn{display:none}
+  .kbsheet .es-c{padding:4px 1px}
+  .kbsheet .es-ce{font-size:18px}
+  .kbsheet .es-k{height:clamp(28px,4.6dvh,36px)}
+  .kbsheet .es-h{padding-top:6px}
+  .kbsheet .es-lb:not(.es-row .es-lb):not(.es-mm .es-lb){display:none}
+}
+@media (max-width:899px) and (max-height:640px){.kbsheet .es-body{gap:5px}.kbsheet .es-r{gap:5px}}
+.kbsheet .es-k{display:grid;place-items:center;line-height:1;padding:0}
+@media (max-width:380px){.kbsheet .es-cats{grid-template-columns:repeat(5,minmax(0,1fr))}}

@@ -107,19 +107,19 @@ function renderEntry() {
           .replace('data-ek="-">-', 'data-ek="-">−')}</div>
       </div>
       <div class="es-r">
-        <div class="es-sec"><span class="es-lb">分類</span><div class="es-cats">${CATS.map(
+        <div class="es-sec es-sc"><span class="es-lb">分類</span><div class="es-cats">${CATS.map(
           c => `<button type="button" class="es-c${x.category === c ? " on" : ""}" data-ecat="${esc(c)}" style="${hs(c)}"><span class="es-ce">${emo(c)}</span><span class="es-cn">${esc(c)}</span></button>`,
         ).join("")}</div></div>
-        <div class="es-sec"><span class="es-lb">支払い方法</span><div class="es-mets">${METHODS.map(
+        <div class="es-sec es-row"><span class="es-lb">支払</span><div class="es-mets">${METHODS.map(
           m => `<button type="button" class="es-m${x.method === m ? " on" : ""}" data-emet="${esc(m)}">${emo(m)} ${esc(m)}</button>`,
         ).join("")}</div></div>
-        <div class="es-sec"><span class="es-lb">日付</span><div class="es-days">
+        <div class="es-sec es-row"><span class="es-lb">日付</span><div class="es-days">
           <button type="button" class="es-m${x.date === td ? " on" : ""}" data-edate="${td}">今日 <small>${md(td)}</small></button>
           <button type="button" class="es-m${x.date === yd ? " on" : ""}" data-edate="${yd}">昨日 <small>${md(yd)}</small></button>
           <button type="button" class="es-m es-other${other ? " on" : ""}" data-eother="1">${other ? `${md(x.date)}（${"日月火水木金土"[FIN.pd(x.date).getDay()]}）` : "ほかの日"}</button>
           <input type="date" id="esDate" class="es-date" value="${esc(x.date)}" max="${td}" aria-label="日付を選ぶ" hidden>
         </div></div>
-        <div class="es-sec"><span class="es-lb">メモ</span><input type="text" id="esMemo" class="es-memo" value="${esc(x.memo || "")}" placeholder="何に使った？（お店・品物など）" autocomplete="off" enterkeyhint="done">
+        <div class="es-sec es-mm"><span class="es-lb">メモ</span><input type="text" id="esMemo" class="es-memo" value="${esc(x.memo || "")}" placeholder="何に使った？（お店・品物など）" autocomplete="off" enterkeyhint="done">
           ${memos.length ? `<div class="es-mcs">${memos.map(m => `<button type="button" class="es-mc${m === x.memo ? " on" : ""}" data-ememo="${esc(m)}">${esc(m)}</button>`).join("")}</div>` : ""}</div>
       </div>
     </div>
