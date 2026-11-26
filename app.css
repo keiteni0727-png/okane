@@ -2140,3 +2140,73 @@ body{background:var(--u-bg)}
 .kb .setsec{font-size:var(--fs-xs)!important;letter-spacing:.06em}
 .pay .v2 .row.st-paid{background:none}
 .pay .v2 .row.st-paid .sico{width:18px;height:18px}
+
+/* ======================================================================
+   完済への道のり（借入・返済のいちばん上）：やる気が続くよう、残り日数と返した割合を大きく
+   ====================================================================== */
+:root{--g-a:#3b5bdb;--g-b:#0f8b7e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--g-a:#8aa2ff;--g-b:#5fd4c0}}
+:root[data-theme="dark"]{--g-a:#8aa2ff;--g-b:#5fd4c0}
+.pay .goal{position:relative;overflow:hidden;border-radius:var(--r-l);padding:16px 18px 12px;color:var(--u-on);background:linear-gradient(125deg,var(--g-a) 0%,color-mix(in srgb,var(--g-a) 45%,var(--g-b)) 100%);display:flex;flex-direction:column;gap:12px}
+.pay .goal::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:color-mix(in srgb,currentColor 7%,transparent);pointer-events:none}
+.pay .goal.empty-goal{color:var(--u-ink);background:var(--u-surface);border:1px dashed var(--u-strong)}
+.pay .g-top{display:flex;align-items:center;justify-content:space-between;gap:16px;position:relative;z-index:1}
+.pay .g-cd{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pay .g-eb{font-size:var(--fs-xs);font-weight:700;letter-spacing:.12em;opacity:.85}
+.pay .g-days{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:var(--fs-base);font-weight:600}
+.pay .g-days b{font-size:44px;line-height:1.05;font-weight:600;letter-spacing:-.02em}
+.pay .g-when{font-size:var(--fs-s);opacity:.9}
+.pay .g-ring{width:96px;height:96px;flex:none}
+.pay .g-rt{fill:none;stroke:color-mix(in srgb,currentColor 22%,transparent);stroke-width:8}
+.pay .g-rf{fill:none;stroke:currentColor;stroke-width:8;stroke-linecap:round}
+.pay .g-rp{fill:currentColor;font:600 17px var(--u-num);text-anchor:middle}
+.pay .g-rl{fill:currentColor;font:600 9px var(--u-f);text-anchor:middle;opacity:.85}
+.pay .g-bar{position:relative;z-index:1}
+.pay .g-track{position:relative;display:block;height:10px;border-radius:var(--r-full);background:color-mix(in srgb,currentColor 22%,transparent)}
+.pay .g-track i{display:block;height:100%;border-radius:inherit;background:currentColor;min-width:6px}
+.pay .g-track em{position:absolute;top:-3px;width:2px;height:16px;margin-left:-1px;border-radius:2px;background:color-mix(in srgb,currentColor 40%,transparent)}
+.pay .g-track em.on{background:currentColor}
+.pay .g-bl{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:var(--fs-xs);margin-top:6px;opacity:.92}
+.pay .g-bl b{font-size:var(--fs-s)}
+.pay .g-msg{position:relative;z-index:1;font-size:var(--fs-m);background:color-mix(in srgb,currentColor 12%,transparent);border-radius:var(--r-m);padding:8px 12px;line-height:1.5}
+.pay .g-stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid color-mix(in srgb,currentColor 25%,transparent);padding-top:10px}
+.pay .g-st{display:flex;flex-direction:column;gap:1px;padding:0 12px;border-left:1px solid color-mix(in srgb,currentColor 20%,transparent);min-width:0}
+.pay .g-st:first-child{border-left:0;padding-left:0}
+.pay .g-st .lb{font-size:var(--fs-xs);opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pay .g-st b{font-size:var(--fs-l);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pay .g-st .s{font-size:var(--fs-xs);opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pay .g-st.hi b{background:color-mix(in srgb,currentColor 16%,transparent);border-radius:6px;padding:0 6px;margin-left:-6px;align-self:flex-start}
+.pay .g-note{position:relative;z-index:1;font-size:10.5px;opacity:.75}
+@media (max-width:639px){
+  .pay .goal{padding:14px 14px 10px}
+  .pay .g-days b{font-size:38px}
+  .pay .g-ring{width:80px;height:80px}
+  .pay .g-stats{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:10px}
+  .pay .g-st:nth-child(3){border-left:0;padding-left:0}
+}
+/* 口座ごとの進み具合 */
+.pay .vbal .acc .ac-p{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:4px}
+.pay .vbal .acc .ac-bar{flex:1;height:5px;border-radius:var(--r-full);background:var(--u-soft);overflow:hidden}
+.pay .vbal .acc .ac-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--g-a),var(--g-b));min-width:3px}
+.pay .vbal .acc .ac-pct{font-size:var(--fs-xs);font-weight:600;min-width:3em;text-align:right}
+.pay .vbal .acc .ac-left{font-size:var(--fs-xs);color:var(--u-sub);min-width:5.5em;text-align:right;white-space:nowrap}
+.pay .vbal .acc.donecard{opacity:1}
+.pay .vbal .acc.donecard .ac-left{color:var(--u-ok);font-weight:700}
+@media (min-width:640px){
+  .pay .vbal .acc{grid-template-areas:"n m b" "p p p";padding-block:8px}
+  .pay .vbal .acc .ac-p{grid-area:p}
+}
+/* 今月の支払い：完済までの近道 */
+.pay .pk-goal{display:flex;align-items:center;gap:10px;width:100%;border:0;border-top:1px solid var(--u-soft);border-radius:0;background:linear-gradient(90deg,color-mix(in srgb,var(--g-a) 10%,var(--u-surface)),color-mix(in srgb,var(--g-b) 10%,var(--u-surface)));padding:8px 14px;font:inherit;font-size:var(--fs-s);color:var(--u-ink);cursor:pointer;text-align:left}
+.pay .pk-goal .pkg-l{color:var(--u-sub);white-space:nowrap}
+.pay .pk-goal b{white-space:nowrap}
+.pay .pk-goal .pkg-bar{flex:1;height:6px;border-radius:var(--r-full);background:color-mix(in srgb,var(--g-a) 15%,var(--u-soft));overflow:hidden;min-width:40px}
+.pay .pk-goal .pkg-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--g-a),var(--g-b));border-radius:inherit;min-width:3px}
+.pay .pk-goal .pkg-p{white-space:nowrap;color:var(--u-sub)}
+.pay .pk-goal .pkg-p b{color:var(--u-ink)}
+.pay .pk-goal .pkg-go{color:var(--u-sub);font-size:var(--fs-l);line-height:1}
+@media (hover:hover){.pay .pk-goal:hover{filter:brightness(.98)}}
+/* 道のりの帯と重なる数字は、完済の見通しでは出さない（1年後の残高・次に完済する口座・利息だけ） */
+.pay .vbal .ol-final,.pay .vbal .ol-kpi>div:first-child{display:none}
+.pay .vbal .ol-kpi{border-top:0;padding-top:0;grid-template-columns:1fr}
+.pay .vbal .bacc{order:1} .pay .vbal .outlook{order:2}

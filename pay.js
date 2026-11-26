@@ -420,6 +420,52 @@
     const next = rows.filter(x => x.end).sort((x, y) => (x.end < y.end ? -1 : 1));
     return { rows, now, last, curPay, curInt, y1, marks, next, start };
   }
+  /* ---------- 返済の進み具合（やる気が続くように：返した額・残り日数・減らせた利息） ---------- */
+  const isPrepay = i => i.memo === "繰上げ返済" || /繰上げ返済$/.test(i.name || "");
+  /* 口座ごと：管理を始めてから返した元金（残高に反映済みの支払済）と、そのときの残高 */
+  function progressOf(a) {
+    const its = allItems().filter(i => i.accountId === a.id && i.status === "paid" && i.applied && !i.noBal);
+    const paid = its.reduce((t, i) => t + (i.principal || 0), 0);
+    const pre = its.filter(isPrepay).reduce((t, i) => t + (i.principal || 0), 0);
+    const start = (a.balance || 0) + paid;
+    return { paid, pre, start, rate: start ? paid / start : 0 };
+  }
+  /* 繰上げ返済で減らせた利息（繰上げしなかった場合の返済予定と比べた見込み）と、早まった月数 */
+  function savedOf(a, pre) {
+    if (!pre || !a.repayType || a.repayType === "none") return { int: 0, months: 0 };
+    const now = payoffInfo(a);
+    const s = schedule({ ...a, balance: (a.balance || 0) + pre });
+    const int = s.rows.reduce((t, x) => t + x.interest, 0);
+    return { int: Math.max(0, int - (now ? now.interest : 0)), months: Math.max(0, s.rows.length - (now ? now.months : 0)) };
+  }
+  /* 全体：総残高に入る口座（個人からの借入は除く）の合計と、いちばん遅い完済日までの日数 */
+  function goalData() {
+    const accs = accList().filter(a => a.category !== "personal" && a.balance != null && a.active !== false);
+    const per = accs.map(a => {
+      const pg = progressOf(a);
+      return { a, ...pg, saved: savedOf(a, pg.pre), info: a.balance > 0 ? payoffInfo(a) : null };
+    });
+    const paid = per.reduce((t, x) => t + x.paid, 0),
+      start = per.reduce((t, x) => t + x.start, 0),
+      left = per.reduce((t, x) => t + (x.a.balance || 0), 0);
+    const ends = per.filter(x => x.info && x.info.end).sort((x, y) => (x.info.end < y.info.end ? 1 : -1));
+    const last = ends[0] || null;
+    const days = last ? Math.max(0, Math.round((pd(last.info.end) - pd(today())) / 864e5)) : null;
+    const saved = per.reduce((t, x) => t + x.saved.int, 0),
+      savedM = Math.max(0, ...per.map(x => x.saved.months));
+    const nextDone = per.filter(x => x.info && x.info.end).sort((x, y) => (x.info.end < y.info.end ? -1 : 1))[0] || null;
+    return { per, paid, start, left, rate: start ? paid / start : 0, last, days, saved, savedM, nextDone, noPlan: per.filter(x => x.a.balance > 0 && !x.info).length };
+  }
+  /* 次の節目（10%きざみ）までの残り */
+  function nextMark(g) {
+    const pct = Math.floor(g.rate * 100);
+    const to = Math.min(100, (Math.floor(pct / 10) + 1) * 10);
+    return { to, need: Math.max(0, Math.ceil((g.start * to) / 100 - g.paid)) };
+  }
+  const ymd = s => {
+    const d = pd(s);
+    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+  };
   function simulate(extra, strat) {
     const accs = debtAccs()
       .filter(a => a.balance > 0)
@@ -773,7 +819,14 @@
       ${c(st.unpaid ? "warn" : "ok", "未払", yen(st.unpaid), `${st.n - st.np}件`)}
       ${c(`main ${m.rest < 0 ? "neg" : ""}`, "手元に残るお金", yen(m.rest), `手取り ${yen(m.inc)} から`)}
     </div>
-    <div class="pk-prog"><span class="pk-bar" role="img" aria-label="支払済 ${rate}%"><i style="width:${rate}%"></i></span><span class="pk-pct">支払済 <b class="num">${rate}%</b>（${st.np}/${st.n}件）</span></div>`;
+    <div class="pk-prog"><span class="pk-bar" role="img" aria-label="支払済 ${rate}%"><i style="width:${rate}%"></i></span><span class="pk-pct">支払済 <b class="num">${rate}%</b>（${st.np}/${st.n}件）</span></div>
+    ${pkGoalHTML()}`;
+  }
+  /* 今月の支払いの帯の下：完済までの道のりへの近道（残り日数と返した割合） */
+  function pkGoalHTML() {
+    const g = goalData();
+    if (!g.start || g.left <= 0) return "";
+    return `<button type="button" class="pk-goal" data-tab="balance"><span class="pkg-l">完済まで</span>${g.days != null ? `<b class="num">あと${g.days.toLocaleString("ja-JP")}日</b>` : ""}<span class="pkg-bar"><i style="width:${Math.min(100, g.rate * 100)}%"></i></span><span class="pkg-p">返した <b class="num">${Math.round(g.rate * 100)}%</b></span><span class="pkg-go" aria-hidden="true">›</span></button>`;
   }
 
   /* ---------- 支払い：一覧とお金の流れ ---------- */
@@ -913,6 +966,44 @@
   <div class="kv total"><span>手元に残るお金</span><span class="num ${rest < 0 ? "t-danger" : "t-ok"}">${yen(rest)}</span></div>`;
   }
 
+  /* ---------- 借入・返済：完済への道のり（いちばん上の大きな帯） ---------- */
+  function goalHTML(g, ol) {
+    if (!g.start) return `<div class="goal empty-goal"><b>口座を登録すると、完済までの道のりがここに出ます</b></div>`;
+    const pct = Math.round(g.rate * 1000) / 10;
+    const mk = nextMark(g);
+    const R = 34, C = 2 * Math.PI * R;
+    const ring = `<svg class="g-ring" viewBox="0 0 80 80" role="img" aria-label="返した割合 ${pct}%"><circle cx="40" cy="40" r="${R}" class="g-rt"/><circle cx="40" cy="40" r="${R}" class="g-rf" stroke-dasharray="${(C * Math.min(1, g.rate)).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="38" class="g-rp">${pct}%</text><text x="40" y="52" class="g-rl">返した</text></svg>`;
+    const msg =
+      g.left <= 0
+        ? "🎉 すべて完済しました。本当におつかれさまでした！"
+        : g.paid <= 0
+          ? "最初の一歩はここから。支払いを「支払済」にすると、道のりが進みます。"
+          : mk.to < 100
+            ? `ここまで <b class="num">${yen(g.paid)}</b> 返しました。次の節目 <b>${mk.to}%</b> まで あと <b class="num">${yen(mk.need)}</b>`
+            : `ゴールまで あと <b class="num">${yen(g.left)}</b>。もう少しです！`;
+    const st = (lb, v, sub, cls = "") => `<div class="g-st ${cls}"><span class="lb">${lb}</span><b class="num">${v}</b>${sub ? `<span class="s">${sub}</span>` : ""}</div>`;
+    return `<div class="goal">
+      <div class="g-top">
+        <div class="g-cd">
+          <span class="g-eb">完済への道のり</span>
+          ${g.days != null ? `<div class="g-days"><span>完済まで あと</span><b class="num">${g.days.toLocaleString("ja-JP")}</b><span>日</span></div>
+          <div class="g-when">${ymd(g.last.info.end)}（予定）・最後は ${esc(g.last.a.name)}</div>` : `<div class="g-days"><b>${g.left <= 0 ? "完済！" : "見通しを計算できません"}</b></div>`}
+        </div>
+        ${ring}
+      </div>
+      <div class="g-bar"><span class="g-track"><i style="width:${Math.min(100, g.rate * 100)}%"></i>${[25, 50, 75].map(m => `<em class="${g.rate * 100 >= m ? "on" : ""}" style="left:${m}%"></em>`).join("")}</span>
+        <div class="g-bl"><span>返した元金 <b class="num">${yen(g.paid)}</b></span><span>はじめの残高 <b class="num">${yen(g.start)}</b></span></div></div>
+      <div class="g-msg">${msg}</div>
+      <div class="g-stats">
+        ${st("のこり", yen(g.left), `${g.per.filter(x => x.a.balance > 0).length}口座`)}
+        ${st("繰上げで減らせた利息", yen(g.saved), g.saved ? `完済が約${g.savedM}ヶ月早まりました` : "繰上げするとここに貯まります", g.saved ? "hi" : "")}
+        ${st("毎月の返済", yen(ol.curPay), ol.curInt ? `うち利息 約${yen(ol.curInt)}` : "")}
+        ${st("次の完済", g.nextDone ? esc(g.nextDone.a.name) : "—", g.nextDone ? `${ymLabel(ymOf(g.nextDone.info.end))}・あと${g.nextDone.info.months}ヶ月` : "")}
+      </div>
+      <div class="g-note">はじめの残高＝いまの残高＋このアプリで「支払済」にした元金。${g.noPlan ? "定額・利息なしの口座は完済日の計算に入れていません。" : ""}</div>
+    </div>`;
+  }
+
   /* ---------- 残高と計画：集計・口座 ---------- */
   function renderBalance() {
     const acc = accList();
@@ -920,14 +1011,9 @@
     const sum = c =>
       debt.filter(a => (c ? a.category === c : a.category !== "personal")).reduce((s, a) => s + (a.balance || 0), 0);
     const ol = outlookData();
-    const c = (cls, lb, v, sub) => `<div class="pk-c ${cls}"><span class="lb">${lb}</span><b class="num">${v}</b><span class="s">${sub}</span></div>`;
-    $("bStats").innerHTML = `<div class="pk-h"><b class="pk-per">借入の残高</b><span class="pk-rng">個人からの借入は除く</span></div>
-    <div class="pk-grid">
-      ${c("main neg", "総残高", yen(sum()), `${debt.filter(a => a.category !== "personal").length}口座`)}
-      ${c("", "クレジットカード", yen(sum("card")), `${debt.filter(a => a.category === "card").length}口座`)}
-      ${c("", "消費者金融", yen(sum("loan")), `${debt.filter(a => a.category === "loan").length}口座`)}
-      ${c("", "毎月の返済", yen(ol.curPay), ol.last ? `すべて完済 ${ymLabel(ol.last.end)}` : "返済中の口座なし")}
-    </div>`;
+    const g = goalData();
+    S._goal = g;
+    $("bStats").innerHTML = goalHTML(g, ol);
     $("bGroups").innerHTML = ["card", "loan", "personal", "other"]
       .map(c => {
         const g = acc
@@ -950,10 +1036,14 @@
         ]
           .filter(Boolean)
           .join('<i aria-hidden="true">・</i>');
+        const pg = progressOf(a);
+        const pct = Math.round(pg.rate * 100);
+        const left = info ? `あと${info.months}ヶ月` : a.balance === 0 ? "完済！" : "";
         return `<button class="acc ac2 ${a.balance === 0 ? "donecard" : ""}" data-acc="${a.id}">
         <div class="ac-n"><b>${esc(a.name)}</b>${a.active === false ? '<span class="pill def">停止中</span>' : a.balance === 0 ? '<span class="pill done">完済</span>' : ""}</div>
         <div class="ac-b num">${yen(a.balance)}</div>
-        <div class="ac-m">${meta}</div></button>`;
+        <div class="ac-m">${meta}</div>
+        ${c === "personal" ? "" : `<div class="ac-p"><span class="ac-bar" role="img" aria-label="返した割合 ${pct}%"><i style="width:${a.balance === 0 ? 100 : pct}%"></i></span><span class="ac-pct num">${a.balance === 0 ? 100 : pct}%</span><span class="ac-left">${left}</span></div>`}</button>`;
       })
       .join("")}</div></div>`;
       })
