@@ -2832,3 +2832,7 @@ body[data-tab="list"] .kb #list .day.empty{background:var(--u-accent2)}
 body[data-tab="list"] .kb #list .day.empty:not(.today){background:none}
 body[data-tab="list"] .kb .card:has(#list){padding-bottom:10px}
 body[data-tab="list"] .kb #list{padding-bottom:0}
+/* 記録のない日（0件）：帯は出さず、うすい文字の細い行で「未入力」とわかるように */
+body[data-tab="list"] .kb #list .day.empty:not(.today){min-height:28px;margin:2px -6px!important;background:none;border:1px dashed var(--u-line)}
+body[data-tab="list"] .kb #list .day.empty:not(.today) .dtog{padding:3px 2px;color:var(--u-sub);font-weight:600}
+body[data-tab="list"] .kb #list .day.empty .dsum{color:var(--u-sub);font-weight:600;font-size:var(--fs-xs)}

@@ -295,10 +295,14 @@ function renderList(mi) {
   $("fsum").innerHTML = UI.filter.sum("kb", conds);
   ledger.shown = fl;
   if (UI.filter.isOpen("kb")) UI.filter.refresh();
-  /* 並べる日付：明細のある日だけ（記録のない日は並べない）。今日はまだ記録がなくても出す */
+  /* 並べる日付：絞り込みなし＝月度の初日から今日まで（過去の月度は最後の日まで）全部。記録のない日もわかるように出す。絞り込み中は明細のある日だけ */
   const fon = !!(ledger.filter.c || ledger.filter.m || q);
   const days = new Set(fl.map(i => i.date));
-  if (!fon && inPeriod(today(), view.month)) days.add(today());
+  if (!fon) {
+    const [ps, pe] = FIN.periodRange(view.month);
+    const last = [pe, today()].sort()[0];
+    for (let d = ps; d <= last; d = FIN.ds(new Date(FIN.pd(d).getTime() + 864e5))) days.add(d);
+  }
   if (ledger.dayAdd && inPeriod(ledger.dayAdd.date, view.month)) days.add(ledger.dayAdd.date);
   const by = {};
   fl.forEach(i => (by[i.date] = by[i.date] || []).push(i));
@@ -309,7 +313,7 @@ function renderList(mi) {
       w = dow(d),
       adding = ledger.dayAdd && ledger.dayAdd.date === d,
       fold = l.length && dayFold.has(d) && !adding;
-    html += `<div data-day="${d}" class="day ${["sun", "", "", "", "", "", "sat"][w]}${l.length ? "" : " empty"}${d === td ? " today" : ""}"><button type="button" class="dtog" data-dfold="${d}"${l.length ? ` aria-expanded="${!fold}"` : ""}>${l.length ? FOLD_IC : '<i class="fic-sp"></i>'}<span class="dd">${d.slice(5).replace("-", "/")} <small>（${"日月火水木金土"[w]}）</small>${d === td ? '<em class="tdy">今日</em>' : ""}</span>${l.length ? `<span class="dn">${l.length}件</span>` : ""}</button><span class="dsum">${l.length ? yen(sumOf(l)) : "まだ記録がありません"}</span></div>`;
+    html += `<div data-day="${d}" class="day ${["sun", "", "", "", "", "", "sat"][w]}${l.length ? "" : " empty"}${d === td ? " today" : ""}"><button type="button" class="dtog" data-dfold="${d}"${l.length ? ` aria-expanded="${!fold}"` : ""}>${l.length ? FOLD_IC : '<i class="fic-sp"></i>'}<span class="dd">${d.slice(5).replace("-", "/")} <small>（${"日月火水木金土"[w]}）</small>${d === td ? '<em class="tdy">今日</em>' : ""}</span>${l.length ? `<span class="dn">${l.length}件</span>` : ""}</button><span class="dsum">${l.length ? yen(sumOf(l)) : "0件"}</span></div>`;
     if (adding) html += addForm(d);
     if (fold) return;
     l.forEach(i => {
