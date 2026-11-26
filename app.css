@@ -2619,3 +2619,51 @@ html.esopen .kb .fab,html.esopen .kb .totop{display:none!important}
   .kbsheet .es-c{padding:5px 2px 4px}
   .kbsheet .es-ce{font-size:19px}
 }
+
+/* ======================================================================
+   家計簿B：明細の一覧を整理（メモが主役・日付の行は淡く・選択の丸は「選択」のときだけ）
+   ====================================================================== */
+/* 上のカード：今月の支出と今日の記録を1枚に。内訳のカードはPCの右の欄だけ（合計は上のカードに出すので消す） */
+.kb .st-eb{font-size:var(--fs-xs);font-weight:700;color:var(--u-sub)}
+.kb .st-tot{display:flex;align-items:center;gap:4px 10px;flex-wrap:wrap}
+.kb .st-tot b{font-size:30px;font-weight:800;line-height:1.15}
+.kb .st-tot .delta{font-size:var(--fs-xs);border-radius:var(--r-full);padding:1px 9px;margin:0}
+.kb .streak .st-sub{margin-top:2px}
+@media (max-width:899px){.kb #summary{display:none!important}}
+@media (min-width:900px){.kb #summary .sumtop{display:none}.kb #summary .sumbody{display:block!important}.kb #summary .kpis{margin-top:4px;border-top:0}.kb #summary .stack{margin-top:2px}}
+/* 一覧の上：絞り込み・選択 */
+.kb #fbarK .fline{display:flex;align-items:center;gap:6px}
+.kb .selbtn{height:30px;padding:0 12px;border:1px solid var(--u-line);border-radius:var(--r-full);background:var(--u-surface);color:var(--u-sub);font:inherit;font-size:var(--fs-s);font-weight:700;cursor:pointer}
+.kb .selbtn.on{background:var(--u-accent);border-color:var(--u-accent);color:var(--u-on)}
+.kb #fbarK .fcnt{margin-left:auto}
+/* 選択の丸：ふだんは出さない */
+.kb #list:not(.selmode) .ck{display:none}
+/* 日付の行：淡く（文字だけ、細い線） */
+body[data-tab="list"] .kb #list .day{background:none;border-radius:0;margin:0 -16px;padding:0 16px 0 12px;min-height:34px;border:0;border-top:1px solid var(--u-soft)}
+body[data-tab="list"] .kb #list .day:first-child{border-top:0;margin-top:0}
+body[data-tab="list"] .kb #list .day .dtog{font-size:var(--fs-s);color:var(--u-ink)}
+body[data-tab="list"] .kb #list .day .dsum{font-size:var(--fs-s);color:var(--u-sub);font-weight:700}
+body[data-tab="list"] .kb #list .day.today{background:none}
+body[data-tab="list"] .kb #list .day.today .dd{color:var(--u-acct)}
+body[data-tab="list"] .kb #list .day.empty .dsum{font-weight:500;font-size:var(--fs-xs)}
+body[data-tab="list"] .kb #list .day+.it{border-top:0}
+/* 1件の行：1行目＝メモ（なければ分類）、2行目＝分類と支払い方法 */
+.kb #list .it3{gap:12px;padding:8px 0;border-bottom:1px solid var(--u-soft)}
+.kb #list .it3:last-child{border-bottom:0}
+.kb .itm3{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.kb .itm3 .i-t{font-size:var(--fs-base);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kb .itm3 .i-s{display:flex;align-items:center;gap:8px;font-size:var(--fs-xs);color:var(--u-sub);min-width:0;white-space:nowrap}
+.kb .itm3 .i-c{color:hsl(var(--h) var(--s,55%) 38%);font-weight:700}
+.kb .itm3 .i-m{overflow:hidden;text-overflow:ellipsis}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .kb .itm3 .i-c{color:hsl(var(--h) var(--s,60%) 72%)}}
+:root[data-theme="dark"] .kb .itm3 .i-c{color:hsl(var(--h) var(--s,60%) 72%)}
+@media (min-width:900px){
+  .kb .itm3{flex-direction:row;align-items:center;gap:14px}
+  .kb .itm3 .i-t{flex:1;min-width:0}
+  .kb .itm3 .i-s{flex:none;gap:12px}
+  .kb .itm3 .i-c{min-width:5.5em;text-align:right}
+  .kb .itm3 .i-m{min-width:6.5em}
+}
+@media (min-width:900px){.kb #summary::before{content:"分類と支払い方法の内訳";display:block;font-size:var(--fs-xs);font-weight:800;color:var(--u-sub);margin-bottom:8px}}
+/* 月度の切り替え：いまの月度を見ているときは「当月」ボタンを出さない（押せない飾りに見えるので） */
+.kb button.mcur:disabled{display:none!important}

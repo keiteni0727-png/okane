@@ -439,7 +439,7 @@ function clickListCheck(e) {
     return true;
   }
   const row = e.target.closest("[data-edit]");
-  if (row && ledger.sel.size) {
+  if (row && (ledger.sel.size || ledger.selMode)) {
     const id = row.dataset.edit;
     ledger.sel.has(id) ? ledger.sel.delete(id) : ledger.sel.add(id);
     render();
@@ -543,7 +543,12 @@ function saveDayAdd() {
   render();
 }
 function clickLedger(t, d) {
-  if (d.dadd) {
+  if (d.selmode) {
+    /* 「選択」：まとめて変更・削除するときだけ丸を出す */
+    ledger.selMode = !(ledger.selMode || ledger.sel.size);
+    if (!ledger.selMode) ledger.sel.clear();
+    render();
+  } else if (d.dadd) {
     openEntry(d.dadd);
   } else if (d.dfold) {
     if (ledger.sel.size) {
@@ -592,6 +597,7 @@ function clickLedger(t, d) {
 function clickSelection(t) {
   if (t.id === "selend") {
     ledger.sel.clear();
+    ledger.selMode = false;
     render();
   } else if (t.id === "qmerge") {
     mergeSel();

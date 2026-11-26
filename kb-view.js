@@ -206,9 +206,16 @@ function renderStreak() {
   const mx = Math.max(1, ...past.map(x => by[x] || 0));
   const lv = x => (by[x] ? 1 + Math.min(3, Math.floor(((by[x] || 0) / mx) * 4)) : 0);
   const lead = (FIN.pd(ps).getDay() + 6) % 7; // 月曜はじまり
-  const msg = ti.length ? "今日の記録 ✓" : "今日の支出を記録しよう";
-  el.innerHTML = `<div class="st-top"><div class="st-today"><span class="st-msg">${msg}</span><span class="st-sub">${ti.length ? `今日 <b class="num">${yen(sumOf(ti))}</b>（${ti.length}件）` : "今日の記録はまだありません"}</span></div><button type="button" class="st-calbtn" data-stcal="1" aria-label="記録カレンダーを開く">📅</button></div>
-    <button type="button" class="st-add" id="kbRec"><span aria-hidden="true">＋</span> 今日の支出を記録</button>
+  /* いま見ている月度の合計と前月比（家計簿の一番上。支出カードと1枚にまとめた） */
+  const vm = view.month;
+  const vi = items.filter(i => inPeriod(i.date, vm)),
+    vp = items.filter(i => inPeriod(i.date, shiftM(vm, -1)));
+  const vs = sumOf(vi),
+    vps = sumOf(vp),
+    dv = vs - vps;
+  const [vs0, ve0] = FIN.periodRange(vm);
+  el.innerHTML = `<div class="st-top"><div class="st-today"><span class="st-eb">${FIN.periodLabel(vm)}の支出 <span class="num">${md(vs0)}〜${md(ve0)}</span></span><span class="st-tot"><b class="num">${yen(vs)}</b>${vps ? `<span class="delta ${dcls(dv)}">前月比 ${dstr(dv, vps)}</span>` : ""}</span>
+    <span class="st-sub">${vm === m ? (ti.length ? `今日 <b class="num">${yen(sumOf(ti))}</b>（${ti.length}件）記録済み ✓` : "今日はまだ記録がありません") : `${vi.length}件`}</span></div><button type="button" class="st-calbtn" data-stcal="1" aria-label="記録カレンダーを開く">📅</button></div>
     <div class="st-cal" role="img" aria-label="${FIN.periodLabel(m)}の記録カレンダー：${past.length}日中${rec}日記録"><div class="st-wd">${"月火水木金土日".split("").map(w => `<span>${w}</span>`).join("")}</div>
     <div class="st-grid">${"<i></i>".repeat(lead)}${days.map(x => `<button type="button" class="st-d l${lv(x)}${x === td ? " td" : ""}${x > td ? " fu" : ""}" data-jump="${x}" title="${x.slice(5).replace("-", "/")} ${by[x] ? yen(by[x]) : "記録なし"}"${x > td ? " disabled" : ""}>${+x.slice(8)}</button>`).join("")}</div>
     <div class="st-foot"><span>${FIN.periodLabel(m)}は <b class="num">${past.length}日中 ${rec}日</b> 記録</span><span class="st-lg"><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> 多い</span></div></div>`;
@@ -256,18 +263,16 @@ function renderList(mi) {
   );
   ledger.mi = mi;
   const conds = [ledger.filter.c, ledger.filter.m].filter(Boolean).map(v => `${emo(v)} ${v}`);
-  $("fbarK").innerHTML = `<div class="fline">${UI.filter.btn("kb", conds.length)}<span class="fcnt">${fl.length}件<b class="num">${yen(sumOf(fl))}</b></span></div>`;
+  const selOn = ledger.selMode || ledger.sel.size > 0;
+  $("list").classList.toggle("selmode", selOn);
+  $("fbarK").innerHTML = `<div class="fline">${UI.filter.btn("kb", conds.length)}<button type="button" class="selbtn${selOn ? " on" : ""}" data-selmode="1" aria-pressed="${selOn}">${selOn ? "選択をやめる" : "選択"}</button><span class="fcnt">${fl.length}件<b class="num">${yen(sumOf(fl))}</b></span></div>`;
   $("fsum").innerHTML = UI.filter.sum("kb", conds);
   ledger.shown = fl;
   if (UI.filter.isOpen("kb")) UI.filter.refresh();
-  /* 並べる日付：絞り込みなし＝月度の初日から今日まで（過去の月度は最後の日まで）全部。絞り込み中は明細のある日だけ */
+  /* 並べる日付：明細のある日だけ（記録のない日は並べない）。今日はまだ記録がなくても出す */
   const fon = !!(ledger.filter.c || ledger.filter.m || q);
   const days = new Set(fl.map(i => i.date));
-  if (!fon) {
-    const [ps, pe] = FIN.periodRange(view.month);
-    const last = [pe, today()].sort()[0];
-    for (let d = ps; d <= last; d = FIN.ds(new Date(FIN.pd(d).getTime() + 864e5))) days.add(d);
-  }
+  if (!fon && inPeriod(today(), view.month)) days.add(today());
   if (ledger.dayAdd && inPeriod(ledger.dayAdd.date, view.month)) days.add(ledger.dayAdd.date);
   const by = {};
   fl.forEach(i => (by[i.date] = by[i.date] || []).push(i));
@@ -278,14 +283,14 @@ function renderList(mi) {
       w = dow(d),
       adding = ledger.dayAdd && ledger.dayAdd.date === d,
       fold = l.length && dayFold.has(d) && !adding;
-    html += `<div data-day="${d}" class="day ${["sun", "", "", "", "", "", "sat"][w]}${l.length ? "" : " empty"}${d === td ? " today" : ""}"><button type="button" class="dtog" data-dfold="${d}"${l.length ? ` aria-expanded="${!fold}"` : ""}>${l.length ? FOLD_IC : '<i class="fic-sp"></i>'}<span class="dd">${d.slice(5).replace("-", "/")} <small>（${"日月火水木金土"[w]}）</small>${d === td ? '<em class="tdy">今日</em>' : ""}</span>${l.length ? `<span class="dn">${l.length}件</span>` : ""}</button><span class="dsum">${l.length ? yen(sumOf(l)) : "—"}</span><button type="button" class="dadd" data-dadd="${d}" aria-label="${+d.slice(5, 7)}月${+d.slice(8)}日に追加">＋</button></div>`;
+    html += `<div data-day="${d}" class="day ${["sun", "", "", "", "", "", "sat"][w]}${l.length ? "" : " empty"}${d === td ? " today" : ""}"><button type="button" class="dtog" data-dfold="${d}"${l.length ? ` aria-expanded="${!fold}"` : ""}>${l.length ? FOLD_IC : '<i class="fic-sp"></i>'}<span class="dd">${d.slice(5).replace("-", "/")} <small>（${"日月火水木金土"[w]}）</small>${d === td ? '<em class="tdy">今日</em>' : ""}</span>${l.length ? `<span class="dn">${l.length}件</span>` : ""}</button><span class="dsum">${l.length ? yen(sumOf(l)) : "まだ記録がありません"}</span></div>`;
     if (adding) html += addForm(d);
     if (fold) return;
     l.forEach(i => {
       html +=
         i.id === ledger.editId
           ? editForm(i)
-          : `<div class="it${ledger.sel.has(i.id) ? " on" : ""}" data-edit="${i.id}"><input type="checkbox" class="ck" data-ck="${i.id}" aria-label="選択"${ledger.sel.has(i.id) ? " checked" : ""}>${ico(i.category)}<div class="itm itm2"><div class="l1">${chip(i.category)}${i.memo && i.memo !== i.category ? `<span class="memo sm">${esc(i.memo)}</span>` : ""}</div><div class="l2">${mchip(i.method)}</div></div><span class="amt">${yen(i.amount)}</span></div>`;
+          : `<div class="it it3${ledger.sel.has(i.id) ? " on" : ""}" data-edit="${i.id}"><input type="checkbox" class="ck" data-ck="${i.id}" aria-label="選択"${ledger.sel.has(i.id) ? " checked" : ""}>${ico(i.category)}<div class="itm3"><b class="i-t">${esc(i.memo && i.memo !== i.category ? i.memo : i.category)}</b><span class="i-s">${i.memo && i.memo !== i.category ? `<span class="i-c" style="${hs(i.category)}">${esc(i.category)}</span>` : ""}<span class="i-m">${emo(i.method)} ${esc(i.method)}</span></span></div><span class="amt">${yen(i.amount)}</span></div>`;
     });
   });
   $("list").innerHTML = html || `<div class="mu empty">${fon ? "条件に合う明細はありません" : "この月度はまだ始まっていません"}</div>`;
