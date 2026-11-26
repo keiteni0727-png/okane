@@ -2852,3 +2852,9 @@ body[data-tab="list"] .kb .kbseg-w,body[data-tab="graph"] .kb .kbseg-w{display:f
   .kb .kbmon{margin:0;justify-content:center}
   .kb .km-c{flex:1}
 }
+/* 日付の行：0件の日も含めて、上下のすき間と高さをすべて同じに */
+body[data-tab="list"] .kb #list .day,body[data-tab="list"] .kb #list .day.empty:not(.today){margin:6px -6px 2px!important;min-height:34px}
+body[data-tab="list"] .kb #list .day.empty:not(.today) .dtog{padding:6px 2px}
+body[data-tab="list"] .kb #list .day:first-child{margin-top:0!important}
+/* 一覧の上（絞り込み）を固定したとき、下のすき間から後ろの行が透けて見えない */
+body[data-tab="list"] .kb #lhead{margin-bottom:0!important;padding-bottom:12px}

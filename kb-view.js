@@ -306,7 +306,7 @@ function renderList(mi) {
   const conds = [ledger.filter.c, ledger.filter.m].filter(Boolean).map(v => `${emo(v)} ${v}`);
   const selOn = ledger.selMode || ledger.sel.size > 0;
   $("list").classList.toggle("selmode", selOn);
-  $("fbarK").innerHTML = `<div class="fline">${UI.filter.btn("kb", conds.length)}<button type="button" class="selbtn${selOn ? " on" : ""}" data-selmode="1" aria-pressed="${selOn}">${selOn ? "選択をやめる" : "選択"}</button><span class="fcnt">${fl.length}件<b class="num">${yen(sumOf(fl))}</b></span></div>`;
+  $("fbarK").innerHTML = `<div class="fline">${UI.filter.btn("kb", conds.length)}<button type="button" class="selbtn${selOn ? " on" : ""}" data-selmode="1" aria-pressed="${selOn}">${selOn ? "選択をやめる" : "選択"}</button><span class="fcnt">${fl.length}件${conds.length ? `<b class="num">${yen(sumOf(fl))}</b>` : ""}</span></div>`;
   $("fsum").innerHTML = UI.filter.sum("kb", conds);
   ledger.shown = fl;
   if (UI.filter.isOpen("kb")) UI.filter.refresh();
