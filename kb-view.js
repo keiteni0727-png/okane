@@ -106,8 +106,23 @@ function renderMonthBar() {
     .join("");
   $("mcur").disabled = cur === thisPeriod();
 }
+/* 家計簿専用の月度の切り替え：前の月度へは戻れる。先の月度へは進めない（未来の支出は入れないので） */
+function renderKbMon() {
+  const el = $("kbMon");
+  if (!el) return;
+  const cur = thisPeriod();
+  if (view.month > cur) view.month = cur;
+  const isCur = view.month === cur;
+  const [ps, pe] = FIN.periodRange(view.month);
+  const nm = FIN.periodLabel(view.month).replace(/^(\d+)年/, "<small>$1年</small>");
+  el.innerHTML = `<button type="button" class="km-b" data-kbm="prev" aria-label="前の月度">‹</button>
+    <div class="km-c"><b>${nm}</b><span class="num">${md(ps)}〜${md(pe)}</span></div>
+    ${isCur ? `<span class="km-b km-off" aria-hidden="true"></span>` : `<button type="button" class="km-b" data-kbm="next" aria-label="次の月度">›</button>`}
+    ${isCur ? "" : `<button type="button" class="km-now" data-kbm="now">今月度へ</button>`}`;
+}
 function render(fromAll) {
   renderMonthBar();
+  renderKbMon();
   const mi = items.filter(i => inPeriod(i.date, view.month)).sort((a, b) => b.date.localeCompare(a.date));
   const pm = shiftM(view.month, -1),
     pi = items.filter(i => inPeriod(i.date, pm));
@@ -214,7 +229,7 @@ function renderStreak() {
     vps = sumOf(vp),
     dv = vs - vps;
   const [vs0, ve0] = FIN.periodRange(vm);
-  el.innerHTML = `<div class="st-top"><div class="st-today"><span class="st-eb">${FIN.periodLabel(vm)}の支出 <span class="num">${md(vs0)}〜${md(ve0)}</span></span><span class="st-tot"><b class="num">${yen(vs)}</b>${vps ? `<span class="delta ${dcls(dv)}">前月比 ${dstr(dv, vps)}</span>` : ""}</span>
+  el.innerHTML = `<div class="st-top"><div class="st-today"><span class="st-eb">この月度の支出</span><span class="st-tot"><b class="num">${yen(vs)}</b>${vps ? `<span class="delta ${dcls(dv)}">前月比 ${dstr(dv, vps)}</span>` : ""}</span>
     <span class="st-sub">${vm === m ? (ti.length ? `今日 <b class="num">${yen(sumOf(ti))}</b>（${ti.length}件）記録済み ✓` : "今日はまだ記録がありません") : `${vi.length}件`}</span></div><button type="button" class="st-calbtn" data-stcal="1" aria-label="記録カレンダーを開く"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button></div>
     <div class="st-cal" role="img" aria-label="${FIN.periodLabel(m)}の記録カレンダー：${past.length}日中${rec}日記録"><div class="st-wd">${"月火水木金土日".split("").map(w => `<span>${w}</span>`).join("")}</div>
     <div class="st-grid">${"<i></i>".repeat(lead)}${days.map(x => `<button type="button" class="st-d l${lv(x)}${x === td ? " td" : ""}${x > td ? " fu" : ""}" data-jump="${x}" title="${x.slice(5).replace("-", "/")} ${by[x] ? yen(by[x]) : "記録なし"}"${x > td ? " disabled" : ""}>${+x.slice(8)}</button>`).join("")}</div>

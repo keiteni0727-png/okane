@@ -543,7 +543,11 @@ function saveDayAdd() {
   render();
 }
 function clickLedger(t, d) {
-  if (d.gby || d.gper) {
+  if (d.kbm) {
+    view.month = d.kbm === "now" ? thisPeriod() : shiftM(view.month, d.kbm === "prev" ? -1 : 1);
+    if (view.month > thisPeriod()) view.month = thisPeriod();
+    render();
+  } else if (d.gby || d.gper) {
     if (d.gby) {
       graph.by = d.gby;
       graph.sel = "";
