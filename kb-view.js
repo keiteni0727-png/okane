@@ -1,7 +1,7 @@
 /* ===================== 描画 ===================== */
 /* ---------- 画面の切り替え ---------- */
 let prevPay = false;
-function setTab(t) {
+function setTab(t, fromPop) {
   if (t === "kb") t = KBV.includes(lsRaw(KKB)) ? lsRaw(KKB) : "list"; // 家計簿は前回の画面を開く
   if (t === "pay") t = "home"; // 旧「支払い管理」からの移行
   if (t === "an") t = AN.includes(lsRaw(KAN)) ? lsRaw(KAN) : "graph"; // 旧「分析」からの移行
@@ -10,6 +10,13 @@ function setTab(t) {
     return;
   }
   closePanels();
+  /* ページの履歴：ホームから開くたびに積む（明細とグラフの切り替えは積まずに置きかえる） */
+  if (!fromPop && view.tab !== t) {
+    const st = history.state || { d: 0 };
+    if (KBV.includes(t) && KBV.includes(view.tab)) history.replaceState({ t, d: st.d || 0 }, "");
+    else if (t === "dash") history.replaceState({ t, d: 0 }, "");
+    else history.pushState({ t, d: (st.d || 0) + 1 }, "");
+  }
   if (t === "rules" && view.tab !== "rules") view.prevTab = view.tab;
   view.tab = t;
   document.body.dataset.tab = t;
@@ -180,6 +187,13 @@ function renderSummary(mi, pi) {
     `</div>`;
 }
 
+/* ホームの入口に出す数字：いまの月度の支出・件数・1日平均 */
+function spendNums() {
+  const m = thisPeriod();
+  const mi = items.filter(i => inPeriod(i.date, m));
+  const sum = sumOf(mi);
+  return { sum, n: mi.length, avg: Math.round(sum / (FIN.dayIndex(today(), m) + 1)) };
+}
 /* ---------- ホームの「今月の支出」：いまの月度の合計・前月比・多い分類・1日平均（家計簿のまとめ） ---------- */
 function dashSpendHTML() {
   const m = thisPeriod();

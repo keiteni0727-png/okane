@@ -28,6 +28,7 @@
   <div class="sb-foot"><button type="button" class="sb-it" id="sbgear" title="設定"><i aria-hidden="true" class="mic gear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></i><span class="lbl">設定</span></button><div class="sb-st"><span id="sbSave" class="savest wait">接続中…</span></div></div>
 </aside>
 <header class="appbar"><div class="wrap abin">
+  <button type="button" class="hback" id="hback" aria-label="ホームに戻る"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>ホーム</span></button>
   <span class="hcur" id="hcur"></span>
   <div class="brand"><svg class="u-mark sb-logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--u-accent)"/><rect x="7.5" y="6.5" width="17" height="19" rx="2.6" fill="#fff"/><rect x="7.5" y="6.5" width="3.2" height="19" rx="1.2" fill="var(--u-accent)" opacity=".22"/><path d="M13.6 10.6 17.6 15.6 21.6 10.6M17.6 15.6v6.4M14.6 17h6M14.6 19.8h6" fill="none" stroke="var(--u-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b class="bname">おかね手帳</b><span id="saveSt" class="savest wait" role="status" aria-live="polite">接続中…</span></div>
   <button type="button" class="u-btn icon soft hthm" id="hTheme" aria-label="表示の切り替え"></button>
@@ -73,6 +74,7 @@
   <!-- ホーム（開いて最初に出る画面）：完済への道のり・今日やること・今月のお金・今月の支出 -->
   <section id="v-dash" class="v2 vdash">
     <div class="d-hello" id="dHello"></div>
+    <nav class="dnav" id="dNav" aria-label="ページ"></nav>
     <div class="dgrid">
       <div class="dcol">
         <div id="dGoal"></div>
@@ -166,6 +168,7 @@
   <div class="q"><select id="qc" aria-label="分類を変更"></select><select id="qm" aria-label="支払い方法を変更"></select></div>
   <div class="acts"><button class="pri" id="qmerge">1件に合算</button><button id="selpost">詳細編集</button><button id="qrule">ルールにする</button><button class="ghost" id="qdel">削除</button></div>
 </div></div>
+<button type="button" id="fab" class="fab" aria-label="追加"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="fab-l">追加</span></button>
 <button type="button" id="toTop" class="totop hide" aria-label="ページの先頭に戻る" tabindex="-1" aria-hidden="true"><span aria-hidden="true">↑</span>トップへ</button>
 <datalist id="memos"></datalist>
 <div id="rbk" hidden></div>

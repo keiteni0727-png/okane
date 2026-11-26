@@ -753,10 +753,31 @@
     const g = goalData();
     $("dHello").innerHTML = `<b class="dh-date">${md(t)}（${wd(t)}）</b><span class="dh-pd">次の給料日 <b class="num">${md(np)}</b>（${nd === 0 ? "今日" : `あと${nd}日`}）</span>`;
     $("dGoal").innerHTML = goalHTML(g, outlookData(), true);
+    $("dNav").innerHTML = navHTML(g, periodStats(cp));
     $("dToday").innerHTML = todayHTML();
     $("dPer").textContent = `${md(ps)}〜${md(pe)}`;
     $("dMoney").innerHTML = dashMoneyHTML(periodStats(cp));
     $("dSpend").innerHTML = FIN.kb.dashSpend ? FIN.kb.dashSpend() : "";
+  }
+  /* ホームの入口（メニューの代わり）：支払い・返済・家計簿。押すとそのページを開く。中身の数字も一緒に出す */
+  function navHTML(g, st) {
+    const t = today();
+    const nx = allItems()
+      .filter(i => i.status === "planned" && i.date >= t)
+      .sort(byDateAmt)[0];
+    const sp = FIN.kb.spendNums ? FIN.kb.spendNums() : { sum: 0, n: 0, avg: 0 };
+    const ic = {
+      home: '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>',
+      balance: '<path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M14 7h4v4"/>',
+      list: '<path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h4"/>',
+    };
+    const tile = (tab, k, name, lb, v, sub, extra = "") =>
+      `<button type="button" class="dn-t dn-${k}" data-tab="${tab}"><span class="dn-h"><i class="dn-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic[k]}</svg></i><b>${name}</b><span class="dn-go" aria-hidden="true">›</span></span><span class="dn-lb">${lb}</span><b class="dn-v num">${v}</b><span class="dn-s">${sub}</span>${extra}</button>`;
+    return (
+      tile("home", "home", "支払い", "今月の未払", yen(st.unpaid), st.unpaid ? `${st.n - st.np}件${nx ? `・次は ${md(nx.date)} ${esc(nx.name)}` : ""}` : "✓ 今月の支払いはすべて済み") +
+      tile("balance", "balance", "返済", "のこり", yen(g.left), g.days != null ? `完済まで あと${g.days.toLocaleString("ja-JP")}日` : "口座を登録して始めましょう", `<span class="dn-bar"><i style="width:${Math.min(100, g.rate * 100)}%"></i></span>`) +
+      tile("kb", "list", "家計簿", "今月の支出", yen(sp.sum), `${sp.n}件・1日平均 ${yen(sp.avg)}`)
+    );
   }
   /* 今日やること：期日を過ぎた・延滞分・この先7日の支払。なければ次の支払を1件 */
   function todayHTML() {

@@ -451,8 +451,12 @@ function clickListCheck(e) {
 }
 /* ヘッダー・下部メニュー・設定の開閉・通知 */
 function clickHeader(t, d) {
-  if (t.id === "hAdd" || t.id === "sbAdd") {
+  if (t.id === "hAdd" || t.id === "sbAdd" || t.id === "fab") {
     doAdd();
+  } else if (t.id === "hback") {
+    /* 戻る：ホームから開いたページなら、ブラウザの履歴で戻る（スマホの「戻る」と同じ動き） */
+    if (history.state && history.state.d > 0) history.back();
+    else setTab("dash");
   } else if (d.theme) {
     U.setTheme(d.theme);
   } else if (d.setedit === "rules" || d.setedit === "master" || d.setedit === "paym") {
@@ -805,6 +809,7 @@ Object.assign(FIN.kb, {
   setTab,
   settingsOpen,
   dashSpend: () => dashSpendHTML(),
+  spendNums: () => spendNums(),
   /* その月度に現金で払った額（支払いの「残るお金」から引く） */
   cashIn: p => sumOf(items.filter(i => i.method === FIN.CASH && inPeriod(i.date, p))),
 });
@@ -829,7 +834,10 @@ rkUpdate();
 }
 setSidebar(lsRaw(KSBC) === "1");
 paintTheme();
-setTab(view.tab);
+history.replaceState({ t: view.tab, d: 0 }, "");
+/* スマホ・ブラウザの「戻る」：前に開いていたページへ */
+addEventListener("popstate", e => setTab((e.state && e.state.t) || "dash", true));
+setTab(view.tab, true);
 load();
 items.forEach(learn);
 render();
