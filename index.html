@@ -62,6 +62,8 @@
 
   <section class="view card" id="v-graph">
       <div class="sh"><b>グラフ・平均</b></div>
+      <div class="gchips" id="gchips"></div>
+      <nav class="gtabs" id="gtabs" aria-label="グラフの切り替え"></nav>
       <div class="gctl"><select id="gby" aria-label="集計の単位"><option value="category">分類別</option><option value="method">支払い方法別</option></select><select id="gper" aria-label="期間"><option value="cur">当月</option><option value="3" selected>直近3か月</option><option value="6">直近6か月</option><option value="12">直近12か月</option><option value="all">全期間</option></select><select id="gsel" aria-label="項目"></select></div>
       <div class="gbody"><div id="gavg"></div><div><div id="gtrend"></div><div id="gdet"></div><div id="gpace"></div><div id="gwd"></div></div></div>
     </section>

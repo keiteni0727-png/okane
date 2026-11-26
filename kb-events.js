@@ -543,7 +543,20 @@ function saveDayAdd() {
   render();
 }
 function clickLedger(t, d) {
-  if (d.selmode) {
+  if (d.gby || d.gper) {
+    if (d.gby) {
+      graph.by = d.gby;
+      graph.sel = "";
+      $("gby").value = d.gby;
+    } else {
+      graph.per = d.gper;
+      $("gper").value = d.gper;
+    }
+    renderGraph();
+  } else if (d.gtab) {
+    graph.tab = d.gtab;
+    renderGraphCtl();
+  } else if (d.selmode) {
     /* 「選択」：まとめて変更・削除するときだけ丸を出す */
     ledger.selMode = !(ledger.selMode || ledger.sel.size);
     if (!ledger.selMode) ledger.sel.clear();

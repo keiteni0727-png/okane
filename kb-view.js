@@ -350,7 +350,18 @@ function updateSel() {
 }
 
 /* ---------- グラフ ---------- */
+/* グラフの上：集計の単位・期間はボタンで選ぶ（中身は今までのプルダウンと同じ値）。スマホは見るグラフをタブで1つずつ */
+const GPER = [["cur", "当月"], ["3", "3か月"], ["6", "6か月"], ["12", "12か月"], ["all", "全期間"]];
+const GTAB = [["sum", "内訳"], ["trend", "推移"], ["pace", "ペース"], ["wd", "曜日"]];
+function renderGraphCtl() {
+  $("gchips").innerHTML = `<div class="gseg" role="group" aria-label="集計の単位">${[["category", "分類別"], ["method", "支払い方法別"]].map(([v, l]) => `<button type="button" data-gby="${v}" aria-pressed="${graph.by === v}">${l}</button>`).join("")}</div>
+    <div class="gseg gper" role="group" aria-label="期間">${GPER.map(([v, l]) => `<button type="button" data-gper="${v}" aria-pressed="${graph.per === v}">${l}</button>`).join("")}</div>`;
+  const tab = graph.tab || "sum";
+  $("gtabs").innerHTML = GTAB.map(([v, l]) => `<button type="button" data-gtab="${v}" aria-current="${tab === v ? "page" : "false"}">${l}</button>`).join("");
+  $("v-graph").dataset.gtab = tab;
+}
 function renderGraph() {
+  renderGraphCtl();
   const g = graphData();
   $("gsel").innerHTML = iconOpts(g.names, g.sel, "すべての項目");
   $("gavg").innerHTML = graphSummaryHTML(g);

@@ -2667,3 +2667,37 @@ body[data-tab="list"] .kb #list .day+.it{border-top:0}
 @media (min-width:900px){.kb #summary::before{content:"分類と支払い方法の内訳";display:block;font-size:var(--fs-xs);font-weight:800;color:var(--u-sub);margin-bottom:8px}}
 /* 月度の切り替え：いまの月度を見ているときは「当月」ボタンを出さない（押せない飾りに見えるので） */
 .kb button.mcur:disabled{display:none!important}
+
+/* ======================================================================
+   家計簿C：グラフ。集計の単位・期間はボタン、スマホは見るグラフをタブで1つずつ
+   ====================================================================== */
+.kb #v-graph #gby,.kb #v-graph #gper{display:none}
+.kb .gctl{grid-template-columns:minmax(0,1fr)!important;max-width:360px}
+.kb .gchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.kb .gseg{display:inline-flex;gap:2px;background:var(--u-chip);border-radius:var(--r-full);padding:3px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.kb .gseg button{flex:none;height:30px;padding:0 12px;border:0;border-radius:var(--r-full);background:none;color:var(--u-sub);font:inherit;font-size:var(--fs-s);font-weight:700;cursor:pointer;white-space:nowrap}
+.kb .gseg button[aria-pressed="true"]{background:var(--u-surface);color:var(--u-acct);box-shadow:0 2px 6px rgba(212,67,31,.14)}
+.kb .gtabs{display:none}
+@media (max-width:899px){
+  .kb .gseg{flex:1 1 auto}
+  .kb .gseg.gper{width:100%}
+  .kb .gseg.gper button{flex:1;padding:0 6px}
+  .kb .gtabs{display:flex;gap:0;margin:4px -16px 12px;padding:0 16px;border-bottom:1px solid var(--u-line);position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--abh));z-index:5;background:var(--u-surface)}
+  .kb .gtabs button{flex:1;height:40px;border:0;background:none;color:var(--u-sub);font:inherit;font-size:var(--fs-base);font-weight:700;border-bottom:3px solid transparent;margin-bottom:-1px;cursor:pointer}
+  .kb .gtabs button[aria-current="page"]{color:var(--u-acct);border-bottom-color:var(--u-accent)}
+  .kb #v-graph:not([data-gtab="sum"]) #gavg,
+  .kb #v-graph:not([data-gtab="trend"]) #gtrend,.kb #v-graph:not([data-gtab="trend"]) #gdet,
+  .kb #v-graph:not([data-gtab="pace"]) #gpace,
+  .kb #v-graph:not([data-gtab="wd"]) #gwd{display:none}
+  .kb #v-graph .gh:first-child{margin-top:4px;border-top:0;padding-top:0}
+}
+
+/* ======================================================================
+   家計簿D：こまかいところ
+   ====================================================================== */
+/* 上の帯のアイコンは家計簿の色に */
+body[data-tab="list"] .kb .hcur .mic,body[data-tab="graph"] .kb .hcur .mic{color:var(--u-accent)!important}
+/* 「トップへ」は下の真ん中に（右下の＋と重ならないように） */
+.u-app .totop,.kb .totop{left:50%!important;right:auto!important;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 24px)!important}
+.u-app .totop.hide,.kb .totop.hide{transform:translate(-50%,10px)}
+@media (max-width:639px){.kb .tiles small{font-size:10px}.kb .tiles div{padding:8px 10px}}
