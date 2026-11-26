@@ -921,7 +921,7 @@
     let its = [...st.its].sort(byDateAmt).filter(FILTER_FN[S.filter] || Boolean);
     S.shownN = its.length;
     const wkm = S.group === "week";
-    $("cFbar").innerHTML = `<div class="fline fchips"><span class="grpseg" role="group" aria-label="まとめ方">${[["week", "週ごと"], ["day", "日付ごと"]].map(([v, l]) => `<button type="button" data-grp="${v}" aria-pressed="${(S.group || "week") === v}">${l}</button>`).join("")}</span>${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
+    $("cFbar").innerHTML = `<div class="fline fchips"><span class="grpseg" role="group" aria-label="まとめ方">${[["week", "週ごと"], ["day", "日付ごと"]].map(([v, l]) => `<button type="button" data-grp="${v}" aria-pressed="${(S.group || "week") === v}">${l}</button>`).join("")}</span><span class="fbrk" aria-hidden="true"></span>${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
     if (!its.length)
       $("cList").innerHTML =
         S.filter !== "all"
@@ -1032,7 +1032,7 @@
     return `<tr class="trow${i.status === "paid" ? " paid" : ""}" data-edit="${i.id}" role="button" tabindex="0">
       <td class="tname">${showDate ? `<span class="tdate num">${md(i.date)}<small>${wd(i.date)}</small></span>` : ""}<span class="chip ${c}">${CAT[c]?.s || ""}</span>${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}</td>
       <td>${i.method ? `<span class="mtag">${esc(i.method)}</span>` : "—"}</td>
-      <td class="r">${yen(amtOf(i))}</td>
+      <td class="r" title="${bd === "—" ? "" : bd}">${yen(amtOf(i))}</td>
       <td class="bd">${bd}</td>
       <td><span class="tst ${cls}">${lbl}</span></td>
       <td class="r">${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</td></tr>`;
@@ -1082,8 +1082,8 @@
     const lbl = stLbl(i, over, late);
     return `<div class="row st-${st}${over ? " over" : ""}" data-edit="${i.id}" role="button" tabindex="0">
       <span class="sico" aria-hidden="true">${ico}</span>
-      <div class="rmain"><div class="nm">${showDate ? `<span class="rdate num">${md(i.date)}（${wd(i.date)}）</span>` : ""}${esc(i.name)}${i.method ? `<span class="mtag">${esc(i.method)}</span>` : ""}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}</div>
-      <div class="sub"><span class="chip ${c}">${CAT[c]?.s || ""}</span><span class="slbl">${lbl}</span>${i.memo ? `<span class="smemo">${esc(i.memo.split(" / ")[0])}</span>` : ""}</div></div>
+      <div class="rmain"><div class="nm">${showDate ? `<span class="rdate num">${md(i.date)}（${wd(i.date)}）</span>` : ""}<span class="rname">${esc(i.name)}</span>${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}</div>
+      <div class="sub"><span class="chip ${c}">${CAT[c]?.s || ""}</span>${i.method ? `<span class="smet">${esc(i.method)}</span>` : ""}<span class="slbl">${lbl}</span>${i.memo ? `<span class="smemo">${esc(i.memo.split(" / ")[0])}</span>` : ""}</div></div>
       <div class="rright"><div class="amt">${yen(amtOf(i))}</div>${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</div>
     </div>`;
   }
