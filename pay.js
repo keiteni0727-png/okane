@@ -16,7 +16,7 @@
   const REGEN_MONTHS = 36; // 支払予定を作り直す期間（月）
   const SCHEDULE_MAX = 600; // 返済予定表を計算する最大の回数
   const KFOLD = "shiharai.fold"; // 折りたたみの開閉（この端末だけに保存）
-  const FOLD_DEF = { outlook: false, once: true, int: true, road: true, "g-personal": true, "g-other": true }; // true＝最初は閉じておく
+  const FOLD_DEF = { flow: true, outlook: false, once: true, int: true, road: true, "g-personal": true, "g-other": true }; // true＝最初は閉じておく
 
   /* ===================== 状態 ===================== */
   const S = {
@@ -829,17 +829,18 @@
     document.querySelectorAll(".pay .cnote").forEach(n => {
       n.textContent = `集計期間は給料日（毎月${S.cfg.payday || DEFAULT_PAYDAY}日、土日の場合は直前の平日）から次の給料日の前日までです。家計簿の明細のうち支払い方法が「${FIN.CASH}」のものは、残るお金から引いています。`;
     });
-    $("hNext").innerHTML = nextHTML();
-    $("cKpi").innerHTML = kpiHTML(periodStats(S.period));
+    /* 上の集計・NEXT はホームにあるので、この画面では出さない */
     renderCycle();
   }
   function alertHTML() {
     const t = today();
-    const all = allItems().filter(i => i.status === "planned" && i.date >= MGMT_START);
+    const [vs, ve] = periodRange(S.period);
+    const all = allItems().filter(i => i.status === "planned" && i.date >= MGMT_START && (i.date < vs || i.date > ve));
     const [, pe] = periodRange(periodOf(t));
     const over = all.filter(i => i.date < t),
       late = all.filter(i => i.kind === "late" && i.date >= t && i.date <= pe);
-    if (!over.length && !late.length)
+    if (!over.length && !late.length) return "";
+    if (false)
       return `<div class="okline">✓ 今月（${md(periodRange(periodOf(t))[0])}〜${md(periodRange(periodOf(t))[1])}）の延滞・期日超過はありません</div>`;
     const sum = a => a.reduce((s, i) => s + (i.amount || 0), 0);
     const row = (i, tag, cls) =>
@@ -920,8 +921,8 @@
     const st = periodStats(S.period);
     let its = [...st.its].sort(byDateAmt).filter(FILTER_FN[S.filter] || Boolean);
     S.shownN = its.length;
-    const wkm = S.group === "week";
-    $("cFbar").innerHTML = `<div class="fline fchips"><span class="grpseg" role="group" aria-label="まとめ方">${[["week", "週ごと"], ["day", "日付ごと"]].map(([v, l]) => `<button type="button" data-grp="${v}" aria-pressed="${(S.group || "week") === v}">${l}</button>`).join("")}</span><span class="fbrk" aria-hidden="true"></span>${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
+    const wkm = false; // 日付ごとだけ（週ごとはなくした）
+    $("cFbar").innerHTML = `<div class="fline fchips">${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
     if (!its.length)
       $("cList").innerHTML =
         S.filter !== "all"
@@ -943,7 +944,7 @@
     $("cFlow").innerHTML = flowHTML(st);
     /* PC向け：支払一覧は表で出す（スマホはカード） */
     $("cTable").innerHTML = tableHTML(its, wkm);
-    $("cWeeks").innerHTML = weeksHTML();
+    applyFold();
   }
   /* ---------- 週ごとの管理（月曜はじまり） ---------- */
   const weekOf = d => {

@@ -2858,3 +2858,30 @@ body[data-tab="list"] .kb #list .day.empty:not(.today) .dtog{padding:6px 2px}
 body[data-tab="list"] .kb #list .day:first-child{margin-top:0!important}
 /* 一覧の上（絞り込み）を固定したとき、下のすき間から後ろの行が透けて見えない */
 body[data-tab="list"] .kb #lhead{margin-bottom:0!important;padding-bottom:12px}
+
+/* ======================================================================
+   支払い：日付ごとの一覧だけに（上の集計・週ごとの予定・NEXT はホームにあるので出さない）
+   ====================================================================== */
+.pay #v-home #cKpi,.pay #v-home .pweeks,.pay #v-home #hNext{display:none!important}
+.pay #v-home .pgrid{display:flex!important;flex-direction:column;gap:12px}
+.pay #v-home .pmain,.pay #v-home .pside{display:contents!important}
+.pay #v-home #cAlert{order:1} .pay #v-home .plist{order:2} .pay #v-home .pflow{order:3}
+.pay #v-home .pflow .fold-h{cursor:pointer}
+@media (min-width:900px){.pay #v-home .pflow{max-width:520px}}
+/* 一覧：日付の見出しを強めに、1件は1行に近く詰める（スマホ） */
+.pay #v-home .dayhead{padding:8px 14px;font-size:var(--fs-s);background:var(--u-accent2);border-top:1px solid var(--u-line)}
+.pay #v-home .dayhead .dh-d{font-size:var(--fs-base);font-weight:700;color:var(--u-acct)}
+.pay #v-home .dayhead .dh-t{color:var(--u-ink);font-size:var(--fs-base)}
+@media (max-width:639px){
+  .pay #v-home .row{padding:7px 12px;gap:2px 8px}
+  .pay #v-home .row .sub{font-size:10.5px}
+  .pay #v-home .row .slbl{margin-left:auto}
+  .pay #v-home .fchip3{flex:1}
+}
+.pay #v-home .plist,.pay #v-home #cAlert{width:100%}
+.pay #v-home .fchip3{white-space:nowrap}
+@media (max-width:639px){
+  .pay #v-home .v2 .fline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .pay #v-home .v2 .fcnt{grid-column:1/-1;grid-row:2;margin:0;justify-content:flex-end}
+  .pay #v-home .v2 .fchip3{padding:3px 4px;font-size:var(--fs-xs)}
+}
