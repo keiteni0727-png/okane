@@ -2138,3 +2138,5 @@ body{background:var(--u-bg)}
 }
 .kb .setrow{min-height:44px}
 .kb .setsec{font-size:var(--fs-xs)!important;letter-spacing:.06em}
+.pay .v2 .row.st-paid{background:none}
+.pay .v2 .row.st-paid .sico{width:18px;height:18px}
