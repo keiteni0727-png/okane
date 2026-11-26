@@ -13,7 +13,7 @@ function setTab(t, fromPop) {
   /* ページの履歴：ホームから開くたびに積む（明細とグラフの切り替えは積まずに置きかえる） */
   if (!fromPop && view.tab !== t) {
     const st = history.state || { d: 0 };
-    if (KBV.includes(t) && KBV.includes(view.tab)) history.replaceState({ t, d: st.d || 0 }, "");
+    if ((KBV.includes(t) && KBV.includes(view.tab)) || (PAYV.includes(t) && PAYV.includes(view.tab))) history.replaceState({ t, d: st.d || 0 }, "");
     else if (t === "dash") history.replaceState({ t, d: 0 }, "");
     else history.pushState({ t, d: (st.d || 0) + 1 }, "");
   }
@@ -36,9 +36,9 @@ function setTab(t, fromPop) {
 }
 /* 下のメニュー・左メニュー・分類内の切り替えで、いまの画面に印をつける（分類のボタンにも） */
 function markTabs(t) {
-  markCurrent(".tabbar [data-tab], .sb [data-tab], .anseg [data-tab]", "tab", t);
+  markCurrent(".tabbar [data-tab], .sb [data-tab], .anseg [data-tab], .pseg [data-tab]", "tab", t);
   /* スマホの上の帯：今いる画面のアイコン（左メニューと同じもの） */
-  const key = t === "rules" ? "gear" : KBV.includes(t) ? "list" : t === "dash" ? "dash" : t === "balance" ? "repay" : "home";
+  const key = t === "rules" ? "gear" : KBV.includes(t) ? "list" : t === "dash" ? "dash" : "home";
   const ic = document.querySelector(`.sb .mic.${key}`);
   const hc = $("hcur");
   if (hc && ic) hc.innerHTML = `<span class="mic ${key}" aria-hidden="true">${ic.innerHTML}</span><span class="hname">${TAB_NAME[t] || ""}</span>`;
@@ -47,7 +47,7 @@ function markTabs(t) {
     .forEach(b => (KBV.includes(t) ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
 }
 /* 上の帯：今いる画面の名前（エンタメ管理と同じく、アイコンと名前を出す） */
-const TAB_NAME = { dash: "ホーム", list: "家計簿", home: "支払い", graph: "家計簿のグラフ", balance: "返済", rules: "設定" };
+const TAB_NAME = { dash: "ホーム", list: "家計簿", home: "支払い", graph: "家計簿のグラフ", balance: "支払い", rules: "設定" };
 /* 家計簿の一番上の支出カード：総額の行だけ出して、内訳・件数などはたたむ（最初はたたむ。この端末に保存） */
 const KSUMF = "okane.sumfold";
 const sumFolded = () => lsRaw(KSUMF) !== "0";

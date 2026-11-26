@@ -788,7 +788,6 @@
       `<button type="button" class="dn-t dn-${k}" data-tab="${tab}"><span class="dn-h"><i class="dn-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic[k]}</svg></i><b>${name}</b><span class="dn-go" aria-hidden="true">›</span></span><span class="dn-lb">${lb}</span><b class="dn-v num">${v}</b><span class="dn-s">${sub}</span>${extra}</button>`;
     return (
       tile("home", "home", "支払い", "今月の未払", yen(st.unpaid), st.unpaid ? `${st.n - st.np}件${nx ? `・次は ${md(nx.date)} ${esc(nx.name)}` : ""}` : "✓ 今月の支払いはすべて済み") +
-      tile("balance", "balance", "返済", g.cur ? `いまの目標：${esc(g.cur.a.name)}を完済` : "のこり", g.cur ? `あと${yen(g.cur.a.balance)}` : yen(g.left), g.cur ? `${Math.round(g.cur.rate * 100)}% 返済・あと${g.cur.info.months}ヶ月` : g.days != null ? `完済まで あと${g.days.toLocaleString("ja-JP")}日` : "口座を登録して始めましょう", `<span class="dn-bar"><i style="width:${g.cur ? Math.min(100, g.cur.rate * 100) : Math.min(100, g.rate * 100)}%"></i></span>`) +
       tile("kb", "list", "家計簿", "今月の支出", yen(sp.sum), `${sp.n}件・1日平均 ${yen(sp.avg)}`)
     );
   }

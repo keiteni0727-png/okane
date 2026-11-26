@@ -2885,3 +2885,21 @@ body[data-tab="list"] .kb #lhead{margin-bottom:0!important;padding-bottom:12px}
   .pay #v-home .v2 .fcnt{grid-column:1/-1;grid-row:2;margin:0;justify-content:flex-end}
   .pay #v-home .v2 .fchip3{padding:3px 4px;font-size:var(--fs-xs)}
 }
+
+/* ======================================================================
+   支払いの中に「支払い／返済」の切り替え（家計簿の明細／グラフと同じ考え方）
+   ====================================================================== */
+.pay .psegw{display:none;padding-top:12px}
+body[data-tab="home"] .pay .psegw,body[data-tab="balance"] .pay .psegw{display:block}
+.pay .pseg{display:inline-flex;gap:0;background:#e3e7ee;border-radius:6px;padding:3px}
+.pay .pseg button{min-width:110px;height:34px;border:0;border-radius:4px;background:none;color:#5b6474;font:inherit;font-size:var(--fs-base);font-weight:700;cursor:pointer;letter-spacing:.06em}
+.pay .pseg button[aria-current="page"]{background:#1e3a64;color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pay .pseg{background:#20242b}:root:not([data-theme="light"]) .pay .pseg button{color:#9aa1ab}:root:not([data-theme="light"]) .pay .pseg button[aria-current="page"]{background:#9db8e0;color:#0d1626}}
+:root[data-theme="dark"] .pay .pseg{background:#20242b}:root[data-theme="dark"] .pay .pseg button{color:#9aa1ab}:root[data-theme="dark"] .pay .pseg button[aria-current="page"]{background:#9db8e0;color:#0d1626}
+@media (max-width:639px){.pay .pseg{display:flex}.pay .pseg button{flex:1;min-width:0}}
+body[data-tab="home"] .pay section.v2,body[data-tab="balance"] .pay section.v2{padding-top:12px}
+/* 返済でも上の帯のアイコン・名前は「支払い」 */
+body[data-tab="balance"] .kb .hcur .mic{color:#1e3a64}
+/* ホームの入口は「支払い」と「家計簿」の2つ（返済は支払いの中へ） */
+.pay .dnav{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:639px){.pay .dnav{grid-template-columns:minmax(0,1fr)}}
