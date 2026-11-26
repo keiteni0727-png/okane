@@ -2820,3 +2820,15 @@ body[data-tab="list"] .kb #list .day:first-child{border-radius:10px 10px 0 0}
 @media (max-width:899px) and (max-height:640px){.kbsheet .es-body{gap:5px}.kbsheet .es-r{gap:5px}}
 .kbsheet .es-k{display:grid;place-items:center;line-height:1;padding:0}
 @media (max-width:380px){.kbsheet .es-cats{grid-template-columns:repeat(5,minmax(0,1fr))}}
+/* カレンダーのボタン：アイコンが上にずれて枠からはみ出す → 真ん中に */
+.kb .streak .st-calbtn{display:flex!important;align-items:center;justify-content:center;width:42px;height:42px;padding:0!important;line-height:0;align-self:flex-start;flex:none}
+.kb .streak .st-calbtn svg{display:block;width:20px;height:20px;margin:0}
+/* 日付の行：端まで塗らず、少し内側の角丸の帯に。今日の行と他の行で文字の位置をそろえる */
+body[data-tab="list"] .kb #list .day{margin:6px -6px 2px!important;padding:0 10px 0 6px!important;border-radius:10px!important;min-height:34px}
+body[data-tab="list"] .kb #list .day:first-child{margin-top:0!important}
+body[data-tab="list"] .kb #list .day .dtog{gap:6px;padding:6px 2px}
+body[data-tab="list"] .kb #list .day .dtog .fic,body[data-tab="list"] .kb #list .day .fic-sp{width:14px;flex:none;display:inline-block}
+body[data-tab="list"] .kb #list .day.empty{background:var(--u-accent2)}
+body[data-tab="list"] .kb #list .day.empty:not(.today){background:none}
+body[data-tab="list"] .kb .card:has(#list){padding-bottom:10px}
+body[data-tab="list"] .kb #list{padding-bottom:0}
