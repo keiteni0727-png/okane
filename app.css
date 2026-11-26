@@ -2461,7 +2461,7 @@ body[data-tab="home"] .pay .v2 .fchip3{border-radius:var(--r-m)}
 .pay .pk-ot b{color:var(--u-ink)}
 
 /* ======================================================================
-   家計簿（data-tab="list"・"graph"）：ポップで、毎日つけたくなる見た目。コーラル・まるい文字・大きめの角丸
+   家計簿（data-tab="list"・"graph"）：ポップで、毎日つけやすい見た目。コーラル・まるい文字・大きめの角丸
    ====================================================================== */
 body[data-tab="list"],body[data-tab="graph"]{--u-accent:#ff6b4a;--u-accent2:#ffede6;--u-acct:#d4431f;--u-on:#ffffff;--u-bg:#fff6f0;--u-surface:#ffffff;--u-line:#f2e2d8;--u-soft:#f8ece5;--u-chip:#fcefe7;--u-strong:#e7cfc2;--r-m:12px;--r-l:20px;--r-s:8px;--u-f:"M PLUS Rounded 1c","IBM Plex Sans JP","Hiragino Maru Gothic ProN",system-ui,sans-serif;--u-num:"M PLUS Rounded 1c","IBM Plex Sans JP",system-ui,sans-serif;--g-a:#ff6b4a;--g-b:#ffb547}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-tab="list"],:root:not([data-theme="light"]) body[data-tab="graph"]{--u-accent:#ff8a6e;--u-accent2:#3a221b;--u-acct:#ffa58e;--u-on:#2a0f08;--u-bg:#15100e;--u-surface:#201916;--u-line:#3a2c25;--u-soft:#2b211c;--u-chip:#2e231e;--u-strong:#4a3a31;--g-a:#ff8a6e;--g-b:#ffc46b}}
@@ -2486,14 +2486,9 @@ body[data-tab="list"] .kb #list .day.empty{background:none;min-height:24px;margi
 body[data-tab="list"] .kb #list .day .tdy{background:var(--u-accent)}
 body[data-tab="list"] .kb .sum .total{font-weight:800}
 body[data-tab="list"] .kb .fab,body[data-tab="graph"] .kb .fab{background:linear-gradient(135deg,#ff6b4a,#ff9a3c);box-shadow:0 10px 24px rgba(255,107,74,.38)}
-/* 連続記録・今日の記録・記録カレンダー */
+/* 今日の記録・記録カレンダー */
 .kb .streak{padding:14px 16px 12px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--g-b) 16%,var(--u-surface)),var(--u-surface) 60%)}
 .kb .st-top{display:flex;align-items:center;gap:14px}
-.kb .st-fire{display:flex;flex-direction:column;align-items:center;justify-content:center;width:74px;height:74px;border-radius:22px;background:linear-gradient(160deg,#ff9a3c,#ff5a3c);color:#fff;flex:none;box-shadow:0 6px 16px rgba(255,90,60,.3);line-height:1}
-.kb .st-fire.off{background:var(--u-chip);color:var(--u-sub);box-shadow:none}
-.kb .st-fire .st-em{font-size:16px}
-.kb .st-fire b{font-size:28px;font-weight:800}
-.kb .st-fire span:last-child{font-size:10px;font-weight:700}
 .kb .st-today{display:flex;flex-direction:column;gap:2px;min-width:0}
 .kb .st-msg{font-size:var(--fs-l);font-weight:800}
 .kb .st-msg b{color:var(--u-acct)}

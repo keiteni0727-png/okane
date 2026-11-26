@@ -783,7 +783,7 @@
     return (
       tile("home", "home", "支払い", "今月の未払", yen(st.unpaid), st.unpaid ? `${st.n - st.np}件${nx ? `・次は ${md(nx.date)} ${esc(nx.name)}` : ""}` : "✓ 今月の支払いはすべて済み") +
       tile("balance", "balance", "返済", "のこり", yen(g.left), g.days != null ? `完済まで あと${g.days.toLocaleString("ja-JP")}日` : "口座を登録して始めましょう", `<span class="dn-bar"><i style="width:${Math.min(100, g.rate * 100)}%"></i></span>`) +
-      tile("kb", "list", "家計簿", "今月の支出", yen(sp.sum), sp.todayDone ? `🔥 ${sp.run}日連続で記録中` : sp.run ? `🔥 今日記録すると${sp.run + 1}日連続` : "今日の支出を記録しよう")
+      tile("kb", "list", "家計簿", "今月の支出", yen(sp.sum), `${sp.n}件・1日平均 ${yen(sp.avg)}`)
     );
   }
   /* 近いうちの支払い：「期日を過ぎた」「今日」「この7日」に分けて出す。なければ次の支払を1件 */
