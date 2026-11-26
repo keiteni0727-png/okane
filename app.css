@@ -2521,3 +2521,21 @@ body[data-tab="list"] .kb .fab,body[data-tab="graph"] .kb .fab{background:linear
 .pay .dn-list .dn-h b{font-family:"M PLUS Rounded 1c",var(--u-f)}
 /* ホームには追加ボタンを出さない（追加は各ページで） */
 body[data-tab="dash"] .kb .fab{display:none!important}
+/* 段階の目標（口座ごとに順番に完済） */
+.pay .g-ttl{font-size:30px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+.pay .g-when b{font-size:var(--fs-base)}
+.pay .g-steps{position:relative;z-index:1;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.pay .g-steps li{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:center;padding:5px 0;font-size:var(--fs-s);position:relative;opacity:.8}
+.pay .g-steps li:not(:last-child)::after{content:"";position:absolute;left:12px;top:26px;bottom:-6px;width:2px;background:color-mix(in srgb,currentColor 28%,transparent)}
+.pay .gs-m{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;border:2px solid color-mix(in srgb,currentColor 45%,transparent);background:transparent;position:relative;z-index:1}
+.pay .g-steps li.done{opacity:1}
+.pay .g-steps li.done .gs-m{background:currentColor;border-color:currentColor;color:var(--g-a)}
+.pay .g-steps li.done .gs-n{text-decoration:line-through;text-decoration-thickness:1px}
+.pay .g-steps li.now{opacity:1;font-weight:700;font-size:var(--fs-base)}
+.pay .g-steps li.now .gs-m{background:currentColor;color:var(--g-a);border-color:currentColor;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 25%,transparent)}
+.pay .g-steps li.goalrow .gs-m{border:0;font-size:15px}
+.pay .gs-w{font-size:var(--fs-xs);white-space:nowrap}
+.pay .vdash .g-steps{display:none}
+@media (max-width:639px){.pay .g-ttl{font-size:24px}}
+.pay .g-steps li.now .gs-m,.pay .g-steps li.done .gs-m{background:var(--u-on);color:var(--g-a);border-color:var(--u-on)}
+.pay .g-steps li.now .gs-m{box-shadow:0 0 0 4px color-mix(in srgb,var(--u-on) 30%,transparent)}
