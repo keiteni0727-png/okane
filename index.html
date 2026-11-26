@@ -90,36 +90,42 @@
   </section>
 
   <!-- 借入・返済（残高と口座＋返済計画） -->
-  <section id="v-balance">
-    <div class="stats" id="bStats"></div>
-    <div class="panel outlook">
-      <div class="panel-h"><h2>完済の見通し</h2><span class="note">いまの返済条件のまま</span></div>
-      <div id="olTop"></div>
-      <div class="ol-int" id="olInt"></div>
-    </div>
-    <div class="panel" data-foldbox="road">
-      <div class="panel-h fold-h" data-fold="road" role="button" tabindex="0"><h2>毎月の返済が軽くなっていく日</h2><span class="note">いまの返済条件のまま（家賃などは除く）</span></div>
-      <div class="chartbox" id="pChart"></div>
-      <div class="timeline" id="pRoad"></div>
-    </div>
-    <div class="grp-h"><h2>口座</h2></div>
-    <div class="note acc-hint">口座を押すと、履歴・今後の予定・その口座の返済計画が見られます。</div>
-    <div id="bGroups" class="stack14"></div>
-    <div class="grp-h plan-h"><h2>繰上げ返済の相談</h2></div>
-    <div class="panel">
-      <div class="panel-h"><h2>1回だけ繰上げするなら</h2><span class="note">今期に1回だけ繰上げした場合</span></div>
-      <div class="boost-h">
-        <div class="field"><label for="pAmt">繰上げに回す額</label>
-          <div class="amtbox"><span>¥</span><input type="number" id="pAmt" inputmode="numeric" step="1000" value="10000"></div>
+  <section id="v-balance" class="v2 vbal">
+    <div class="pk" id="bStats"></div>
+    <div class="pgrid">
+      <div class="pmain">
+        <div class="panel bacc">
+          <div class="panel-h"><h2>口座</h2><span class="note">押すと履歴・今後の予定・返済計画が見られます</span></div>
+          <div id="bGroups"></div>
         </div>
-        <div class="quick" id="pQuick"><button data-qa="5000">5千</button><button data-qa="10000">1万</button><button data-qa="30000">3万</button><button data-qa="50000">5万</button></div>
+        <div class="panel bboost">
+          <div class="panel-h"><h2>繰上げ返済の相談：1回だけ繰上げするなら</h2><span class="note">今期に1回だけ繰上げした場合</span></div>
+          <div class="boost-h">
+            <div class="field"><label for="pAmt">繰上げに回す額</label>
+              <div class="amtbox"><span>¥</span><input type="number" id="pAmt" inputmode="numeric" step="1000" value="10000"></div>
+            </div>
+            <div class="quick" id="pQuick"><button data-qa="5000">5千</button><button data-qa="10000">1万</button><button data-qa="30000">3万</button><button data-qa="50000">5万</button></div>
+          </div>
+          <div id="pRank"></div>
+          <div class="whatif">
+            <div class="bar-row"><label for="sExtra" class="label">毎月あと少し返せたら</label><b class="num" id="sExtraV"></b></div>
+            <input type="range" id="sExtra" min="0" max="50000" step="1000" value="0">
+            <div class="note" id="sResult"></div>
+          </div>
+        </div>
+        <div class="panel broad" data-foldbox="road">
+          <div class="panel-h fold-h" data-fold="road" role="button" tabindex="0"><h2>毎月の返済が軽くなっていく日</h2><span class="note">いまの返済条件のまま（家賃などは除く）</span></div>
+          <div class="chartbox" id="pChart"></div>
+          <div class="timeline" id="pRoad"></div>
+        </div>
       </div>
-      <div id="pRank"></div>
-      <div class="whatif">
-        <div class="bar-row"><label for="sExtra" class="label">毎月あと少し返せたら</label><b class="num" id="sExtraV"></b></div>
-        <input type="range" id="sExtra" min="0" max="50000" step="1000" value="0">
-        <div class="note" id="sResult"></div>
-      </div>
+      <aside class="pside">
+        <div class="panel outlook">
+          <div class="panel-h"><h2>完済の見通し</h2><span class="note">いまの返済条件のまま</span></div>
+          <div id="olTop"></div>
+          <div class="ol-int" id="olInt"></div>
+        </div>
+      </aside>
     </div>
   </section>
 

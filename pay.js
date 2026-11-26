@@ -919,10 +919,15 @@
     const debt = acc.filter(a => a.balance && a.active !== false);
     const sum = c =>
       debt.filter(a => (c ? a.category === c : a.category !== "personal")).reduce((s, a) => s + (a.balance || 0), 0);
-    $("bStats").innerHTML =
-      `<div class="stat bs-total"><span class="label">総残高</span><span class="v danger">${yen(sum())}</span><span class="s">${debt.filter(a => a.category !== "personal").length}口座・個人借入は除く</span></div>
-  <div class="stat"><span class="label">クレジットカード</span><span class="v">${yen(sum("card"))}</span></div>
-  <div class="stat"><span class="label">消費者金融</span><span class="v">${yen(sum("loan"))}</span></div>`;
+    const ol = outlookData();
+    const c = (cls, lb, v, sub) => `<div class="pk-c ${cls}"><span class="lb">${lb}</span><b class="num">${v}</b><span class="s">${sub}</span></div>`;
+    $("bStats").innerHTML = `<div class="pk-h"><b class="pk-per">借入の残高</b><span class="pk-rng">個人からの借入は除く</span></div>
+    <div class="pk-grid">
+      ${c("main neg", "総残高", yen(sum()), `${debt.filter(a => a.category !== "personal").length}口座`)}
+      ${c("", "クレジットカード", yen(sum("card")), `${debt.filter(a => a.category === "card").length}口座`)}
+      ${c("", "消費者金融", yen(sum("loan")), `${debt.filter(a => a.category === "loan").length}口座`)}
+      ${c("", "毎月の返済", yen(ol.curPay), ol.last ? `すべて完済 ${ymLabel(ol.last.end)}` : "返済中の口座なし")}
+    </div>`;
     $("bGroups").innerHTML = ["card", "loan", "personal", "other"]
       .map(c => {
         const g = acc

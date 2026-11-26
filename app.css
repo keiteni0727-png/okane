@@ -2075,3 +2075,48 @@ body{background:var(--u-bg)}
 .kb .irow .rt .dl{font-size:var(--fs-xs)!important}
 .kb .irow .track{height:4px}
 .kb .tiles small{white-space:nowrap}
+
+/* ======================================================================
+   借入・返済（.vbal）：上に残高の帯、左に口座（表のような一覧）・繰上げ・返済が軽くなる日、右に完済の見通し
+   ====================================================================== */
+.pay .vbal .outlook{order:1} .pay .vbal .bacc{order:2} .pay .vbal .bboost{order:3} .pay .vbal .broad{order:4}
+.pay .vbal .pk-c.main.neg{background:var(--u-danger2)}
+@media (min-width:900px){.pay .vbal .pgrid{grid-template-columns:minmax(0,1fr) 340px}}
+/* 口座：まとまり＝見出し行、口座＝1行 */
+.pay .vbal #bGroups{display:flex;flex-direction:column}
+.pay .vbal .grp{gap:0}
+.pay .vbal .grp-h{margin:0;padding:6px 14px!important;background:color-mix(in srgb,var(--u-bg) 70%,var(--u-surface));border-top:1px solid var(--u-line);border-bottom:1px solid var(--u-soft)}
+.pay .vbal .grp:first-child .grp-h{border-top:0}
+.pay .vbal .grp-h h2{font-size:var(--fs-s);font-weight:700;letter-spacing:.04em}
+.pay .vbal .grp-h .note{font-size:var(--fs-s);color:var(--u-ink);font-weight:600}
+.pay .vbal .grp.folded .grp-h{border-bottom:0}
+.pay .vbal .acc-grid{display:flex;flex-direction:column;gap:0;border:0;border-radius:0}
+.pay .vbal .acc{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n b" "m m";border:0;border-top:1px solid var(--u-soft);border-radius:0;padding:7px 14px;gap:0 10px;background:none}
+.pay .vbal .acc:first-child{border-top:0}
+.pay .vbal .acc .ac-n{grid-area:n}
+.pay .vbal .acc .ac-b{grid-area:b;font-size:var(--fs-base)}
+.pay .vbal .acc .ac-m{grid-area:m}
+@media (hover:hover){.pay .vbal .acc:hover{background:var(--u-accent2);border-color:var(--u-soft)}}
+@media (min-width:640px){
+  .pay .vbal .acc{grid-template-columns:minmax(8em,1fr) minmax(0,2fr) auto;grid-template-areas:"n m b";align-items:center;min-height:38px}
+  .pay .vbal .acc .ac-m{font-size:var(--fs-s)}
+}
+/* 繰上げ */
+.pay .vbal .boost-h{padding:12px 14px 8px;gap:12px}
+.pay .vbal .amtbox input{font-size:var(--fs-l);padding:6px 8px}
+.pay .vbal .quick button{height:32px;min-height:32px}
+.pay .vbal .rank{padding:8px 14px;gap:10px}
+.pay .vbal .rank.top{background:var(--u-ok2)}
+.pay .vbal .rank .rb>b,.pay .vbal .rank .rb h3{font-size:var(--fs-base)}
+.pay .vbal .eff{font-size:var(--fs-s)}
+.pay .vbal .rank button{font-size:var(--fs-s);padding:4px 10px;min-height:30px}
+.pay .vbal .whatif{padding:10px 14px;background:color-mix(in srgb,var(--u-bg) 70%,var(--u-surface))}
+/* 完済の見通し */
+.pay .vbal .ol-head{grid-template-columns:minmax(0,1fr);padding:12px 14px 8px;gap:10px}
+.pay .vbal .ol-final b{font-size:var(--fs-2xl)}
+.pay .vbal .ol-kpi{border-top:1px solid var(--u-soft);padding-top:8px}
+.pay .vbal .ol-kpi b{font-size:var(--fs-base)}
+.pay .vbal .ol-next{padding:8px 14px 10px}
+.pay .vbal .ol-next .ms{font-size:var(--fs-s);flex-wrap:wrap}
+.pay .vbal .ol-int{padding:8px 14px 10px;font-size:var(--fs-s);flex-wrap:wrap}
+.pay .vbal .tl{padding:6px 14px}
