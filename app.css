@@ -2399,3 +2399,128 @@ body.sel{--u-toast-b:190px}
 /* 支払いのデータの画面の上の余白（分類の切り替えがなくなった分） */
 .pay section.v2{padding-top:14px}
 @media (max-width:899px){body .kb .abin>button#gear.hact{margin-left:auto!important}}
+.pay .td-g{display:flex;justify-content:space-between;gap:10px;padding:6px 14px;font-size:var(--fs-xs);font-weight:700;color:var(--u-sub);background:color-mix(in srgb,var(--u-bg) 70%,var(--u-surface));border-top:1px solid var(--u-soft)}
+.pay .td-g:first-child{border-top:0}
+.pay .td-g.over{color:var(--u-danger);background:var(--u-danger2)}
+.pay .td-g.now{color:var(--u-warn);background:var(--u-warn2)}
+.pay .td-g b{font-weight:600}
+.pay .td-g+.td-row{border-top:0}
+.pay .td-row{grid-template-columns:6.8em minmax(0,1fr) auto auto}
+
+/* ======================================================================
+   支払い（data-tab="home"）：かための「管理表」。紺・角は小さく・線で区切る。週ごとに管理
+   ====================================================================== */
+body[data-tab="home"]{--u-accent:#1e3a64;--u-accent2:#e6ebf3;--u-acct:#1e3a64;--u-on:#ffffff;--u-bg:#eef0f3;--u-line:#d9dde4;--u-soft:#e9ecf0;--r-m:4px;--r-l:6px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-tab="home"]{--u-accent:#9db8e0;--u-accent2:#1c2634;--u-acct:#b6cbea;--u-on:#0d1626;--u-bg:#0e1014;--u-line:#2a2f38;--u-soft:#20242b}}
+:root[data-theme="dark"] body[data-tab="home"]{--u-accent:#9db8e0;--u-accent2:#1c2634;--u-acct:#b6cbea;--u-on:#0d1626;--u-bg:#0e1014;--u-line:#2a2f38;--u-soft:#20242b}
+body[data-tab="home"] .kb .fab{background:var(--u-accent);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+body[data-tab="home"] .pay .panel-h h2,body[data-tab="home"] .pay .pk-per{letter-spacing:.08em}
+body[data-tab="home"] .pay .pk{border-top:3px solid var(--u-accent)}
+body[data-tab="home"] .pay .pk-c .lb,body[data-tab="home"] .pay .v2 .ptable th{text-transform:uppercase;letter-spacing:.1em}
+body[data-tab="home"] .pay .pk-c.main{border-radius:var(--r-m)}
+body[data-tab="home"] .pay .v2 .fchip3{border-radius:var(--r-m)}
+.pay #v-home #cAlert{order:1} .pay #v-home .pweeks{order:2} .pay #v-home #hNext{order:3} .pay #v-home .plist{order:4} .pay #v-home .pflow{order:5}
+/* まとめ方の切り替え（週ごと／日付ごと） */
+.pay .grpseg{display:inline-flex;border:1px solid var(--u-line);border-radius:var(--r-m);overflow:hidden;margin-right:6px}
+.pay .grpseg button{border:0;border-radius:0;background:var(--u-surface);color:var(--u-sub);font:inherit;font-size:var(--fs-s);font-weight:600;padding:4px 12px;height:28px;cursor:pointer}
+.pay .grpseg button+button{border-left:1px solid var(--u-line)}
+.pay .grpseg button[aria-pressed="true"]{background:var(--u-accent);color:var(--u-on)}
+/* 週の見出し（カード・表） */
+.pay .wkhead{display:grid;grid-template-columns:auto auto minmax(30px,1fr) auto auto;gap:10px;align-items:center;padding:7px 14px;background:color-mix(in srgb,var(--u-bg) 75%,var(--u-surface));border-top:1px solid var(--u-line);border-bottom:1px solid var(--u-soft);font-size:var(--fs-s)}
+.pay .wkhead:first-child{border-top:0}
+.pay .wkhead.now{box-shadow:inset 3px 0 0 var(--u-accent);background:var(--u-accent2)}
+.pay .wk-t{font-weight:700;color:var(--u-acct);font-size:var(--fs-s)}
+.pay .wk-r{color:var(--u-sub);font-size:var(--fs-xs)}
+.pay .wk-p{display:inline-block;height:5px;border-radius:2px;background:var(--u-soft);overflow:hidden;min-width:40px;width:80px;vertical-align:middle}
+.pay .wkhead .wk-p{width:auto}
+.pay .wk-p i{display:block;height:100%;background:var(--u-ok)}
+.pay .wk-n{font-size:var(--fs-xs);color:var(--u-sub);white-space:nowrap}
+.pay .wk-s{font-weight:600}
+.pay .wkhead+.row{border-top:0}
+.pay .rdate{font-size:var(--fs-xs);font-weight:600;color:var(--u-sub);margin-right:2px}
+.pay .v2 .ptable tr.grp.wk td{font-size:var(--fs-s)}
+.pay .v2 .ptable tr.grp.wk.now td{background:var(--u-accent2);box-shadow:inset 0 0 0 0 transparent}
+.pay .v2 .ptable tr.grp.wk.now td:first-child{box-shadow:inset 3px 0 0 var(--u-accent)}
+.pay .v2 .ptable tr.grp.wk .wk-t{margin-right:6px}
+.pay .v2 .ptable .tdate{display:inline-flex;align-items:baseline;gap:2px;min-width:4.2em;font-size:var(--fs-s);color:var(--u-sub);margin-right:8px}
+.pay .v2 .ptable .tdate small{font-size:10px}
+@media (max-width:639px){.pay .wkhead{grid-template-columns:auto minmax(0,1fr) auto;row-gap:4px}.pay .wkhead .wk-p{grid-column:1/-1;grid-row:2;width:100%}.pay .wkhead .wk-n{display:none}}
+/* 右の欄：週ごとの予定 */
+.pay .wkrow{display:grid;grid-template-columns:5.6em minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 14px;border-top:1px solid var(--u-soft)}
+.pay .wkrow.now{background:var(--u-accent2)}
+.pay .wr-t{display:flex;flex-direction:column;line-height:1.25}
+.pay .wr-t b{font-size:var(--fs-s)}
+.pay .wr-t small{font-size:10.5px;color:var(--u-sub)}
+.pay .wr-bar{height:6px;border-radius:2px;background:var(--u-soft);overflow:hidden}
+.pay .wr-bar i{display:block;height:100%;background:var(--u-ok)}
+.pay .wr-v{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25}
+.pay .wr-v b{font-size:var(--fs-base);font-weight:600}
+.pay .wr-v small{font-size:10.5px;color:var(--u-sub);white-space:nowrap}
+.pay .pk-ot{font-size:var(--fs-xs);color:var(--u-sub);white-space:nowrap;padding-left:10px;border-left:1px solid var(--u-line)}
+.pay .pk-ot.all b{color:var(--u-ok)}
+.pay .pk-ot b{color:var(--u-ink)}
+
+/* ======================================================================
+   家計簿（data-tab="list"・"graph"）：ポップで、毎日つけたくなる見た目。コーラル・まるい文字・大きめの角丸
+   ====================================================================== */
+body[data-tab="list"],body[data-tab="graph"]{--u-accent:#ff6b4a;--u-accent2:#ffede6;--u-acct:#d4431f;--u-on:#ffffff;--u-bg:#fff6f0;--u-surface:#ffffff;--u-line:#f2e2d8;--u-soft:#f8ece5;--u-chip:#fcefe7;--u-strong:#e7cfc2;--r-m:12px;--r-l:20px;--r-s:8px;--u-f:"M PLUS Rounded 1c","IBM Plex Sans JP","Hiragino Maru Gothic ProN",system-ui,sans-serif;--u-num:"M PLUS Rounded 1c","IBM Plex Sans JP",system-ui,sans-serif;--g-a:#ff6b4a;--g-b:#ffb547}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-tab="list"],:root:not([data-theme="light"]) body[data-tab="graph"]{--u-accent:#ff8a6e;--u-accent2:#3a221b;--u-acct:#ffa58e;--u-on:#2a0f08;--u-bg:#15100e;--u-surface:#201916;--u-line:#3a2c25;--u-soft:#2b211c;--u-chip:#2e231e;--u-strong:#4a3a31;--g-a:#ff8a6e;--g-b:#ffc46b}}
+:root[data-theme="dark"] body[data-tab="list"],:root[data-theme="dark"] body[data-tab="graph"]{--u-accent:#ff8a6e;--u-accent2:#3a221b;--u-acct:#ffa58e;--u-on:#2a0f08;--u-bg:#15100e;--u-surface:#201916;--u-line:#3a2c25;--u-soft:#2b211c;--u-chip:#2e231e;--u-strong:#4a3a31;--g-a:#ff8a6e;--g-b:#ffc46b}
+body[data-tab="list"] .kb,body[data-tab="graph"] .kb{font-family:var(--u-f)}
+body[data-tab="list"] .kb .card,body[data-tab="graph"] .kb .card{border-radius:var(--r-l);border-color:var(--u-line);box-shadow:0 2px 0 var(--u-line)}
+body[data-tab="list"] .kb .kbseg button[aria-current="page"],body[data-tab="graph"] .kb .kbseg button[aria-current="page"]{color:var(--u-acct);border-bottom-color:var(--u-accent)}
+body[data-tab="list"] .kb .kbseg,body[data-tab="graph"] .kb .kbseg{border:0;gap:6px;background:var(--u-chip);border-radius:var(--r-full);padding:4px;display:inline-flex}
+body[data-tab="list"] .kb .kbseg button,body[data-tab="graph"] .kb .kbseg button{border:0;border-radius:var(--r-full);padding:7px 18px;margin:0;font-weight:700}
+body[data-tab="list"] .kb .kbseg button[aria-current="page"],body[data-tab="graph"] .kb .kbseg button[aria-current="page"]{background:var(--u-surface);box-shadow:0 2px 6px rgba(212,67,31,.15)}
+@media (max-width:639px){body[data-tab="list"] .kb .kbseg,body[data-tab="graph"] .kb .kbseg{display:flex}}
+/* 明細の行：絵文字を大きく、札はまるく */
+body[data-tab="list"] .kb #list .ico{width:34px;height:34px;min-width:34px;border-radius:12px;font-size:18px}
+body[data-tab="list"] .kb #list .itm2 .l1 .chip{border-radius:var(--r-full);font-weight:700}
+body[data-tab="list"] .kb #list .amt{font-weight:800;font-size:var(--fs-l)}
+body[data-tab="list"] .kb #list .it{min-height:48px;padding-block:6px}
+body[data-tab="list"] .kb #list .day{border-radius:12px;margin:6px -8px 2px;border:0;background:var(--u-chip);min-height:34px}
+body[data-tab="list"] .kb #list .day:first-child{margin-top:4px}
+body[data-tab="list"] .kb #list .day.today{background:var(--u-accent2)}
+body[data-tab="list"] .kb #list .day.today .dadd{background:var(--u-accent);color:var(--u-on);border-radius:50%;width:28px;height:28px}
+body[data-tab="list"] .kb #list .day.empty{background:none;min-height:24px;margin-block:0}
+body[data-tab="list"] .kb #list .day .tdy{background:var(--u-accent)}
+body[data-tab="list"] .kb .sum .total{font-weight:800}
+body[data-tab="list"] .kb .fab,body[data-tab="graph"] .kb .fab{background:linear-gradient(135deg,#ff6b4a,#ff9a3c);box-shadow:0 10px 24px rgba(255,107,74,.38)}
+/* 連続記録・今日の記録・記録カレンダー */
+.kb .streak{padding:14px 16px 12px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--g-b) 16%,var(--u-surface)),var(--u-surface) 60%)}
+.kb .st-top{display:flex;align-items:center;gap:14px}
+.kb .st-fire{display:flex;flex-direction:column;align-items:center;justify-content:center;width:74px;height:74px;border-radius:22px;background:linear-gradient(160deg,#ff9a3c,#ff5a3c);color:#fff;flex:none;box-shadow:0 6px 16px rgba(255,90,60,.3);line-height:1}
+.kb .st-fire.off{background:var(--u-chip);color:var(--u-sub);box-shadow:none}
+.kb .st-fire .st-em{font-size:16px}
+.kb .st-fire b{font-size:28px;font-weight:800}
+.kb .st-fire span:last-child{font-size:10px;font-weight:700}
+.kb .st-today{display:flex;flex-direction:column;gap:2px;min-width:0}
+.kb .st-msg{font-size:var(--fs-l);font-weight:800}
+.kb .st-msg b{color:var(--u-acct)}
+.kb .st-sub{font-size:var(--fs-s);color:var(--u-sub)}
+.kb .st-sub b{color:var(--u-ink)}
+.kb .st-add{display:flex;align-items:center;justify-content:center;gap:6px;height:46px;border:0;border-radius:var(--r-full);background:linear-gradient(135deg,#ff6b4a,#ff9a3c);color:#fff;font:inherit;font-size:var(--fs-base);font-weight:800;cursor:pointer;box-shadow:0 6px 14px rgba(255,107,74,.3)}
+.kb .st-add span{font-size:20px;line-height:1}
+.kb .st-add:active{transform:scale(.98)}
+.kb .st-cal{display:flex;flex-direction:column;gap:6px}
+.kb .st-wd,.kb .st-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.kb .st-wd span{text-align:center;font-size:10px;font-weight:700;color:var(--u-sub)}
+.kb .st-d{aspect-ratio:1;border:0;border-radius:9px;font:inherit;font-size:11px;font-weight:700;color:var(--u-sub);background:var(--u-soft);cursor:pointer;padding:0;display:grid;place-items:center}
+.kb .st-d.l1{background:#ffd9c9;color:#9a3a1d}.kb .st-d.l2{background:#ffb79a;color:#7a2a12}.kb .st-d.l3{background:#ff8d68;color:#fff}.kb .st-d.l4{background:#f2582f;color:#fff}
+.kb .st-d.td{outline:2px solid var(--u-accent);outline-offset:1px}
+.kb .st-d.fu{background:none;color:var(--u-strong);cursor:default}
+.kb .st-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:var(--fs-xs);color:var(--u-sub)}
+.kb .st-foot b{color:var(--u-ink)}
+.kb .st-lg{display:inline-flex;align-items:center;gap:2px}
+.kb .st-lg i{width:10px;height:10px;border-radius:3px;background:var(--u-soft)}
+.kb .st-lg i.l1{background:#ffd9c9}.kb .st-lg i.l2{background:#ffb79a}.kb .st-lg i.l3{background:#ff8d68}.kb .st-lg i.l4{background:#f2582f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .kb .st-d.l1{background:#5a2d20;color:#ffc9b6}:root:not([data-theme="light"]) .kb .st-d.l2{background:#7d3a24;color:#ffe0d4}}
+:root[data-theme="dark"] .kb .st-d.l1{background:#5a2d20;color:#ffc9b6}:root[data-theme="dark"] .kb .st-d.l2{background:#7d3a24;color:#ffe0d4}
+@media (max-width:899px){.kb .st-cal{display:none}.kb .streak.cal .st-cal{display:flex}}
+.kb .st-calbtn{display:none;margin-left:auto;align-self:flex-start;width:40px;height:40px;border:1px solid var(--u-line);border-radius:12px;background:var(--u-surface);font-size:18px;cursor:pointer;flex:none}
+@media (max-width:899px){.kb .st-calbtn{display:grid;place-items:center}.kb .streak.cal .st-calbtn{background:var(--u-accent2);border-color:var(--u-accent)}}
+/* ホームの入口は、それぞれのページの色（支払い＝紺、返済＝道のりの色、家計簿＝コーラル） */
+.pay .dn-home{--dn-c:#1e3a64} .pay .dn-list{--dn-c:#ff6b4a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pay .dn-home{--dn-c:#9db8e0}:root:not([data-theme="light"]) .pay .dn-list{--dn-c:#ff8a6e}}
+:root[data-theme="dark"] .pay .dn-home{--dn-c:#9db8e0} :root[data-theme="dark"] .pay .dn-list{--dn-c:#ff8a6e}
+.pay .dn-list .dn-h b{font-family:"M PLUS Rounded 1c",var(--u-f)}

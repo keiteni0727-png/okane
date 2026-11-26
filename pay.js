@@ -27,6 +27,13 @@
     _base: null, // 「もしも」の比べる元（データが変わったら捨てる）
     view: "none", // home / balance（家計簿の画面を開いているときは none）
     filter: "all", // 一覧の絞り込み all / unpaid / late
+    group: (() => {
+      try {
+        return localStorage.getItem("okane.paygroup") || "week";
+      } catch (_) {
+        return "week";
+      }
+    })(), // 一覧のまとめ方 week（週ごと）/ day（日付ごと）
     sim: { extra: 0, strat: "rate" }, // 「毎月あと少し返せたら」
     ad: null, // 開いている口座の画面 {id, tab, from, val, pp}
     fold: {}, // 折りたたみの開閉
@@ -776,31 +783,31 @@
     return (
       tile("home", "home", "支払い", "今月の未払", yen(st.unpaid), st.unpaid ? `${st.n - st.np}件${nx ? `・次は ${md(nx.date)} ${esc(nx.name)}` : ""}` : "✓ 今月の支払いはすべて済み") +
       tile("balance", "balance", "返済", "のこり", yen(g.left), g.days != null ? `完済まで あと${g.days.toLocaleString("ja-JP")}日` : "口座を登録して始めましょう", `<span class="dn-bar"><i style="width:${Math.min(100, g.rate * 100)}%"></i></span>`) +
-      tile("kb", "list", "家計簿", "今月の支出", yen(sp.sum), `${sp.n}件・1日平均 ${yen(sp.avg)}`)
+      tile("kb", "list", "家計簿", "今月の支出", yen(sp.sum), sp.todayDone ? `🔥 ${sp.run}日連続で記録中` : sp.run ? `🔥 今日記録すると${sp.run + 1}日連続` : "今日の支出を記録しよう")
     );
   }
-  /* 今日やること：期日を過ぎた・延滞分・この先7日の支払。なければ次の支払を1件 */
+  /* 近いうちの支払い：「期日を過ぎた」「今日」「この7日」に分けて出す。なければ次の支払を1件 */
   function todayHTML() {
     const t = today();
     const wk = ds(new Date(pd(t).getTime() + 7 * 864e5));
-    const [, pe] = periodRange(periodOf(t));
     const up = allItems()
       .filter(i => i.status === "planned" && i.date >= MGMT_START)
       .sort(byDateAmt);
-    const must = up.filter(i => i.date < t || (i.kind === "late" && i.date <= pe) || i.date <= wk);
+    const over = up.filter(i => i.date < t),
+      now = up.filter(i => i.date === t),
+      soon = up.filter(i => i.date > t && i.date <= wk);
     const row = i => {
-      const over = i.date < t;
       const days = Math.round((pd(i.date) - pd(t)) / 864e5);
-      const when = over ? "期日超過" : days === 0 ? "今日" : days === 1 ? "明日" : `あと${days}日`;
-      const cls = over || i.kind === "late" ? "warn" : days <= 2 ? "soon" : "";
-      return `<div class="td-row ${cls}"><span class="td-d"><b class="num">${md(i.date)}</b><em>${when}</em></span><button type="button" class="td-n linkbtn" data-edit="${i.id}">${esc(i.name)}${i.kind === "late" ? '<span class="td-late">延滞分</span>' : ""}<small>${esc(i.method || "")}</small></button><b class="td-a num">${yen(i.amount)}</b><button class="primary sm" data-pay="${i.id}">支払う</button></div>`;
+      const when = days < 0 ? `${-days}日過ぎ` : days === 0 ? "今日" : days === 1 ? "明日" : `あと${days}日`;
+      const cls = days < 0 || i.kind === "late" ? "warn" : days <= 1 ? "soon" : "";
+      return `<div class="td-row ${cls}"><span class="td-d"><b class="num">${md(i.date)}（${wd(i.date)}）</b><em>${when}</em></span><button type="button" class="td-n linkbtn" data-edit="${i.id}">${esc(i.name)}${i.kind === "late" ? '<span class="td-late">延滞分</span>' : ""}<small>${esc(i.method || "")}</small></button><b class="td-a num">${yen(i.amount)}</b><button class="primary sm" data-pay="${i.id}">支払う</button></div>`;
     };
-    if (must.length) {
-      const sum = must.reduce((x, i) => x + (i.amount || 0), 0);
-      return `<div class="td-sum">${must.length}件・合計 <b class="num">${yen(sum)}</b></div>${must.map(row).join("")}`;
-    }
+    const sum = a => a.reduce((x, i) => x + (i.amount || 0), 0);
+    const grp = (cls, lb, a) => (a.length ? `<div class="td-g ${cls}"><span>${lb}</span><b class="num">${a.length}件・${yen(sum(a))}</b></div>${a.map(row).join("")}` : "");
+    if (over.length || now.length || soon.length)
+      return grp("over", "期日を過ぎています", over) + grp("now", "今日が期日", now) + grp("soon", `この7日（〜${md(wk)}）`, soon);
     const nx = up.find(i => i.date >= t);
-    return `<div class="td-ok"><b>✓ 今日やることはありません</b>${nx ? `<span>次の支払いは ${md(nx.date)}（${wd(nx.date)}）${esc(nx.name)} <b class="num">${yen(nx.amount)}</b></span>` : "<span>予定している支払いはありません</span>"}</div>`;
+    return `<div class="td-ok"><b>✓ この7日に払うものはありません</b>${nx ? `<span>次の支払いは ${md(nx.date)}（${wd(nx.date)}）${esc(nx.name)} <b class="num">${yen(nx.amount)}</b></span>` : "<span>予定している支払いはありません</span>"}</div>`;
   }
   /* 今月のお金：手元に残るお金を大きく、支払いの進み具合を添える */
   function dashMoneyHTML(st) {
@@ -880,6 +887,8 @@
     const m = moneyOf(st);
     const cur = S.period === periodOf(today());
     const rate = st.t ? Math.round((st.paid / st.t) * 100) : 0;
+    const paidIts = st.its.filter(i => i.status === "paid");
+    const onTime = paidIts.filter(i => !i.paidDate || i.paidDate <= i.date).length;
     const c = (cls, lb, v, sub) => `<div class="pk-c ${cls}"><span class="lb">${lb}</span><b class="num">${v}</b><span class="s">${sub}</span></div>`;
     return `<div class="pk-h"><b class="pk-per">${periodLabel(S.period)}</b>${cur ? '<span class="pk-now">いまの期間</span>' : ""}<span class="pk-rng num">${md(st.s)}(${wd(st.s)})〜${md(st.e)}(${wd(st.e)})</span></div>
     <div class="pk-grid">
@@ -888,7 +897,7 @@
       ${c(st.unpaid ? "warn" : "ok", "未払", yen(st.unpaid), `${st.n - st.np}件`)}
       ${c(`main ${m.rest < 0 ? "neg" : ""}`, "手元に残るお金", yen(m.rest), `手取り ${yen(m.inc)} から`)}
     </div>
-    <div class="pk-prog"><span class="pk-bar" role="img" aria-label="支払済 ${rate}%"><i style="width:${rate}%"></i></span><span class="pk-pct">支払済 <b class="num">${rate}%</b>（${st.np}/${st.n}件）</span></div>
+    <div class="pk-prog"><span class="pk-bar" role="img" aria-label="支払済 ${rate}%"><i style="width:${rate}%"></i></span><span class="pk-pct">支払済 <b class="num">${rate}%</b>（${st.np}/${st.n}件）</span>${paidIts.length ? `<span class="pk-ot${onTime === paidIts.length ? " all" : ""}">期日どおり <b class="num">${onTime}/${paidIts.length}件</b></span>` : ""}</div>
     ${pkGoalHTML()}`;
   }
   /* 今月の支払いの帯の下：完済までの道のりへの近道（残り日数と返した割合） */
@@ -904,7 +913,8 @@
     const st = periodStats(S.period);
     let its = [...st.its].sort(byDateAmt).filter(FILTER_FN[S.filter] || Boolean);
     S.shownN = its.length;
-    $("cFbar").innerHTML = `<div class="fline fchips">${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
+    const wkm = S.group === "week";
+    $("cFbar").innerHTML = `<div class="fline fchips"><span class="grpseg" role="group" aria-label="まとめ方">${[["week", "週ごと"], ["day", "日付ごと"]].map(([v, l]) => `<button type="button" data-grp="${v}" aria-pressed="${(S.group || "week") === v}">${l}</button>`).join("")}</span>${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
     if (!its.length)
       $("cList").innerHTML =
         S.filter !== "all"
@@ -914,26 +924,73 @@
       let h = "",
         cur = null;
       its.forEach(i => {
-        if (i.date !== cur) {
-          cur = i.date;
-          h += dayHeadHTML(its, cur);
+        const k = wkm ? weekOf(i.date) : i.date;
+        if (k !== cur) {
+          cur = k;
+          h += wkm ? weekHeadHTML(its, k) : dayHeadHTML(its, cur);
         }
-        h += rowHTML(i);
+        h += rowHTML(i, wkm);
       });
       $("cList").innerHTML = h;
     }
     $("cFlow").innerHTML = flowHTML(st);
     /* PC向け：支払一覧は表で出す（スマホはカード） */
-    $("cTable").innerHTML = tableHTML(its);
+    $("cTable").innerHTML = tableHTML(its, wkm);
+    $("cWeeks").innerHTML = weeksHTML();
+  }
+  /* ---------- 週ごとの管理（月曜はじまり） ---------- */
+  const weekOf = d => {
+    const x = pd(d);
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+    return ds(x);
+  };
+  const weekEnd = k => ds(new Date(pd(k).getTime() + 6 * 864e5));
+  function weekTag(k) {
+    const n = Math.round((pd(k) - pd(weekOf(today()))) / (7 * 864e5));
+    return n === 0 ? "今週" : n === 1 ? "来週" : n === -1 ? "先週" : n > 0 ? `${n}週後` : `${-n}週前`;
+  }
+  function weekNums(list) {
+    const live = list.filter(x => x.status !== "deferred");
+    const tot = live.reduce((t, x) => t + amtOf(x), 0);
+    const paid = live.filter(x => x.status === "paid");
+    const pa = paid.reduce((t, x) => t + amtOf(x), 0);
+    return { tot, pa, un: tot - pa, n: live.length, np: paid.length, rate: tot ? pa / tot : 0 };
+  }
+  /* 一覧の週の見出し：週の範囲・合計・済んだ件数と進み具合 */
+  function weekHeadHTML(its, k) {
+    const w = weekNums(its.filter(x => weekOf(x.date) === k));
+    const tag = weekTag(k);
+    return `<div class="wkhead${tag === "今週" ? " now" : ""}"><span class="wk-t">${tag}</span><span class="wk-r num">${md(k)}（月）〜${md(weekEnd(k))}（日）</span><span class="wk-p"><i style="width:${Math.round(w.rate * 100)}%"></i></span><span class="wk-n">${w.np}/${w.n}件 済</span><b class="wk-s num">${yen(w.tot)}</b></div>`;
+  }
+  /* 右の欄：今週から4週間の支払いの予定（週ごとの合計・残り・進み具合） */
+  function weeksHTML() {
+    const k0 = weekOf(today());
+    const all = allItems().filter(i => i.date >= MGMT_START);
+    const rows = [0, 1, 2, 3].map(n => {
+      const k = ds(new Date(pd(k0).getTime() + n * 7 * 864e5));
+      const w = weekNums(all.filter(i => weekOf(i.date) === k));
+      return `<div class="wkrow${n === 0 ? " now" : ""}"><span class="wr-t"><b>${weekTag(k)}</b><small class="num">${md(k)}〜${md(weekEnd(k))}</small></span><span class="wr-bar"><i style="width:${Math.round(w.rate * 100)}%"></i></span><span class="wr-v"><b class="num">${yen(w.tot)}</b><small>${w.n ? (w.un ? `残り ${yen(w.un)}` : "✓ すべて済み") : "支払いなし"}</small></span></div>`;
+    });
+    return `<div class="panel-h"><h2>週ごとの予定</h2><span class="note">今週から4週間</span></div>${rows.join("")}`;
   }
   /* PC向けの表：日付の見出し行（その日の合計と、未払分の支払方法ごとの額）＋支払い1件＝1行 */
-  function tableHTML(its) {
+  function tableHTML(its, wkm) {
     const head = `<thead><tr><th>支払い</th><th>支払方法</th><th class="r">金額</th><th>内訳</th><th>状況</th><th></th></tr></thead>`;
     if (!its.length)
       return head + `<tbody><tr><td colspan="6" class="tempty">${S.filter !== "all" ? "条件に合う支払はありません" : "この期間の支払はまだありません"}</td></tr></tbody>`;
     let h = head + "<tbody>",
       cur = null;
     its.forEach(i => {
+      if (wkm) {
+        const k = weekOf(i.date);
+        if (k !== cur) {
+          cur = k;
+          const w = weekNums(its.filter(x => weekOf(x.date) === k));
+          h += `<tr class="grp wk${weekTag(k) === "今週" ? " now" : ""}"><td colspan="2"><b class="wk-t">${weekTag(k)}</b> ${md(k)}（月）〜${md(weekEnd(k))}（日）</td><td class="r">${yen(w.tot)}</td><td class="gnote" colspan="3"><span class="wk-p"><i style="width:${Math.round(w.rate * 100)}%"></i></span> ${w.np}/${w.n}件 済${w.un ? `・残り ${yen(w.un)}` : ""}</td></tr>`;
+        }
+        h += trowHTML(i, true);
+        return;
+      }
       if (i.date !== cur) {
         cur = i.date;
         const day = its.filter(x => x.date === cur && x.status !== "deferred");
@@ -958,7 +1015,7 @@
     h += `</tbody><tfoot><tr><td colspan="2">合計（${live.length}件）</td><td class="r">${yen(tA)}</td><td class="bd">${bd}</td><td class="tunpaid">未払 ${yen(un)}</td><td></td></tr></tfoot>`;
     return h;
   }
-  function trowHTML(i) {
+  function trowHTML(i, showDate) {
     const c = catOf(i);
     const late = i.kind === "late";
     const over = i.status === "planned" && i.date < today();
@@ -966,7 +1023,7 @@
     const cls = i.status === "paid" ? "done" : i.status === "deferred" ? "def" : over || late ? "warn" : "unpaid";
     const bd = i.accountId ? [`元金 ${yen(i.principal || 0)}`, `利息 ${yen(i.interest || 0)}`, ...(i.other ? [`その他 ${yen(i.other)}`] : [])].join(" ・ ") : "—";
     return `<tr class="trow${i.status === "paid" ? " paid" : ""}" data-edit="${i.id}" role="button" tabindex="0">
-      <td class="tname"><span class="chip ${c}">${CAT[c]?.s || ""}</span>${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}</td>
+      <td class="tname">${showDate ? `<span class="tdate num">${md(i.date)}<small>${wd(i.date)}</small></span>` : ""}<span class="chip ${c}">${CAT[c]?.s || ""}</span>${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}</td>
       <td>${i.method ? `<span class="mtag">${esc(i.method)}</span>` : "—"}</td>
       <td class="r">${yen(amtOf(i))}</td>
       <td class="bd">${bd}</td>
@@ -1009,7 +1066,7 @@
     return over ? "期日超過" : "未払";
   }
   /* 支払の行：状態（支払済・延滞→翌月・延滞分・未払）で色と印を変える */
-  function rowHTML(i) {
+  function rowHTML(i, showDate) {
     const c = catOf(i);
     const late = i.kind === "late";
     const over = i.status === "planned" && i.date < today();
@@ -1018,7 +1075,7 @@
     const lbl = stLbl(i, over, late);
     return `<div class="row st-${st}${over ? " over" : ""}" data-edit="${i.id}" role="button" tabindex="0">
       <span class="sico" aria-hidden="true">${ico}</span>
-      <div class="rmain"><div class="nm">${esc(i.name)}${i.method ? `<span class="mtag">${esc(i.method)}</span>` : ""}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}</div>
+      <div class="rmain"><div class="nm">${showDate ? `<span class="rdate num">${md(i.date)}（${wd(i.date)}）</span>` : ""}${esc(i.name)}${i.method ? `<span class="mtag">${esc(i.method)}</span>` : ""}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}</div>
       <div class="sub"><span class="chip ${c}">${CAT[c]?.s || ""}</span><span class="slbl">${lbl}</span>${i.memo ? `<span class="smemo">${esc(i.memo.split(" / ")[0])}</span>` : ""}</div></div>
       <div class="rright"><div class="amt">${yen(amtOf(i))}</div>${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</div>
     </div>`;
@@ -2609,6 +2666,12 @@
     /* 支払い */
     else if (d.f) {
       S.filter = d.f;
+      render();
+    } else if (d.grp) {
+      S.group = d.grp;
+      try {
+        localStorage.setItem("okane.paygroup", d.grp);
+      } catch (_) {}
       render();
     } else if (t.id === "cAdd" || d.add) editItem(null);
     else if (d.pay) openPay(d.pay);

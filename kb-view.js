@@ -112,6 +112,7 @@ function render(fromAll) {
   const pm = shiftM(view.month, -1),
     pi = items.filter(i => inPeriod(i.date, pm));
   renderSummary(mi, pi);
+  renderStreak();
   renderList(mi);
   renderRules();
   renderSettings();
@@ -187,12 +188,59 @@ function renderSummary(mi, pi) {
     `</div>`;
 }
 
+/* ---------- 家計簿：毎日の記録（連続記録・今日の記録・記録カレンダー） ---------- */
+function renderStreak() {
+  const el = $("kbStreak");
+  if (!el) return;
+  const td = today();
+  const by = {};
+  items.forEach(i => (by[i.date] = (by[i.date] || 0) + i.amount));
+  const has = d => by[d] != null;
+  const prev = d => FIN.ds(new Date(FIN.pd(d).getTime() - 864e5));
+  /* 連続記録：今日まだなら昨日から数える */
+  let d = has(td) ? td : prev(td),
+    run = 0;
+  while (has(d)) {
+    run++;
+    d = prev(d);
+  }
+  const ti = items.filter(i => i.date === td);
+  const m = thisPeriod();
+  const [ps, pe] = FIN.periodRange(m);
+  const days = [];
+  for (let x = ps; x <= pe; x = FIN.ds(new Date(FIN.pd(x).getTime() + 864e5))) days.push(x);
+  const past = days.filter(x => x <= td);
+  const rec = past.filter(has).length;
+  const mx = Math.max(1, ...past.map(x => by[x] || 0));
+  const lv = x => (by[x] ? 1 + Math.min(3, Math.floor(((by[x] || 0) / mx) * 4)) : 0);
+  const lead = (FIN.pd(ps).getDay() + 6) % 7; // 月曜はじまり
+  const msg = ti.length
+    ? `今日も記録できました 🎉`
+    : run
+      ? `今日記録すると <b>${run + 1}日連続</b>！`
+      : "今日から記録をはじめよう！";
+  el.innerHTML = `<div class="st-top"><div class="st-fire${run ? "" : " off"}"><span class="st-em" aria-hidden="true">🔥</span><b class="num">${run}</b><span>日連続</span></div>
+    <div class="st-today"><span class="st-msg">${msg}</span><span class="st-sub">${ti.length ? `今日 <b class="num">${yen(sumOf(ti))}</b>（${ti.length}件）` : "今日の記録はまだありません"}</span></div><button type="button" class="st-calbtn" data-stcal="1" aria-label="記録カレンダーを開く">📅</button></div>
+    <button type="button" class="st-add" id="kbRec"><span aria-hidden="true">＋</span> 今日の支出を記録</button>
+    <div class="st-cal" role="img" aria-label="${FIN.periodLabel(m)}の記録カレンダー：${past.length}日中${rec}日記録"><div class="st-wd">${"月火水木金土日".split("").map(w => `<span>${w}</span>`).join("")}</div>
+    <div class="st-grid">${"<i></i>".repeat(lead)}${days.map(x => `<button type="button" class="st-d l${lv(x)}${x === td ? " td" : ""}${x > td ? " fu" : ""}" data-jump="${x}" title="${x.slice(5).replace("-", "/")} ${by[x] ? yen(by[x]) : "記録なし"}"${x > td ? " disabled" : ""}>${+x.slice(8)}</button>`).join("")}</div>
+    <div class="st-foot"><span>${FIN.periodLabel(m)}は <b class="num">${past.length}日中 ${rec}日</b> 記録</span><span class="st-lg"><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> 多い</span></div></div>`;
+}
 /* ホームの入口に出す数字：いまの月度の支出・件数・1日平均 */
 function spendNums() {
   const m = thisPeriod();
   const mi = items.filter(i => inPeriod(i.date, m));
   const sum = sumOf(mi);
-  return { sum, n: mi.length, avg: Math.round(sum / (FIN.dayIndex(today(), m) + 1)) };
+  /* 連続記録の日数（今日まだなら昨日から数える）と、今日記録したか */
+  const has = new Set(items.map(i => i.date));
+  const prev = d => FIN.ds(new Date(FIN.pd(d).getTime() - 864e5));
+  let d = has.has(today()) ? today() : prev(today()),
+    run = 0;
+  while (has.has(d)) {
+    run++;
+    d = prev(d);
+  }
+  return { sum, n: mi.length, avg: Math.round(sum / (FIN.dayIndex(today(), m) + 1)), run, todayDone: has.has(today()) };
 }
 /* ---------- ホームの「今月の支出」：いまの月度の合計・前月比・多い分類・1日平均（家計簿のまとめ） ---------- */
 function dashSpendHTML() {

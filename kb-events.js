@@ -451,8 +451,19 @@ function clickListCheck(e) {
 }
 /* ヘッダー・下部メニュー・設定の開閉・通知 */
 function clickHeader(t, d) {
-  if (t.id === "hAdd" || t.id === "sbAdd" || t.id === "fab") {
+  if (t.id === "hAdd" || t.id === "sbAdd" || t.id === "fab" || t.id === "kbRec") {
     doAdd();
+  } else if (d.stcal) {
+    $("kbStreak").classList.toggle("cal");
+  } else if (d.jump) {
+    /* 記録カレンダーの日付：その日の明細へ（いまの月度の一覧に移る） */
+    if (view.tab !== "list") setTab("list");
+    if (!inPeriod(d.jump, view.month)) {
+      view.month = thisPeriod();
+      render();
+    }
+    const row = document.querySelector(`#list [data-day="${d.jump}"]`);
+    if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
   } else if (t.id === "hback") {
     /* 戻る：ホームから開いたページなら、ブラウザの履歴で戻る（スマホの「戻る」と同じ動き） */
     if (history.state && history.state.d > 0) history.back();
