@@ -252,6 +252,32 @@ function dashSpendHTML() {
     <div class="ds-foot"><span>1日平均 <b class="num">${yen(Math.round(sum / days))}</b></span><span>${mi.length}件</span><span>前の月度 合計 <b class="num">${yen(psum)}</b></span></div>`;
 }
 
+/* ---------- 明細の絞り込み（分類・支払い方法）：「絞り込み」ボタンで出るパネルの中身 ---------- */
+UI.filter.define("kb", {
+  cfg() {
+    const mi = ledger.mi || [];
+    const cnt = (k, v) => mi.filter(i => i[k] === v).length;
+    const used = (k, list) => list.filter(v => cnt(k, v) || ledger.filter[k === "category" ? "c" : "m"] === v);
+    return {
+      rows: [
+        { k: "c", label: "分類", cur: ledger.filter.c, all: mi.length, opts: used("category", CATS).map(v => ({ v, label: `${emo(v)} ${v}`, n: cnt("category", v) })) },
+        { k: "m", label: "支払い方法", cur: ledger.filter.m, all: mi.length, opts: used("method", METHODS).map(v => ({ v, label: `${emo(v)} ${v}`, n: cnt("method", v) })) },
+      ],
+      n: (ledger.shown || []).length,
+      unit: "件",
+    };
+  },
+  pick(k, v) {
+    ledger.filter[k] = v || "";
+    render();
+  },
+  reset() {
+    ledger.filter.c = "";
+    ledger.filter.m = "";
+    render();
+  },
+});
+
 /* ---------- 明細一覧・編集フォーム・追加前の確認 ---------- */
 function renderList(mi) {
   const q = ledger.filter.q.trim().toLowerCase();

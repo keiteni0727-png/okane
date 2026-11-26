@@ -2701,3 +2701,8 @@ body[data-tab="list"] .kb .hcur .mic,body[data-tab="graph"] .kb .hcur .mic{color
 .u-app .totop,.kb .totop{left:50%!important;right:auto!important;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 24px)!important}
 .u-app .totop.hide,.kb .totop.hide{transform:translate(-50%,10px)}
 @media (max-width:639px){.kb .tiles small{font-size:10px}.kb .tiles div{padding:8px 10px}}
+.kbsheet .es-date{height:36px;border:1.5px solid var(--u-accent);border-radius:var(--r-full);padding:0 12px;font:inherit;font-size:16px;background:var(--u-surface);color:var(--u-ink)}
+.kbsheet .es-date[hidden]{display:none}
+/* 左メニューをなくしたので、その幅（--sbw）で右にずらしていたもの（選択のバー・設定など）を戻す */
+:root,body,body.sbc{--sbw:0px!important}
+@media (min-width:900px){.kb #selbar:not([hidden]){left:50%!important;right:auto!important;transform:translateX(-50%);width:min(780px,calc(100% - 32px));bottom:16px!important;border:1px solid var(--u-line);border-radius:var(--r-l);padding:12px 16px}}

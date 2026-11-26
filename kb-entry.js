@@ -87,6 +87,8 @@ function entryKey(k) {
 /* ---------- 描画 ---------- */
 function renderEntry() {
   const el = $("kbSheet");
+  /* すでに開いているときは、全体を作り直さずに中身だけ書きかえる（ちらつかないように） */
+  if (!el.hidden && el.querySelector(".es")) return paintEntry();
   const x = entry.d;
   const td = today(),
     yd = FIN.ds(new Date(FIN.pd(td).getTime() - 864e5));
@@ -114,7 +116,8 @@ function renderEntry() {
         <div class="es-sec"><span class="es-lb">日付</span><div class="es-days">
           <button type="button" class="es-m${x.date === td ? " on" : ""}" data-edate="${td}">今日 <small>${md(td)}</small></button>
           <button type="button" class="es-m${x.date === yd ? " on" : ""}" data-edate="${yd}">昨日 <small>${md(yd)}</small></button>
-          <label class="es-m es-other${other ? " on" : ""}">${other ? md(x.date) : "ほかの日"}<input type="date" id="esDate" value="${esc(x.date)}" aria-label="ほかの日を選ぶ"></label>
+          <button type="button" class="es-m es-other${other ? " on" : ""}" data-eother="1">${other ? `${md(x.date)}（${"日月火水木金土"[FIN.pd(x.date).getDay()]}）` : "ほかの日"}</button>
+          <input type="date" id="esDate" class="es-date" value="${esc(x.date)}" max="${td}" aria-label="日付を選ぶ" hidden>
         </div></div>
         <div class="es-sec"><span class="es-lb">メモ</span><input type="text" id="esMemo" class="es-memo" value="${esc(x.memo || "")}" placeholder="何に使った？（お店・品物など）" autocomplete="off" enterkeyhint="done">
           ${memos.length ? `<div class="es-mcs">${memos.map(m => `<button type="button" class="es-mc${m === x.memo ? " on" : ""}" data-ememo="${esc(m)}">${esc(m)}</button>`).join("")}</div>` : ""}</div>
@@ -123,6 +126,35 @@ function renderEntry() {
     <div class="es-f">${entry.mode === "edit" ? `<button type="button" class="es-del" data-edel="1">削除</button>` : ""}<button type="button" class="es-save" id="esSave" data-esave2="1"></button></div>
   </div>`;
   el.hidden = false;
+  paintEntryAmt();
+}
+/* 開いたままの書きかえ：選んだボタンの印・日付・メモの候補・金額の絵文字だけ */
+function paintEntry() {
+  const x = entry.d;
+  const el = $("kbSheet");
+  el.querySelectorAll("[data-ecat]").forEach(b => b.classList.toggle("on", b.dataset.ecat === x.category));
+  el.querySelectorAll("[data-emet]").forEach(b => b.classList.toggle("on", b.dataset.emet === x.method));
+  let hit = false;
+  el.querySelectorAll("[data-edate]").forEach(b => {
+    const on = b.dataset.edate === x.date;
+    hit = hit || on;
+    b.classList.toggle("on", on);
+  });
+  const ob = el.querySelector("[data-eother]");
+  ob.classList.toggle("on", !hit);
+  ob.textContent = hit ? "ほかの日" : `${md(x.date)}（${"日月火水木金土"[FIN.pd(x.date).getDay()]}）`;
+  $("esDate").value = x.date;
+  const memo = $("esMemo");
+  if (memo.value !== (x.memo || "")) memo.value = x.memo || "";
+  const memos = recentMemos(x.category, 8);
+  let box = el.querySelector(".es-mcs");
+  if (!box) {
+    box = document.createElement("div");
+    box.className = "es-mcs";
+    memo.after(box);
+  }
+  box.innerHTML = memos.map(m => `<button type="button" class="es-mc${m === x.memo ? " on" : ""}" data-ememo="${esc(m)}">${esc(m)}</button>`).join("");
+  box.hidden = !memos.length;
   paintEntryAmt();
 }
 /* 金額の表示と、保存ボタンの文字（キーを押すたびに、ここだけ描き直す） */
@@ -166,12 +198,22 @@ function entrySave() {
 document.addEventListener("click", e => {
   const host = e.target.closest("#kbSheet");
   if (!host) return;
-  const b = e.target.closest("[data-ek],[data-ex],[data-ecat],[data-emet],[data-edate],[data-ememo],[data-esave2],[data-edel]");
+  const b = e.target.closest("[data-ek],[data-ex],[data-ecat],[data-emet],[data-edate],[data-ememo],[data-esave2],[data-edel],[data-eother]");
   if (!b) return;
   const d = b.dataset;
   e.stopPropagation();
   if (d.ek) entryKey(d.ek);
   else if (d.ex) closeEntry();
+  else if (d.eother) {
+    /* ほかの日：日付を選ぶ画面を開く（開けない端末では、日付の欄をそのまま出す） */
+    const inp = $("esDate");
+    inp.hidden = false;
+    try {
+      inp.showPicker();
+    } catch (_) {
+      inp.focus();
+    }
+  }
   else if (d.esave2) entrySave();
   else if (d.edel) {
     if (!arm("es-del", b, "もう一度押すと削除")) {
@@ -199,7 +241,8 @@ document.addEventListener("change", e => {
   if (e.target.id === "esDate" && e.target.value) {
     entry.d.memo = ($("esMemo")?.value || "").trim();
     entry.d.date = e.target.value;
-    renderEntry();
+    e.target.hidden = true;
+    paintEntry();
   }
 });
 document.addEventListener("input", e => {
