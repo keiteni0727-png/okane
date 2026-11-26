@@ -2519,3 +2519,5 @@ body[data-tab="list"] .kb .fab,body[data-tab="graph"] .kb .fab{background:linear
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pay .dn-home{--dn-c:#9db8e0}:root:not([data-theme="light"]) .pay .dn-list{--dn-c:#ff8a6e}}
 :root[data-theme="dark"] .pay .dn-home{--dn-c:#9db8e0} :root[data-theme="dark"] .pay .dn-list{--dn-c:#ff8a6e}
 .pay .dn-list .dn-h b{font-family:"M PLUS Rounded 1c",var(--u-f)}
+/* ホームには追加ボタンを出さない（追加は各ページで） */
+body[data-tab="dash"] .kb .fab{display:none!important}
