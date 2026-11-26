@@ -2047,3 +2047,31 @@ body{background:var(--u-bg)}
   .kb .kbside .sum .sumtog{display:none}
   .kb .kbside .sum .sumtop{cursor:default}
 }
+
+/* ======================================================================
+   グラフ：操作は小さく、数字の帯は支払いと同じ形。見出しは細い線で区切る
+   ====================================================================== */
+.kb #v-graph{padding:12px 16px 16px}
+.kb #v-graph>.sh{display:none}
+.kb .gctl{gap:6px;margin-bottom:8px}
+.kb .gctl select{height:34px;min-height:34px;font-size:var(--fs-base)!important;padding:4px 28px 4px 10px;border-radius:var(--r-m);background-color:var(--u-surface);border:1px solid var(--u-line)}
+.kb .tiles{gap:0;border:1px solid var(--u-line);border-radius:var(--r-l);overflow:hidden;margin:8px 0 4px}
+.kb .tiles div{background:none;border-left:1px solid var(--u-soft);border-radius:0;padding:8px 12px}
+.kb .tiles div:first-child{border-left:0}
+.kb .tiles b{font-size:var(--fs-l)!important}
+.kb .gh{font-size:var(--fs-base)!important;font-weight:700;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--u-soft)}
+.kb .gh small{font-size:var(--fs-xs)!important;font-weight:500}
+.kb #v-graph .legend{font-size:var(--fs-xs)!important}
+@media (min-width:900px){
+  .kb #v-graph{padding:14px 18px 18px}
+  .kb .gctl{grid-template-columns:160px 160px minmax(0,240px)}
+  .kb .gbody{gap:24px}
+}
+.kb #v-graph .mu{font-size:var(--fs-s)!important}
+.kb .irow{padding:4px 4px;gap:8px}
+.kb .irow .ico{width:24px;height:24px;min-width:24px;font-size:var(--fs-s);border-radius:var(--r-s)}
+.kb .irow .nm{font-size:var(--fs-m)!important}
+.kb .irow .rt{font-size:var(--fs-m)!important}
+.kb .irow .rt .dl{font-size:var(--fs-xs)!important}
+.kb .irow .track{height:4px}
+.kb .tiles small{white-space:nowrap}

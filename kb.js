@@ -164,7 +164,7 @@ function ico(n, sm) {
 function bcol(n) {
   const h = hue(n),
     st = satOf(n);
-  return h < 0 ? "hsl(220 8% 58%)" : st != null ? `hsl(${h} ${st + 10}% 40%)` : `hsl(${h} 65% 52%)`;
+  return h < 0 ? "hsl(220 8% 58%)" : st != null ? `hsl(${h} ${st + 10}% 40%)` : `hsl(${h} 48% 54%)`;
 }
 
 /* ===================== 状態 ===================== */
