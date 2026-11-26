@@ -1988,3 +1988,62 @@ body{background:var(--u-bg)}
 .pay .v2 .ptable .bd{white-space:normal;line-height:1.45;min-width:9em}
 .pay .v2 .ptable td.r:last-child{width:1%}
 .pay .v2 .ptable tr.trow td{height:34px}
+
+/* ======================================================================
+   明細（家計簿）：1件＝1行に詰める。PCは右の欄に内訳を常に出す
+   ====================================================================== */
+.kb .layout{padding-block:12px 24px}
+.kb #lhead{padding:8px 16px 8px 12px;margin:-16px -16px 0}
+.kb #fbarK .fline{padding:0;margin:0}
+.kb #fbarK .u-fbtn,.kb #fbarK button{min-height:30px;height:30px;font-size:var(--fs-s)}
+.kb #fbarK .fcnt{font-size:var(--fs-s);color:var(--u-sub)}
+.kb #fbarK .fcnt b{font-size:var(--fs-base);color:var(--u-ink)}
+/* 日付の行 */
+.kb #list .day{margin:0 -16px;min-height:32px;padding:0 10px 0 8px;background:color-mix(in srgb,var(--u-bg) 70%,var(--u-surface));border-block:1px solid var(--u-soft);font-size:var(--fs-s)}
+.kb #list .day:first-child{border-top:0}
+.kb #list .day .dtog{padding:5px 4px;font-size:var(--fs-s)}
+.kb #list .day small{font-size:var(--fs-xs)}
+.kb #list .day .dn{font-size:var(--fs-xs)}
+.kb #list .day .dsum{font-size:var(--fs-s);color:var(--u-ink)}
+.kb #list .day .dadd{width:26px;height:24px;font-size:var(--fs-l);border-color:transparent;background:none}
+.kb #list .day .dadd:hover{background:var(--u-accent2)}
+.kb #list .day.today .dadd{background:var(--u-accent);color:var(--u-on)}
+.kb #list .day.empty{min-height:26px;color:var(--u-sub)}
+.kb #list .day.empty .dsum{color:var(--u-strong)}
+.kb #list .day+.day{margin-top:0}
+/* 1件の行 */
+.kb #list .it{padding:5px 0;gap:10px;border-bottom:1px solid var(--u-soft);min-height:40px}
+.kb #list .it.on{padding:5px 16px}
+.kb #list .ck{width:18px;height:18px;min-width:18px;border-width:1.5px}
+.kb #list .ck:checked::after{width:4px;height:8px;border-width:0 2px 2px 0}
+.kb #list .ico{width:28px;height:28px;min-width:28px;border-radius:var(--r-m);font-size:var(--fs-base)}
+.kb #list .itm.itm2{display:flex!important;align-items:center;gap:10px;flex:1;min-width:0}
+.kb #list .itm2 .l1{flex:1;min-width:0}
+.kb #list .itm2 .l1 .chip{font-size:var(--fs-s);font-weight:600;padding:1px 8px}
+.kb #list .itm2 .memo.sm{font-size:var(--fs-s)}
+.kb #list .itm2 .l2{flex:none}
+.kb #list .itm2 .l2 .chip{border:0;background:none;padding:0;font-size:var(--fs-xs);font-weight:500;color:var(--u-sub)}
+.kb #list .amt{font-size:var(--fs-base);min-width:5.5em;text-align:right}
+@media (max-width:639px){
+  .kb #list .itm.itm2{flex-direction:column;align-items:stretch;gap:0}
+  .kb #list .itm2 .l1 .chip{font-size:var(--fs-xs);padding:0 7px}
+  .kb #list .itm2 .l2 .chip{font-size:10.5px;line-height:1.4}
+}
+@media (hover:hover){.kb #list .it:not(.on):hover{background:color-mix(in srgb,var(--u-accent2) 60%,transparent);margin:0 -16px;padding-inline:16px}}
+/* 支出の内訳カード */
+.kb .sum{padding:12px 14px}
+.kb .sum .eyebrow{font-size:var(--fs-xs)!important;font-weight:600;color:var(--u-sub);letter-spacing:.04em}
+.kb .sum .eyebrow .rng{margin-left:6px;font-family:var(--u-num)}
+.kb .sum .total{font-size:var(--fs-2xl)!important;line-height:1.2}
+.kb .sum .delta{font-size:var(--fs-xs)!important;border-radius:var(--r-full);padding:1px 8px}
+.kb .sum .stack{height:8px;border-radius:var(--r-full);margin-top:12px;gap:2px}
+.kb .sum .legend{font-size:var(--fs-xs)!important;gap:4px 12px;margin-top:8px}
+.kb .sum .kpis{border-top:1px solid var(--u-soft);margin-top:12px;padding-top:10px}
+.kb .sum .kpis span{font-size:var(--fs-xs)!important}
+.kb .sum .kpis b{font-size:var(--fs-base)!important}
+.kb .sum .meths .chip{font-size:var(--fs-xs)}
+@media (min-width:900px){
+  .kb .kbside .sum.folded .sumbody{display:block}
+  .kb .kbside .sum .sumtog{display:none}
+  .kb .kbside .sum .sumtop{cursor:default}
+}
