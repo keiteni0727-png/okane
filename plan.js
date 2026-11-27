@@ -83,7 +83,7 @@
     el.innerHTML = `
     <div class="pv-hero">
       <span class="pv-eb">${has ? "補填を入れた計画" : "いまの条件のまま"}</span>
-      <div class="pv-big"><span>すべて完済</span><b>${now.last ? ymLabel(now.last) : "見込みなし"}</b>${now.last ? `<span>あと${monthsBetween(FIN.currentPeriod(), now.last)}ヶ月</span>` : ""}</div>
+      <div class="pv-big"><span>すべて完済</span><b>${now.last ? ymLabel(now.last) : "見込みなし"}</b>${now.last ? `<span>あと${now.months.length}ヶ月</span>` : ""}</div>
       <div class="pv-res">
         <div><span>早まる</span><b class="num">${has && early > 0 ? `${early}ヶ月` : has ? "0ヶ月" : '<small>補填すると出ます</small>'}</b></div>
         <div><span>減る利息</span><b class="num">${has && saved > 0 ? yen(saved) : has ? "¥0" : '<small>補填すると出ます</small>'}</b></div>
@@ -233,10 +233,10 @@
         const reg = c.by[FIN.addMonths(c.end, -1)]?.pay || c.by[c.end].pay;
         rows.push({ ym: nx, name: c.a.name, pay: tot(nx), drop: reg });
       });
-    const first = tot(ms[1] || ms[0]); // 今月は払い終わった借入先があるので、来月をいまの目安にする
+    const first = tot(ms[0]); // 月ごとの表と同じく、今月から数える
     const left = v => inc - v - (plan.living || 0);
     return `<div class="pv-dl">
-      <div class="pv-dr now"><span class="pv-dm">いま（${ymShort(ms[1] || ms[0])}〜）</span><span class="pv-dp">毎月 <b class="num">${yen(first)}</b></span><span class="pv-dleft">残る ${yen(left(first))}</span></div>
+      <div class="pv-dr now"><span class="pv-dm">いま（${ymShort(ms[0])}〜）</span><span class="pv-dp">毎月 <b class="num">${yen(first)}</b></span><span class="pv-dleft">残る ${yen(left(first))}</span></div>
       ${rows.map(r => `<div class="pv-dr"><span class="pv-dm">${ymLabel(r.ym)}</span><span class="pv-dp">毎月 <b class="num">${yen(r.pay)}</b> <em>−${man(r.drop)}</em><small>${esc(r.name)}が完済</small></span><span class="pv-dleft">残る ${yen(left(r.pay))}</span></div>`).join("")}
       <div class="pv-liv">生活費（毎月）<input type="number" inputmode="numeric" class="num" id="plLiving" value="${plan.living || ""}" placeholder="0"><span>を引いて「残る」を出します</span></div>
     </div>`;
