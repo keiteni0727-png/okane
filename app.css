@@ -3389,3 +3389,31 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay .td-g.fh{justify-content:flex-start;gap:8px}
 .pay .td-g.fh b{margin-left:auto}
 .pay .pl-yr.fh td{cursor:pointer}
+/* 借入先の履歴：1件＝1行（日付｜残高の推移｜元金｜利息｜その他） */
+.pay .hlist2.h1 .hr1{display:grid;grid-template-columns:4.6em minmax(0,2.2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:center;width:100%;padding:8px 14px;border:0;border-top:1px solid var(--u-soft);background:var(--u-surface);color:var(--u-ink);font:inherit;font-size:var(--fs-base);text-align:right;cursor:pointer}
+.pay .hlist2.h1 .hr1.hh{cursor:default;background:var(--u-chip);font-size:var(--fs-xs);font-weight:700;color:var(--u-sub);padding-block:6px;border-top:0}
+.pay .hlist2.h1 .hr1>span:first-child{text-align:left}
+.pay .hlist2.h1 .hr1>span:nth-child(2){text-align:left}
+.pay .hlist2.h1 .hyr+.hr1{border-top:0}
+.pay .hlist2.h1 .hr1.late{box-shadow:inset 3px 0 0 var(--u-danger)}
+.pay .h1d{font-weight:700;display:flex;align-items:center;gap:4px}
+.pay .h1d em{font-style:normal;font-size:9.5px;font-weight:800;color:#fff;background:var(--u-danger);border-radius:3px;padding:0 4px}
+.pay .h1b{color:var(--u-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pay .h1b i{font-style:normal;margin:0 2px}
+.pay .h1b b{color:var(--u-ink)}
+.pay .h1v{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25;white-space:nowrap}
+.pay .h1v.pr{color:var(--u-ok);font-weight:600}
+.pay .h1v small{font-size:10px;color:var(--u-sub);font-family:var(--u-f)}
+@media (max-width:639px){
+  .pay .hlist2.h1 .hr1{grid-template-columns:3.4em minmax(0,1fr) 4.6em 4.6em 4.2em;gap:6px;padding:8px 10px;font-size:var(--fs-s)}
+  .pay .h1b{white-space:normal;line-height:1.3;font-size:var(--fs-xs)}
+  .pay .h1b i{display:none}
+  .pay .h1b b{display:block}
+}
+/* その他の金額と内容 */
+.pay .othrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:6px}
+.pay .othrow .othl{font-size:var(--fs-s)!important}
+.pay .hlist2.h1 .hr1{grid-template-columns:5.8em minmax(0,2.2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+.pay .h1d{white-space:nowrap}
+.pay .h1d em{white-space:nowrap}
+@media (max-width:639px){.pay .hlist2.h1 .hr1{grid-template-columns:4.4em minmax(0,1fr) 4.6em 4.6em 4.2em}.pay .h1d{flex-direction:column;align-items:flex-start;gap:1px}}

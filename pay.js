@@ -1523,20 +1523,18 @@
       if (/引落|振込|振替|カード|現金|払い/.test(m)) return m;
       return `${m}から引落`;
     };
+    /* 1件＝1行：日付｜残高の推移｜元金｜利息｜その他 */
     const rowOf = i => {
       const d = i.paidDate || i.date;
-      const bd = [
-        i.principal ? ["元金", i.principal, "pr"] : null,
-        i.interest || i.lateFee ? ["利息", (i.interest || 0) + (i.lateFee || 0), "in", i.lateFee ? `（通常 ${yen(i.interest || 0)}・延滞 ${yen(i.lateFee)}）` : ""] : null,
-        i.other ? ["その他", i.other, "ot"] : null,
-      ].filter(Boolean);
-      const bal = i.balanceBefore != null ? `<span class="hb">残高 ${yen(i.balanceBefore)} → <b>${yen(Math.max(0, i.balanceBefore - (i.principal || 0)))}</b></span>` : "";
-      return `<button class="hrow2${i.kind === "late" ? " late" : ""}" data-edit="${i.id}">
-        <span class="hd2"><b class="num">${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}</b><small>${"日月火水木金土"[pd(d).getDay()]}</small></span>
-        <span class="hm2"><span class="ht2">${i.kind === "late" ? '<span class="hlate">延滞分</span>' : ""}${esc(i.name)}</span>
-          <span class="hs2">${i.method ? `<span class="hmeth">${esc(how(i.method))}</span>` : ""}${bal}</span>
-          ${bd.length ? `<span class="hbd">${bd.map(([l, v, c, x]) => `<span class="${c}">${l} <b class="num">${yen(v)}</b>${x ? `<small>${x}</small>` : ""}</span>`).join("")}</span>` : ""}</span>
-        <b class="ha2 num">${yen(amt(i))}</b></button>`;
+      const after = i.balanceBefore != null ? Math.max(0, i.balanceBefore - (i.principal || 0)) : null;
+      const int = (i.interest || 0) + (i.lateFee || 0);
+      return `<button class="hr1${i.kind === "late" ? " late" : ""}" data-edit="${i.id}" title="${esc(i.name)}・${yen(amt(i))}">
+        <span class="h1d num">${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}${i.kind === "late" ? '<em>延滞</em>' : ""}</span>
+        <span class="h1b num">${i.balanceBefore != null ? `${yen(i.balanceBefore)} <i>→</i> <b>${yen(after)}</b>` : "—"}</span>
+        <span class="h1v num pr">${i.principal ? yen(i.principal) : "—"}</span>
+        <span class="h1v num">${int ? yen(int) : "—"}${i.lateFee ? `<small>延滞 ${yen(i.lateFee)}</small>` : ""}</span>
+        <span class="h1v num">${i.other ? yen(i.other) : "—"}${i.other && i.otherLabel ? `<small>${esc(i.otherLabel)}</small>` : ""}</span>
+      </button>`;
     };
     let h = "",
       yr = null;
@@ -1551,7 +1549,7 @@
       if (!isF(`hist:${acc ? acc.id : ""}:${yr}`)) h += rowOf(i);
     });
     return `<div class="hsum"><div><span class="label">支払った合計</span><b class="num">${yen(sum("amount"))}</b></div><div><span class="label">うち元金</span><b class="num ok">${yen(sum("principal"))}</b></div><div><span class="label">うち利息</span><b class="num">${yen(sum("interest") + sum("lateFee"))}</b>${sum("lateFee") ? `<small>（通常 ${yen(sum("interest"))}・延滞 ${yen(sum("lateFee"))}）</small>` : ""}</div></div>
-    <div class="hlist2">${h}</div>`;
+    <div class="hlist2 h1"><div class="hr1 hh"><span>日付</span><span>残高の推移</span><span>元金</span><span>利息</span><span>その他</span></div>${h}</div>`;
   }
   /* 今後の予定（返済中でない借入先）：登録済みの支払を12件まで */
   function accFutureHTML(a) {
@@ -1703,7 +1701,7 @@
     }
     const x = splitOf(it, a);
     const total = it.status === "paid" ? (it.paidAmount ?? it.amount) : it.amount;
-    return { debt: true, total, other: x.other, interest: x.interest, principal: x.principal, ...late };
+    return { debt: true, total, other: x.other, otherLabel: it.otherLabel || "", interest: x.interest, principal: x.principal, ...late };
   }
   /* 延滞分だけ、延滞手数料の欄と根拠の一行を出す */
   function feeHTML(P, m) {
@@ -1725,7 +1723,7 @@
   <div class="field"><label for="${P}-pr">うち元金</label><input type="number" id="${P}-pr" inputmode="numeric" value="${m.principal ?? ""}"></div>
   <div class="field"><label for="${P}-in">うち利息（通常利息・自動計算）</label><input type="number" id="${P}-in" inputmode="numeric" value="${m.interest ?? ""}"></div>
   <div class="sumline full"><span>リボ支払額（元金＋利息）</span><b class="num" id="${P}-revo"></b></div>
-  <div class="field"><label for="${P}-oth">うち、その他（家賃・当月利用分など）</label><input type="number" id="${P}-oth" inputmode="numeric" value="${m.other || ""}" placeholder="0"></div>
+  <div class="field"><label for="${P}-oth">うち、その他</label><div class="othrow"><input type="number" id="${P}-oth" inputmode="numeric" value="${m.other || ""}" placeholder="0"><input type="text" id="${P}-othl" list="othList" class="othl" value="${esc(m.otherLabel || "")}" placeholder="内容（家賃など）" aria-label="その他の内容"></div><datalist id="othList">${["家賃", "当月利用分", "分割払い", "年会費", "手数料", "保険料"].map(v => `<option value="${v}">`).join("")}</datalist></div>
   ${feeHTML(P, m)}
   <div class="diffbox full" id="${P}-diff" hidden></div>`;
   }
@@ -1829,7 +1827,8 @@
         interest = Number($(P + "-in").value) || 0,
         principal = Number($(P + "-pr").value) || 0,
         tot = numOrNull($(P + "-tot").value);
-      return { amount: tot ?? principal + interest + other + fee, other, interest, principal, ...fx };
+      const ol = $(P + "-othl") ? $(P + "-othl").value.trim() : "";
+      return { amount: tot ?? principal + interest + other + fee, other, otherLabel: other ? ol : "", interest, principal, ...fx };
     }
     return { amount: (numOrNull($(P + "-amt").value) || 0) + fee, ...fx };
   }
@@ -2001,7 +2000,7 @@
       ...it,
       date,
       amount: mv.amount,
-      ...(debt ? { principal: mv.principal, interest: mv.interest, other: mv.other } : {}),
+      ...(debt ? { principal: mv.principal, interest: mv.interest, other: mv.other, otherLabel: mv.otherLabel } : {}),
       ...lateOf(mv),
       method: $("p-me").value,
       memo: $("p-memo").value,
@@ -2033,6 +2032,7 @@
       principal: pr,
       interest: debt ? mv.interest : it.interest,
       other: debt ? mv.other : it.other,
+      otherLabel: debt ? mv.otherLabel : it.otherLabel,
       ...lateOf(mv),
       method: $("p-me").value,
       memo: $("p-memo").value,
@@ -2378,7 +2378,7 @@
       if (f && !ctx.moneyDirty) return {};
       const mv = moneyRead("e");
       return isDebt(a)
-        ? { amount: mv.amount, principal: mv.principal, interest: mv.interest, other: mv.other, ...lateOf(mv) }
+        ? { amount: mv.amount, principal: mv.principal, interest: mv.interest, other: mv.other, otherLabel: mv.otherLabel, ...lateOf(mv) }
         : { amount: mv.amount, principal: null, interest: null, other: null, ...lateOf(mv) };
     };
     const n = {
