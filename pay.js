@@ -1534,6 +1534,7 @@
         <span class="h1v num pr">${i.principal ? yen(i.principal) : "—"}</span>
         <span class="h1v num">${int ? yen(int) : "—"}${i.lateFee ? `<small>延滞 ${yen(i.lateFee)}</small>` : ""}</span>
         <span class="h1v num">${i.other ? yen(i.other) : "—"}${i.other && i.otherLabel ? `<small>${esc(i.otherLabel)}</small>` : ""}</span>
+        <span class="h1a num">${yen(amt(i))}</span>
       </button>`;
     };
     let h = "",
@@ -1549,7 +1550,7 @@
       if (!isF(`hist:${acc ? acc.id : ""}:${yr}`)) h += rowOf(i);
     });
     return `<div class="hsum"><div><span class="label">支払った合計</span><b class="num">${yen(sum("amount"))}</b></div><div><span class="label">うち元金</span><b class="num ok">${yen(sum("principal"))}</b></div><div><span class="label">うち利息</span><b class="num">${yen(sum("interest") + sum("lateFee"))}</b>${sum("lateFee") ? `<small>（通常 ${yen(sum("interest"))}・延滞 ${yen(sum("lateFee"))}）</small>` : ""}</div></div>
-    <div class="hlist2 h1"><div class="hr1 hh"><span>日付</span><span>残高の推移</span><span>元金</span><span>利息</span><span>その他</span></div>${h}</div>`;
+    <div class="hlist2 h1"><div class="hr1 hh"><span>日付</span><span>残高の推移</span><span>元金</span><span>利息</span><span>その他</span><span>支払額</span></div>${h}</div>`;
   }
   /* 今後の予定（返済中でない借入先）：登録済みの支払を12件まで */
   function accFutureHTML(a) {

@@ -3417,3 +3417,21 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay .h1d{white-space:nowrap}
 .pay .h1d em{white-space:nowrap}
 @media (max-width:639px){.pay .hlist2.h1 .hr1{grid-template-columns:4.4em minmax(0,1fr) 4.6em 4.6em 4.2em}.pay .h1d{flex-direction:column;align-items:flex-start;gap:1px}}
+/* 履歴の1行：見出しと中身の列をそろえる・左の赤い線はなし・内訳は控えめ・支払額を右端に */
+.pay .hlist2.h1 .hr1,.pay .hlist2.h1 .hr1.hh{display:grid!important;grid-template-columns:5.8em minmax(0,2fr) repeat(3,minmax(0,.9fr)) minmax(0,1fr)!important;gap:10px!important;padding:8px 14px!important;margin:0!important;box-sizing:border-box;border-left:0!important;border-right:0!important;border-radius:0!important;min-height:0;height:auto}
+.pay .hlist2.h1 .hr1>span{min-width:0;text-align:right}
+.pay .hlist2.h1 .hr1>span:nth-child(-n+2){text-align:left}
+.pay .hlist2.h1 .hr1.late{box-shadow:none!important}
+.pay .h1v,.pay .h1v.pr{color:var(--u-sub)!important;font-weight:400!important;font-size:var(--fs-s);align-items:flex-end}
+.pay .h1a{font-weight:700;color:var(--u-ink);white-space:nowrap}
+.pay .h1b{font-size:var(--fs-s)}
+@media (max-width:639px){
+  .pay .hlist2.h1 .hr1,.pay .hlist2.h1 .hr1.hh{grid-template-columns:3.6em minmax(0,1fr) 4.4em 4.6em!important;gap:6px!important;padding:8px 10px!important}
+  .pay .hlist2.h1 .hr1>span:nth-child(3),.pay .hlist2.h1 .hr1>span:nth-child(5){display:none}
+}
+/* 支払いの行を2行に：1行目＝名前と状態・区分・支払方法、2行目＝内訳 */
+.pay #v-home .row .rmain{flex-direction:row;flex-wrap:wrap;align-items:center;gap:3px 10px}
+.pay #v-home .row .rmain .sub{flex-wrap:nowrap}
+.pay #v-home .row .rbd{flex-basis:100%;margin-top:0}
+.pay #v-home .row{padding-top:9px;padding-bottom:9px}
+@media (max-width:639px){.pay #v-home .row .rmain .sub{flex-wrap:wrap}}
