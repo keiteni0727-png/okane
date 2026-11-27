@@ -3245,3 +3245,29 @@ body[data-tab="home"] .pay .psegw{display:flex!important;align-items:center;gap:
   body[data-tab="home"] .pay .psegw{flex-direction:column;align-items:stretch;gap:8px}
   .pay .pymon{margin:0;justify-content:center}
 }
+
+/* ======================================================================
+   共通の土台をそろえる：どの画面でも、上の帯・切り替えのタブ・月度・最初の箱の位置と大きさを同じに
+   ====================================================================== */
+:root{--seg-top:12px;--seg-h:40px;--gap1:12px}
+/* 切り替えのタブの段（家計簿＝明細/グラフ、支払い＝支払い/返済/計画） */
+body[data-tab="list"] .kb .kbseg-w,body[data-tab="graph"] .kb .kbseg-w,
+body[data-tab="home"] .pay .psegw,body[data-tab="balance"] .pay .psegw,body[data-tab="plan"] .pay .psegw{display:flex!important;flex-direction:row;align-items:center;gap:8px 10px;flex-wrap:wrap;padding-top:var(--seg-top)!important;padding-bottom:0!important;margin:0 auto!important}
+.kb .kbseg,.pay .pseg{height:var(--seg-h);box-sizing:border-box;padding:3px!important;margin:0!important}
+.kb .kbseg button,.pay .pseg button{height:calc(var(--seg-h) - 6px)!important;padding-top:0!important;padding-bottom:0!important;display:inline-flex;align-items:center;justify-content:center}
+.kb .kbmon,.pay .pymon{height:var(--seg-h);margin-left:auto}
+/* タブの下から最初の箱まで */
+body[data-tab="list"] .kb .layout,body[data-tab="graph"] .kb .layout{padding-top:var(--gap1)!important}
+.pay section.v2{padding-top:var(--gap1)!important}
+.pay .vbal .goal,.pay .vbal .pk{margin:0!important}
+/* ホーム：上の帯の下からの余白も同じに */
+.pay #v-dash.v2{padding-top:var(--gap1)!important}
+/* スマホ：タブ → 月度 の順（家計簿も支払いも同じ） */
+@media (max-width:639px){
+  body[data-tab="list"] .kb .kbseg-w,body[data-tab="graph"] .kb .kbseg-w,
+  body[data-tab="home"] .pay .psegw{flex-direction:column!important;align-items:stretch!important}
+  .kb .kbseg,.pay .pseg{display:flex!important;width:100%}
+  .kb .kbseg button,.pay .pseg button{flex:1}
+  .kb .kbmon,.pay .pymon{margin:0!important;justify-content:center}
+}
+.pay .vbal #bStats.pk{border:0!important;background:none!important;border-radius:0!important;overflow:visible}
