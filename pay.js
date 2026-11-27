@@ -844,6 +844,43 @@
   }
 
   /* ---------- 支払い：アラート・次の引き落とし・集計 ---------- */
+  /* 支払いのいちばん上：この月度の支払いの進み具合（返済の目標と同じ形のカード） */
+  function payHeroHTML(st) {
+    const rate = st.t ? st.paid / st.t : 0;
+    const pct = Math.round(rate * 100);
+    const t = today();
+    const nx = st.its.filter(i => i.status === "planned").sort(byDateAmt)[0];
+    const over = st.its.filter(i => i.status === "planned" && i.date < t);
+    const m = moneyOf(st);
+    const R = 34,
+      C = 2 * Math.PI * R;
+    const days = nx ? Math.round((pd(nx.date) - pd(t)) / 864e5) : null;
+    const when = days == null ? "" : days < 0 ? `${-days}日過ぎ` : days === 0 ? "今日" : days === 1 ? "明日" : `あと${days}日`;
+    const msg = !st.n
+      ? "この月度の支払いはまだありません"
+      : !st.unpaid
+        ? "🎉 この月度の支払いはすべて済みました"
+        : over.length
+          ? `期日を過ぎた支払いが <b>${over.length}件</b> あります。先に済ませましょう`
+          : `あと <b>${st.n - st.np}件</b>・<b class="num">${yen(st.unpaid)}</b> で、この月度の支払いは完了です`;
+    return `<div class="ph">
+      <div class="ph-top">
+        <div class="ph-l">
+          <span class="ph-eb">${periodLabel(S.period)}の支払い</span>
+          <div class="ph-big"><b class="num">${yen(st.unpaid)}</b><span>のこり</span></div>
+          <div class="ph-sub">支払予定 ${yen(st.t)}・支払済 ${yen(st.paid)}</div>
+        </div>
+        <svg class="g-ring ph-ring" viewBox="0 0 80 80" role="img" aria-label="支払済 ${pct}%"><circle cx="40" cy="40" r="${R}" class="g-rt"/><circle cx="40" cy="40" r="${R}" class="g-rf" stroke-dasharray="${((C * pct) / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="38" class="g-rp">${pct}%</text><text x="40" y="52" class="g-rl">${st.np}/${st.n}件</text></svg>
+      </div>
+      <span class="g-track ph-track"><i style="width:${pct}%"></i></span>
+      <div class="g-msg ph-msg">${msg}</div>
+      <div class="ph-stats">
+        <div><span>次の支払い</span><b>${nx ? `${md(nx.date)}（${wd(nx.date)}）` : "—"}</b><small>${nx ? `${esc(nx.name)}・${yen(nx.amount)}・${when}` : "予定なし"}</small></div>
+        <div><span>手元に残るお金</span><b class="num">${yen(m.rest)}</b><small>手取り ${yen(m.inc)} から</small></div>
+        <div><span>期日どおり</span><b class="num">${st.np ? `${st.its.filter(i => i.status === "paid" && (!i.paidDate || i.paidDate <= i.date)).length}/${st.np}件` : "—"}</b><small>支払済のうち</small></div>
+      </div>
+    </div>`;
+  }
   /* 支払い専用の月度の切り替え（タブの横・枠の外。家計簿と同じ形）。2026年1月より前へは戻れない */
   function renderPyMon() {
     const el = $("pyMon");
@@ -863,7 +900,7 @@
     document.querySelectorAll(".pay .cnote").forEach(n => {
       n.textContent = `集計期間は給料日（毎月${S.cfg.payday || DEFAULT_PAYDAY}日、土日の場合は直前の平日）から次の給料日の前日までです。家計簿の明細のうち支払い方法が「${FIN.CASH}」のものは、残るお金から引いています。`;
     });
-    /* 上の集計・NEXT はホームにあるので、この画面では出さない */
+    $("cKpi").innerHTML = payHeroHTML(periodStats(S.period));
     renderCycle();
   }
   function alertHTML() {
@@ -1120,7 +1157,7 @@
     return `<div class="row st-${st}${over ? " over" : ""}" data-edit="${i.id}" role="button" tabindex="0">
       <span class="sico" aria-hidden="true">${ico}</span>
       <div class="rmain"><div class="nm">${showDate ? `<span class="rdate num">${md(i.date)}（${wd(i.date)}）</span>` : ""}<span class="rname">${esc(i.name)}</span>${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}</div>
-      <div class="sub"><span class="chip ${c}">${CAT[c]?.s || ""}</span>${i.method ? `<span class="smet">${esc(i.method)}</span>` : ""}<span class="slbl">${lbl}</span>${i.memo ? `<span class="smemo">${esc(i.memo.split(" / ")[0])}</span>` : ""}</div></div>
+      <div class="sub"><span class="chip ${c}">${CAT[c]?.s || ""}</span>${i.method ? `<span class="smet">${esc(i.method)}</span>` : ""}<span class="slbl">${lbl}</span>${i.memo ? `<span class="smemo">${esc(i.memo.split(" / ")[0])}</span>` : ""}</div>${i.accountId && (i.principal || i.interest) ? `<div class="rbd"><span class="pr">元金 <b class="num">${yen(i.principal || 0)}</b></span><span class="in">利息 <b class="num">${yen((i.interest || 0) + (i.lateFee || 0))}</b>${i.lateFee ? `<small>（延滞 ${yen(i.lateFee)}）</small>` : ""}</span>${i.other ? `<span class="ot">その他 <b class="num">${yen(i.other)}</b></span>` : ""}${i.balanceBefore != null ? `<span class="bb">残高 ${yen(i.balanceBefore)} → <b class="num">${yen(Math.max(0, i.balanceBefore - (i.principal || 0)))}</b></span>` : ""}</div>` : ""}</div>
       <div class="rright"><div class="amt">${yen(amtOf(i))}</div>${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</div>
     </div>`;
   }

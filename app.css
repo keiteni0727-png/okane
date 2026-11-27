@@ -3332,3 +3332,58 @@ body[data-tab="list"] .kb .layout,body[data-tab="graph"] .kb .layout{padding-top
   .kb .wrap,.pay .wrap,.kb .appbar .wrap{max-width:1480px!important}
   .kb .mbar{right:calc(max(16px,(100vw - 1480px)/2 + 16px) + 90px)!important}
 }
+
+/* ======================================================================
+   支払い（作り直し）：返済と同じやわらかい見た目。いちばん上に進み具合のカード、日付ごとのカードの一覧
+   ====================================================================== */
+body[data-tab="home"]{--u-accent:#3b5bdb;--u-accent2:#e9eefc;--u-acct:#2c47b5;--u-on:#fff;--u-bg:#f4f3ef;--u-line:#e3e1db;--u-soft:#efede8;--r-m:8px;--r-l:12px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-tab="home"]{--u-accent:#8aa2ff;--u-accent2:#232b45;--u-acct:#a9bbff;--u-on:#0e1530;--u-bg:#111317;--u-line:#2c3038;--u-soft:#22262d}}
+:root[data-theme="dark"] body[data-tab="home"]{--u-accent:#8aa2ff;--u-accent2:#232b45;--u-acct:#a9bbff;--u-on:#0e1530;--u-bg:#111317;--u-line:#2c3038;--u-soft:#22262d}
+body[data-tab="home"] .pay .pk{border-top:0}
+body[data-tab="home"] .pay .panel-h h2,body[data-tab="home"] .pay .pk-per{letter-spacing:.02em}
+body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),color-mix(in srgb,var(--g-a) 55%,var(--g-b)))}
+/* いちばん上のカード */
+.pay #v-home #cKpi{display:block!important;order:0;background:none;border:0;padding:0;overflow:visible}
+.pay .ph{color:#fff;border-radius:12px;padding:16px 18px 12px;background:linear-gradient(125deg,var(--g-a),color-mix(in srgb,var(--g-a) 45%,var(--g-b)));display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.pay .ph::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+.pay .ph-top{display:flex;justify-content:space-between;align-items:center;gap:16px;position:relative;z-index:1}
+.pay .ph-l{display:flex;flex-direction:column;gap:2px}
+.pay .ph-eb{font-size:var(--fs-xs);font-weight:700;letter-spacing:.1em;opacity:.85}
+.pay .ph-big{display:flex;align-items:baseline;gap:8px}
+.pay .ph-big b{font-size:38px;font-weight:600;line-height:1.1}
+.pay .ph-big span{font-size:var(--fs-s);opacity:.85}
+.pay .ph-sub{font-size:var(--fs-s);opacity:.9}
+.pay .ph-ring{width:92px;height:92px;flex:none}
+.pay .ph-track{position:relative;z-index:1}
+.pay .ph-msg{position:relative;z-index:1}
+.pay .ph-stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.22);padding-top:10px}
+.pay .ph-stats>div{display:flex;flex-direction:column;gap:1px;padding:0 12px;border-left:1px solid rgba(255,255,255,.18);min-width:0}
+.pay .ph-stats>div:first-child{border-left:0;padding-left:0}
+.pay .ph-stats span{font-size:var(--fs-xs);opacity:.82}
+.pay .ph-stats b{font-size:var(--fs-l);font-weight:600;white-space:nowrap}
+.pay .ph-stats small{font-size:var(--fs-xs);opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:639px){.pay .ph-big b{font-size:30px}.pay .ph-ring{width:76px;height:76px}.pay .ph-stats{grid-template-columns:1fr 1fr;row-gap:10px}.pay .ph-stats>div:nth-child(3){border-left:0;padding-left:0}}
+/* 一覧：PCでもカードの一覧（表はやめる） */
+.pay #v-home .pctable{display:none!important}
+.pay #v-home .pcards{display:block!important}
+.pay #v-home .plist{border-radius:12px;overflow:hidden}
+.pay #v-home .ptoolbar{padding:10px 14px;border-bottom:1px solid var(--u-soft)}
+.pay #v-home .fchip3{border-radius:999px!important;height:32px;padding:0 14px;font-weight:600}
+.pay #v-home .fchip3.on{background:var(--u-accent);border-color:var(--u-accent);color:var(--u-on)}
+.pay #v-home .dayhead{background:color-mix(in srgb,var(--u-bg) 65%,var(--u-surface));border-top:1px solid var(--u-soft);padding:8px 16px}
+.pay #v-home .dayhead .dh-d{color:var(--u-ink);font-size:var(--fs-base)}
+.pay #v-home .dayhead .dh-t{font-size:var(--fs-base)}
+.pay #v-home .row{padding:12px 16px;gap:4px 14px;grid-template-columns:24px minmax(0,1fr) auto;box-shadow:none!important;background:var(--u-surface)}
+.pay #v-home .row.st-late{background:var(--u-danger2)!important}
+.pay #v-home .row.st-deferred{background:repeating-linear-gradient(135deg,transparent 0 8px,color-mix(in srgb,var(--u-line) 35%,transparent) 8px 9px)!important}
+@media (hover:hover){.pay #v-home .row:hover{background:var(--u-chip)!important}}
+.pay #v-home .row .nm{font-size:var(--fs-l)}
+.pay #v-home .row .amt{font-size:var(--fs-l)}
+.pay #v-home .row .slbl{border-radius:999px!important}
+.pay #v-home .row .paybtn{border-radius:999px;padding:6px 16px;min-height:32px;font-size:var(--fs-s)}
+.pay .rbd{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:4px}
+.pay .rbd>span{font-size:var(--fs-xs);border-radius:999px;padding:1px 8px;background:var(--u-chip);color:var(--u-sub)}
+.pay .rbd .pr{background:var(--u-ok2);color:var(--u-ok)} .pay .rbd .in{background:var(--u-warn2);color:var(--u-warn)}
+.pay .rbd .bb{background:none;padding-left:2px}
+.pay .rbd b{font-weight:700} .pay .rbd small{font-size:10px;margin-left:2px}
+.pay #v-home .pflow{border-radius:12px;overflow:hidden}
