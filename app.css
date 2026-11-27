@@ -3414,3 +3414,15 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay #v-home .ptoolbar #cFbar .fline{padding:10px 14px}
 .pay #v-home .stlg{border-top:1px solid var(--u-soft);border-bottom:0}
 @media (max-width:639px){.pay .rbd{gap:0 10px}.pay .rbd>span+span::before{content:none}}
+/* マウスを乗せたときに青くしない（行・カード・一覧のボタンすべて）：うすい灰色だけにする */
+@media (hover:hover){
+  .u-btns button:where(:not(.u-btn,.u-chip)):hover,.u-btn:not(:disabled):not(.pri):not(.txt):hover,.kb button:not(:disabled):hover{border-color:var(--u-strong)!important}
+  .pay .np-it:hover,.pay .row:hover,.pay .hrow2:hover,.pay .pl-c:hover,.pay .vbal .acc:hover,.pay .td-row:hover,.pay .dn-t:hover,.pay .bplan:hover,.pay .pk-goal:hover{background-color:var(--u-chip)!important;border-color:var(--u-line)!important;outline:0}
+  .pay .ptable tr.trow:hover td,.pay .v2 .ptable tr.trow:hover td{background:var(--u-chip)!important}
+  .kb #list .it:not(.on):hover{background:var(--u-chip)!important}
+  .kb #list .day .dadd:hover,.kb .hback:hover{background:var(--u-chip)!important}
+  .pay #v-home .row:hover{filter:none;background-color:color-mix(in srgb,var(--st-bg,var(--u-surface)) 100%,#000 4%)!important}
+  .pay .hrow2:hover,.pay .vbal .acc:hover{border-top-color:var(--u-soft)!important}
+}
+.pay .hrow2:focus,.pay .acc:focus,.pay .row:focus{outline:none}
+.pay .hrow2:focus-visible,.pay .acc:focus-visible,.pay .row:focus-visible{outline:2px solid var(--u-strong);outline-offset:-2px}
