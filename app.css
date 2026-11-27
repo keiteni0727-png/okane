@@ -44,15 +44,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   body.sbc .u-app .sb-lamp{font-size:8px;letter-spacing:.04em;padding:3px 4px 2px}
   body.sbc .u-app .sb-it{justify-content:center;padding:10px 0}
 }
-@media (min-width:900px) and (hover:hover){
-  .u-app .sb-it:not([aria-current]):hover{background:var(--u-chip);color:var(--u-ink)}
-}
 
 /* ===== ボタン（おかね手帳の書き方）：class="u-btns" の中の button すべてに効く =====
   ・.u-btn / .u-chip を付けたボタンには効かない（そちらは下の「見た目の決まり」の形になる）
   ・塗り＝主な操作（pri / primary）、枠線＝そのほかの操作、小さいもの（sm / btn-s）、文字だけ（u-btns の中の ghost） */
 .u-btns button:where(:not(.u-btn,.u-chip)){font:inherit;font-size:var(--fs-base);font-weight:700;line-height:1.4;padding:9px 14px;border:1px solid var(--u-line);border-radius:var(--r-m);background:var(--u-surface);color:var(--u-ink);cursor:pointer}
-@media (hover:hover){.u-btns button:where(:not(.u-btn,.u-chip)):hover{border-color:var(--u-accent)}}
 .u-btns button:where(:not(.u-btn,.u-chip)):disabled{opacity:.45;cursor:default}
 .u-btns button:where(:not(.u-btn,.u-chip)).pri,.u-btns button:where(:not(.u-btn,.u-chip)).primary{background:var(--u-accent);border-color:var(--u-accent);color:var(--u-on)}
 .u-btns button:where(:not(.u-btn,.u-chip)).sm,.u-btns button:where(:not(.u-btn,.u-chip)).btn-s{padding:6px 12px;font-size:var(--fs-m)}
@@ -88,7 +84,6 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .u-btn.icon.soft{border-color:transparent;background:var(--u-chip);color:var(--u-sub)}
 .u-btn svg{width:1.15em;height:1.15em;flex:none}
 .u-btn:disabled{opacity:.4;cursor:default}
-@media (hover:hover){.u-btn:not(:disabled):not(.pri):not(.txt):hover{border-color:var(--u-accent)}.u-btn.txt:hover{color:var(--u-ink)}}
 
 /* ----- 札のボタン：.u-chip（まんまる・押せる）。ジャンル・クール・絞り込みの候補など、選んだり外したりするもの -----
   .on 選んでいる / .add 追加（点線） / 中に .x（✕）を入れると外せる札。色付きの札は style="--chip-bg:…;--chip-fg:…" */
@@ -191,8 +186,7 @@ html.pkopen,html.pkopen body{overflow:hidden}
 .dd-q input:focus,.dd-q input:focus-visible{outline:none;box-shadow:none}
 .popmode .dd-box:not(:has(.dd-q)) .dd-list{padding-top:4px}
 .dd-row{width:100%;display:flex;align-items:center;gap:12px;min-height:46px;padding:0 16px;border:0;border-top:1px solid var(--u-soft);background:transparent;color:var(--u-ink);font:inherit;font-size:15px;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.popmode .dd-row{min-height:42px;font-size:14px}
-.dd-row:hover,.dd-row:focus-visible{background:var(--u-soft);outline:none}
+.popmode .dd-row{min-height:42px;font-size:14px}.dd-row:focus-visible{background:var(--u-soft);outline:none}
 .dd-row.on{background:var(--u-accent2);font-weight:700}
 .dd-row.on>svg{color:var(--u-acct);flex:none}
 .dd-row:disabled{opacity:.4;cursor:default}
@@ -245,9 +239,6 @@ body:not([data-tab="home"]):not([data-tab="balance"]) #payWrap{display:none}
 .kb select,.kb input[type=text],.kb input[type=number],.kb input[type=date]{background:var(--u-bg);border:1px solid var(--u-line);border-radius:var(--r-m);padding:7px 8px;min-width:0;width:100%;max-width:100%;font-size:var(--fs-l)}
 .kb input[type=date]{-webkit-appearance:none;appearance:none;min-height:38px;display:block}
 .kb input[type=date]::-webkit-date-and-time-value{text-align:left}
-
-/* ボタン：塗り＝主な操作、枠線＝そのほかの操作、ghost＝控えめな文字 */
-@media (hover:hover){.kb button:not(:disabled):hover{border-color:var(--u-accent)}}
 .kb button.armed{color:var(--u-danger)} /* 「2回押す」の1回目 */
 .kb button.grow{flex:1}
 .kb button.wide{width:100%}
@@ -408,7 +399,6 @@ body.sel .kb .layout{padding-bottom:190px}
 .kb .donut .dk{font-size:var(--fs-xs);fill:var(--u-sub);font-family:var(--u-f)}
 .kb .donut .dv{font-size:var(--fs-l);font-weight:600;fill:var(--u-ink);font-family:var(--u-num)}
 .kb .irow{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 4px;border-radius:var(--r-m);cursor:pointer}
-.kb .irow:hover{background:var(--u-bg)}
 .kb .irow .nm{display:flex;justify-content:space-between;gap:6px;font-size:var(--fs-m);font-weight:600}
 .kb .irow .nm small{color:var(--u-sub);font-family:var(--u-num);font-weight:600}
 .kb .irow .track{margin-top:4px;height:5px}
@@ -680,7 +670,6 @@ body.sel .kb .layout{padding-bottom:190px}
 .pay .np-list{border-top:1px solid var(--u-soft)}
 .pay .np-it{display:grid;grid-template-columns:minmax(0,1fr) auto auto 10px;gap:10px;align-items:center;width:100%;border:0;border-top:1px solid var(--u-soft);border-radius:0;background:transparent;padding:9px 16px;text-align:left;font-weight:400}
 .pay .np-it:first-child{border-top:0}
-@media (hover:hover){.pay .np-it:hover{background:var(--u-accent2)}}
 .pay .np-it::after{content:"›";color:var(--u-sub);font-size:var(--fs-l);line-height:1}
 .pay .np-n{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pay .np-m{font-size:var(--fs-xs);color:var(--u-sub);white-space:nowrap}
@@ -700,7 +689,6 @@ body.sel .kb .layout{padding-bottom:190px}
 .pay .dayhead .dh-done{font-size:var(--fs-xs);color:var(--u-ok);font-weight:700}
 .pay .row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:10px 16px;border-top:1px solid var(--u-soft);cursor:pointer;position:relative}
 .pay .dayhead+.row{border-top:0}
-@media (hover:hover){.pay .row:hover{background:var(--u-accent2)}}
 .pay .row .rmain{min-width:0;display:flex;flex-direction:column;gap:3px}
 .pay .row .nm{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:var(--fs-base);font-weight:700;line-height:1.3}
 .pay .row .sub{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:var(--fs-xs);color:var(--u-sub);font-family:var(--u-f);white-space:normal;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
@@ -778,8 +766,6 @@ body.sel .kb .layout{padding-bottom:190px}
 .pay .grp-h h2{white-space:nowrap}
 .pay .acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;border-radius:var(--r-l)}
 .pay .acc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 10px;align-items:center;padding:9px 14px;cursor:pointer;text-align:left;font:inherit;color:inherit;background:var(--u-surface);border:1px solid var(--u-line);border-radius:var(--r-l)}
-.pay .acc:hover{border-color:var(--u-line)}
-@media (hover:hover){.pay .acc:hover{border-color:var(--u-accent)}}
 .pay .acc.donecard{opacity:.7}
 .pay .acc .ac-n{display:flex;align-items:center;gap:6px;min-width:0}
 .pay .acc .ac-n b{font-size:var(--fs-base);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -976,7 +962,7 @@ body.sel .kb .layout{padding-bottom:190px}
   .pay .acc-grid{grid-template-columns:minmax(0,1fr);gap:0;border:1px solid var(--u-line);overflow:hidden}
   .pay .acc{border:0;border-top:1px solid var(--u-soft)}
   .pay .acc:first-child{border-top:0}
-  .pay .acc,.pay .acc:hover{border-color:transparent;border-top-color:var(--u-soft)}
+  .pay .acc{border-color:transparent;border-top-color:var(--u-soft)}
   .pay .acc:first-child{border-top-color:transparent}
   .pay .boost-h{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 14px 4px}
   .pay .rank{grid-template-columns:auto minmax(0,1fr);padding:10px 14px;gap:4px 10px}
@@ -1416,7 +1402,6 @@ body.sbc .u-app .sb .sb-logo{width:26px;height:26px}
 .u-app .sb .sb-row>.sb-it{flex:1;min-width:0;border-radius:0;background:none;padding-left:8px}
 .u-app .sb .sbp .sb-row>.sb-it[aria-current="page"]{background:none;color:var(--u-acct)}
 .u-app .sb .sb-fold{flex:none;width:38px;align-self:stretch;border:0;border-left:1px solid var(--u-line);background:none;color:var(--u-sub);border-radius:0;padding:0;display:grid;place-items:center}
-.u-app .sb .sb-fold:hover{background:var(--u-line)}
 .u-app .sb .sbp .sb-sub{margin:0;padding:0 0 6px;border-left:0;gap:0}
 .u-app .sb .sbp .sb-sub .sb-it{border-radius:0;padding-left:24px;background:none;border-left:3px solid transparent}
 .u-app .sb .sbp .sb-sub .sb-it[aria-current="page"]{background:var(--u-surface);border-left-color:var(--u-accent);color:var(--u-ink);font-weight:700}
@@ -1446,8 +1431,7 @@ body.sbc .u-app .sb .sbp .sb-row>.sb-it{justify-content:center;padding:10px 0}
 @media (max-width:899px){
   .u-app .totop{bottom:calc(env(safe-area-inset-bottom,0px) + 16px)}
 }
-.pay .wrap{padding-block-end:24px}
-.u-app .sb .sb-fold:hover,.u-app .sb .sb-fold:focus{border-color:transparent;border-left-color:var(--u-line)}
+.pay .wrap{padding-block-end:24px}.u-app .sb .sb-fold:focus{border-color:transparent;border-left-color:var(--u-line)}
 /* ===== 上の帯：エンタメ管理と同じ（☰・今の画面のアイコンと名前・表示の切り替え）。日付は帯の下の行 ===== */
 .kb .appbar{background:var(--u-surface)}
 .kb .hcur{display:flex!important;align-items:center;gap:7px;width:auto!important;height:auto!important;margin-right:auto;font-size:var(--fs-l);font-weight:900;white-space:nowrap;min-width:0;color:var(--u-ink)}
@@ -1523,7 +1507,6 @@ body.sbc .u-app .sb .sbp .sb-row>.sb-it{justify-content:center;padding:10px 0}
 .u-app .sb .sb-add{display:none}
 @media (min-width:900px){
   .u-app .sb .sb-add{display:flex;align-items:center;justify-content:center;gap:4px;flex:none;border:0;background:var(--u-accent);color:var(--u-on);border-radius:var(--r-m);font:inherit;font-weight:700;white-space:nowrap;cursor:pointer;width:100%}
-  .u-app .sb .sb-add:hover{filter:brightness(1.04)}
 }
 /* 明細の追加カード：追加中の行やメッセージがないときは出さない */
 .kb .addcard:has(#msg:empty){display:none}
@@ -1560,8 +1543,7 @@ html.fshopen,html.fshopen body{overflow:hidden}
 .fsh-x{flex:none}
 .fsh-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 0 6px}
 .fsh-it{border-top:1px solid var(--u-soft)}
-.fsh-row{width:100%;display:flex;align-items:center;gap:10px;min-height:50px;padding:0 14px 0 18px;border:0;background:none;color:var(--u-ink);font:inherit;font-size:var(--fs-l);text-align:left;cursor:pointer}
-.fsh-row:hover,.fsh-row:focus-visible{background:var(--u-soft);outline:none}
+.fsh-row{width:100%;display:flex;align-items:center;gap:10px;min-height:50px;padding:0 14px 0 18px;border:0;background:none;color:var(--u-ink);font:inherit;font-size:var(--fs-l);text-align:left;cursor:pointer}.fsh-row:focus-visible{background:var(--u-soft);outline:none}
 .fsh-k{flex:none;font-weight:700}
 .fsh-v{flex:1;min-width:0;text-align:right;color:var(--u-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-base)}
 .fsh-v.on{color:var(--u-acct);font-weight:700}
@@ -1652,7 +1634,6 @@ input.calcon{border-color:var(--u-accent)!important;box-shadow:0 0 0 2px color-m
   .u-app .sb .sb-top b{font-size:var(--fs-l);font-weight:900}
   .u-app .sb .sb-ham{flex:none;width:36px;height:36px;border:0;background:var(--u-chip);color:var(--u-ink);border-radius:var(--r-m);display:grid;place-items:center;padding:0;cursor:pointer}
   .u-app .sb .sb-ham svg{width:20px;height:20px}
-  .u-app .sb .sb-ham:hover{background:var(--u-line)}
   .u-app .sb .sb-add{height:38px;padding:0;margin:0 0 6px;font-size:var(--fs-base)}
   .u-app .sb .sb-sec{padding:4px 8px 2px}
   .u-app .sb .sb-foot{padding-top:6px;gap:2px}
@@ -1674,7 +1655,6 @@ input.calcon{border-color:var(--u-accent)!important;box-shadow:0 0 0 2px color-m
 .kb #list .day .tdy{font-style:normal;font-size:var(--fs-xs);font-weight:700;color:var(--u-on);background:var(--u-accent);border-radius:var(--r-full);padding:1px 7px;margin-left:6px;vertical-align:1px}
 .kb #list .day .dsum{flex:none;font-family:var(--u-num);font-size:var(--fs-m);font-weight:600;color:var(--u-sub)}
 .kb #list .day .dadd{flex:none;width:34px;height:30px;border:1px solid var(--u-line);background:var(--u-surface);color:var(--u-acct);border-radius:var(--r-m);font-size:var(--fs-xl);font-weight:700;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer}
-.kb #list .day .dadd:hover{border-color:var(--u-accent)}
 .kb #list .day.empty{background:transparent}
 .kb #list .day.empty .dd{color:var(--u-sub);font-weight:600}
 .kb #list .day.empty .dsum{opacity:.5}
@@ -1701,7 +1681,6 @@ html.setopen,html.setopen body{overflow:hidden}
 .kb .setgrp{border:1px solid var(--u-line);border-radius:var(--r-l);background:var(--u-surface);overflow:hidden}
 .kb .setrow{width:100%;display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px 0 14px;border:0;border-top:1px solid var(--u-soft);border-radius:0;background:none;color:var(--u-ink);font:inherit;font-size:var(--fs-base);text-align:left;cursor:pointer;box-shadow:none}
 .kb .setgrp>.setrow:first-child{border-top:0}
-.kb button.setrow:hover{background:var(--u-soft)}
 .kb .setrow.static{cursor:default}
 .kb .seti{width:19px;height:19px;flex:none;color:var(--u-sub)}
 .kb .setl{flex:none;font-weight:700}
@@ -1767,7 +1746,6 @@ html.setopen,html.setopen body{overflow:hidden}
 .pay .fchip3{border:1px solid var(--u-line);background:var(--u-surface);color:var(--u-sub);border-radius:999px;padding:5px 14px;font:inherit;font-size:var(--fs-m);cursor:pointer}
 .pay .fchip3.on{background:var(--u-chip);color:var(--u-ink);font-weight:700;border-color:var(--u-strong)}
 .pay .ptable tr.trow{cursor:pointer}
-.pay .ptable tr.trow:hover td{background:var(--u-accent2)}
 .pay .ptable tr.paid td{color:var(--u-sub)}
 .pay .ptable .tname{font-weight:700}
 .pay .ptable tr.paid .tname{font-weight:400}
@@ -1812,7 +1790,7 @@ body{background:var(--u-bg)}
   .u-app .sb .sbp .sb-row>.sb-it .mic svg{width:16px;height:16px}
   .u-app .sb .sbp .sb-row>.sb-it[aria-current="page"]{color:var(--u-ink)}
   .u-app .sb .sb-fold{width:28px;border-left:0;border-radius:var(--r-m)}
-  .u-app .sb .sb-fold:hover,.u-app .sb .sb-fold:focus{background:var(--u-chip);border-left-color:transparent}
+  .u-app .sb .sb-fold:focus{background:var(--u-chip);border-left-color:transparent}
   .u-app .sb .sbp .sb-sub{padding:0;gap:1px}
   .u-app .sb .sbp .sb-sub .sb-it{height:34px;padding-left:32px;border-left:0;border-radius:var(--r-m);font-size:var(--fs-base);font-weight:500;color:var(--u-ink);position:relative}
   .u-app .sb .sbp .sb-sub .sb-it[aria-current="page"]{background:var(--u-accent2);color:var(--u-acct);font-weight:700}
@@ -1822,9 +1800,6 @@ body{background:var(--u-bg)}
   body.sbc .u-app .sb .sbp .sb-row>.sb-it{height:40px}
   body.sbc .u-app .sb .sbp .sb-row>.sb-it .mic{width:22px;height:22px}
   body.sbc .u-app .sb .sbp .sb-row>.sb-it .mic svg{width:20px;height:20px}
-}
-@media (min-width:900px) and (hover:hover){
-  .u-app .sb .sbp .sb-sub .sb-it:not([aria-current]):hover{background:var(--u-chip)}
 }
 
 /* ---------- 上の帯：PCは細く、月度の切り替えを帯の中（右側）に入れて1行減らす ---------- */
@@ -1981,7 +1956,6 @@ body{background:var(--u-bg)}
 .pay .v2 .ptable .chip{font-size:10px;background:none}
 .pay .v2 .ptable .mtag{font-weight:500}
 .pay .v2 .ptable .paybtn{padding:3px 12px;font-size:var(--fs-xs);min-height:26px}
-.pay .v2 .ptable tr.trow:hover td{background:var(--u-accent2)}
 .pay .v2 .ptable tfoot td{background:color-mix(in srgb,var(--u-bg) 70%,var(--u-surface));border-top:1px solid var(--u-line);font-size:var(--fs-m)}
 .pay .v2 .ptable .tst.unpaid{color:var(--u-warn)}
 .pay .v2 .ptable .tname .chip{display:inline-block;min-width:5.6em;text-align:center;margin-right:10px;padding:0 4px;vertical-align:1px}
@@ -2006,7 +1980,6 @@ body{background:var(--u-bg)}
 .kb #list .day .dn{font-size:var(--fs-xs)}
 .kb #list .day .dsum{font-size:var(--fs-s);color:var(--u-ink)}
 .kb #list .day .dadd{width:26px;height:24px;font-size:var(--fs-l);border-color:transparent;background:none}
-.kb #list .day .dadd:hover{background:var(--u-accent2)}
 .kb #list .day.today .dadd{background:var(--u-accent);color:var(--u-on)}
 .kb #list .day.empty{min-height:26px;color:var(--u-sub)}
 .kb #list .day.empty .dsum{color:var(--u-strong)}
@@ -2029,7 +2002,6 @@ body{background:var(--u-bg)}
   .kb #list .itm2 .l1 .chip{font-size:var(--fs-xs);padding:0 7px}
   .kb #list .itm2 .l2 .chip{font-size:10.5px;line-height:1.4}
 }
-@media (hover:hover){.kb #list .it:not(.on):hover{background:color-mix(in srgb,var(--u-accent2) 60%,transparent);margin:0 -16px;padding-inline:16px}}
 /* 支出の内訳カード */
 .kb .sum{padding:12px 14px}
 .kb .sum .eyebrow{font-size:var(--fs-xs)!important;font-weight:600;color:var(--u-sub);letter-spacing:.04em}
@@ -2096,7 +2068,6 @@ body{background:var(--u-bg)}
 .pay .vbal .acc .ac-n{grid-area:n}
 .pay .vbal .acc .ac-b{grid-area:b;font-size:var(--fs-base)}
 .pay .vbal .acc .ac-m{grid-area:m}
-@media (hover:hover){.pay .vbal .acc:hover{background:var(--u-accent2);border-color:var(--u-soft)}}
 @media (min-width:640px){
   .pay .vbal .acc{grid-template-columns:minmax(8em,1fr) minmax(0,2fr) auto;grid-template-areas:"n m b";align-items:center;min-height:38px}
   .pay .vbal .acc .ac-m{font-size:var(--fs-s)}
@@ -2205,7 +2176,6 @@ body{background:var(--u-bg)}
 .pay .pk-goal .pkg-p{white-space:nowrap;color:var(--u-sub)}
 .pay .pk-goal .pkg-p b{color:var(--u-ink)}
 .pay .pk-goal .pkg-go{color:var(--u-sub);font-size:var(--fs-l);line-height:1}
-@media (hover:hover){.pay .pk-goal:hover{filter:brightness(.98)}}
 /* 道のりの帯と重なる数字は、完済の見通しでは出さない（1年後の残高・次に完済する口座・利息だけ） */
 .pay .vbal .ol-final,.pay .vbal .ol-kpi>div:first-child{display:none}
 .pay .vbal .ol-kpi{border-top:0;padding-top:0;grid-template-columns:1fr}
@@ -2236,7 +2206,6 @@ body[data-tab="dash"] .kb .mbar,body[data-tab="balance"] .kb .mbar{display:none!
   body.sbc .u-app .sb .sbn>.sb-it{justify-content:center;padding:0}
   body.sbc .u-app .sb .sbn .sb-sub{display:none}
 }
-@media (min-width:900px) and (hover:hover){.u-app .sb .sbn>.sb-it:not([aria-current]):hover,.u-app .sb .sbn .sb-sub .sb-it:not([aria-current]):hover{background:var(--u-chip)}}
 /* 下のメニュー（スマホ）：4つ */
 @media (max-width:899px){
   .kb .tabbar{flex-basis:480px}
@@ -2326,7 +2295,6 @@ body{padding-left:0!important}
 .kb .abin{position:relative;gap:8px}
 .kb .hback{display:none;align-items:center;gap:2px;flex:none;height:36px;padding:0 10px 0 4px;border:0;border-radius:var(--r-full);background:none;color:var(--u-acct);font:inherit;font-size:var(--fs-base);font-weight:600;cursor:pointer}
 .kb .hback svg{width:20px;height:20px}
-@media (hover:hover){.kb .hback:hover{background:var(--u-accent2)}}
 body:not([data-tab="dash"]) .kb .hback{display:inline-flex}
 .kb .brand{display:flex!important;align-items:center;gap:8px;margin-right:auto!important;font-weight:700;font-size:var(--fs-l)!important;min-width:0}
 .kb .brand .u-mark.sb-logo{display:block!important;width:28px;height:28px;flex:none}
@@ -2373,7 +2341,6 @@ body.sel{--u-toast-b:190px}
 .pay .dn-t{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:1px;text-align:left;padding:12px 14px;border:1px solid var(--u-line);border-radius:var(--r-l);background:var(--u-surface);color:var(--u-ink);font:inherit;cursor:pointer;overflow:hidden;min-width:0;transition:border-color .15s,transform .15s}
 .pay .dn-t::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--dn-c)}
 .pay .dn-home{--dn-c:var(--u-accent)} .pay .dn-balance{--dn-c:var(--g-b)} .pay .dn-list{--dn-c:var(--k-list)}
-@media (hover:hover){.pay .dn-t:hover{border-color:var(--dn-c);transform:translateY(-1px)}}
 .pay .dn-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .pay .dn-i{width:30px;height:30px;border-radius:var(--r-m);display:grid;place-items:center;background:color-mix(in srgb,var(--dn-c) 13%,transparent);color:var(--dn-c);flex:none}
 .pay .dn-i svg{width:18px;height:18px}
@@ -3052,7 +3019,6 @@ body[data-tab="plan"] .kb .hcur .mic{color:#1e3a64}
 .pay .pl-c.ex{background:color-mix(in srgb,var(--u-ok) 10%,var(--u-surface))}
 .pay .pl-c.fin{background:color-mix(in srgb,var(--u-ok) 16%,var(--u-surface))}
 .pay .pl-c.fin small{color:var(--u-ok);font-weight:700}
-@media (hover:hover){.pay .pl-c:hover{background:var(--u-accent2)}}
 .pay .pl-done{background:repeating-linear-gradient(135deg,transparent 0 6px,var(--u-soft) 6px 7px)!important}
 .pay .pl-sum{font-weight:700;background:var(--u-chip)!important}
 .pay .pl-sum.ok{color:var(--u-ok)} .pay .pl-sum.neg{color:var(--u-danger)}
@@ -3218,7 +3184,6 @@ body[data-tab="plan"] .kb .fab{display:none!important}
 .pay .hrow2{display:grid;grid-template-columns:3.2em minmax(0,1fr) auto;gap:10px;align-items:start;width:100%;padding:9px 12px;border:0;border-top:1px solid var(--u-soft);background:var(--u-surface);color:var(--u-ink);font:inherit;text-align:left;cursor:pointer}
 .pay .hyr+.hrow2{border-top:0}
 .pay .hrow2.late{box-shadow:inset 3px 0 0 var(--u-danger)}
-@media (hover:hover){.pay .hrow2:hover{background:var(--u-accent2)}}
 .pay .hd2{display:flex;flex-direction:column;line-height:1.2}
 .pay .hd2 b{font-size:var(--fs-base)} .pay .hd2 small{font-size:10.5px;color:var(--u-sub)}
 .pay .hm2{display:flex;flex-direction:column;gap:3px;min-width:0}
@@ -3282,8 +3247,6 @@ body[data-tab="list"] .kb .layout,body[data-tab="graph"] .kb .layout{padding-top
 .pay .goal.gfold .g-ring,.pay .goal.gfold .g-msg,.pay .goal.gfold .g-steps,.pay .goal.gfold .g-stats,.pay .goal.gfold .g-note,.pay .goal.gfold .g-bl,.pay .goal.gfold .g-when{display:none}
 .pay .goal.gfold{gap:8px;padding-block:12px}
 .pay .goal.gfold .g-ttl{font-size:var(--fs-xl)}
-/* 借入先の一覧：マウスを乗せても青くしない */
-@media (hover:hover){.pay .vbal .acc:hover{background:var(--u-chip)!important;border-color:var(--u-soft)!important}}
 /* 借入先の画面：2026年1月時点・いまの残高 */
 .pay .ad-sum.ad-sum3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .pay .ad-sum small.ok{color:var(--u-ok);font-weight:700}
@@ -3376,7 +3339,6 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay #v-home .row{padding:12px 16px;gap:4px 14px;grid-template-columns:24px minmax(0,1fr) auto;box-shadow:none!important;background:var(--u-surface)}
 .pay #v-home .row.st-late{background:var(--u-danger2)!important}
 .pay #v-home .row.st-deferred{background:repeating-linear-gradient(135deg,transparent 0 8px,color-mix(in srgb,var(--u-line) 35%,transparent) 8px 9px)!important}
-@media (hover:hover){.pay #v-home .row:hover{background:var(--u-chip)!important}}
 .pay #v-home .row .nm{font-size:var(--fs-l)}
 .pay #v-home .row .amt{font-size:var(--fs-l)}
 .pay #v-home .row .slbl{border-radius:999px!important}
@@ -3404,7 +3366,6 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay #v-home .row.st-deferred{--st-c:#d98a1c;--st-bg:color-mix(in srgb,#d98a1c 11%,var(--u-surface))}
 .pay #v-home .row.st-deferred{background-image:repeating-linear-gradient(135deg,transparent 0 8px,color-mix(in srgb,#d98a1c 10%,transparent) 8px 9px)!important}
 .pay #v-home .row.st-paid .rname,.pay #v-home .row.st-paid .amt{color:var(--u-ink)}
-@media (hover:hover){.pay #v-home .row:hover{filter:brightness(.97)}}
 /* 未払（通常）の札も青に、前月延滞分は赤の塗り */
 .pay #v-home .row.st-planned:not(.over) .slbl{background:#3b5bdb!important;color:#fff!important;box-shadow:none!important}
 /* 一覧の上に色の見本 */
@@ -3414,15 +3375,7 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay #v-home .ptoolbar #cFbar .fline{padding:10px 14px}
 .pay #v-home .stlg{border-top:1px solid var(--u-soft);border-bottom:0}
 @media (max-width:639px){.pay .rbd{gap:0 10px}.pay .rbd>span+span::before{content:none}}
-/* マウスを乗せたときに青くしない（行・カード・一覧のボタンすべて）：うすい灰色だけにする */
-@media (hover:hover){
-  .u-btns button:where(:not(.u-btn,.u-chip)):hover,.u-btn:not(:disabled):not(.pri):not(.txt):hover,.kb button:not(:disabled):hover{border-color:var(--u-strong)!important}
-  .pay .np-it:hover,.pay .row:hover,.pay .hrow2:hover,.pay .pl-c:hover,.pay .vbal .acc:hover,.pay .td-row:hover,.pay .dn-t:hover,.pay .bplan:hover,.pay .pk-goal:hover{background-color:var(--u-chip)!important;border-color:var(--u-line)!important;outline:0}
-  .pay .ptable tr.trow:hover td,.pay .v2 .ptable tr.trow:hover td{background:var(--u-chip)!important}
-  .kb #list .it:not(.on):hover{background:var(--u-chip)!important}
-  .kb #list .day .dadd:hover,.kb .hback:hover{background:var(--u-chip)!important}
-  .pay #v-home .row:hover{filter:none;background-color:color-mix(in srgb,var(--st-bg,var(--u-surface)) 100%,#000 4%)!important}
-  .pay .hrow2:hover,.pay .vbal .acc:hover{border-top-color:var(--u-soft)!important}
-}
 .pay .hrow2:focus,.pay .acc:focus,.pay .row:focus{outline:none}
 .pay .hrow2:focus-visible,.pay .acc:focus-visible,.pay .row:focus-visible{outline:2px solid var(--u-strong);outline-offset:-2px}
+
+/* マウスを乗せても色や形を変えない（全画面）。上の :hover の指定はすべて外した */
