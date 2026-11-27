@@ -3387,3 +3387,11 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay .rbd .bb{background:none;padding-left:2px}
 .pay .rbd b{font-weight:700} .pay .rbd small{font-size:10px;margin-left:2px}
 .pay #v-home .pflow{border-radius:12px;overflow:hidden}
+/* 内訳（元金・利息など）は札にしない：小さな文字の1行に。状態の札（支払済・未払など）と見分けやすく */
+.pay .rbd{gap:2px 0;margin-top:3px}
+.pay .rbd>span,.pay .rbd .pr,.pay .rbd .in,.pay .rbd .ot,.pay .rbd .bb{background:none!important;color:var(--u-sub)!important;border-radius:0;padding:0;font-size:var(--fs-xs)}
+.pay .rbd>span+span::before{content:"／";margin:0 6px;color:var(--u-strong)}
+.pay .rbd b{color:var(--u-ink);font-weight:600}
+.pay .rbd .pr::after,.pay .rbd .in::after{content:none}
+/* 状態の札は、はっきり塗る（支払済＝緑の塗り・白文字） */
+.pay #v-home .row.st-paid .slbl{background:var(--u-ok)!important;color:#fff!important}
