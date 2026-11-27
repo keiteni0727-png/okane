@@ -91,6 +91,7 @@ function closePanels() {
 const payTab = () => view.tab === "home" || view.tab === "balance";
 const barMonth = () => (payTab() && FIN.pay.period ? FIN.pay.period() : view.month);
 function setBarMonth(m) {
+  if (m < FIN.MIN_PERIOD) m = FIN.MIN_PERIOD;
   if (payTab() && FIN.pay.setPeriod) {
     FIN.pay.setPeriod(m);
     renderMonthBar();
@@ -105,6 +106,7 @@ function renderMonthBar() {
     .map(m => `<option value="${m}"${m === cur ? " selected" : ""}>${FIN.periodLabel(m)}</option>`)
     .join("");
   $("mcur").disabled = cur === thisPeriod();
+  if ($("mprev")) $("mprev").disabled = cur <= FIN.MIN_PERIOD;
 }
 /* 家計簿専用の月度の切り替え：前の月度へは戻れる。先の月度へは進めない（未来の支出は入れないので） */
 function renderKbMon() {
@@ -112,10 +114,11 @@ function renderKbMon() {
   if (!el) return;
   const cur = thisPeriod();
   if (view.month > cur) view.month = cur;
+  if (view.month < FIN.MIN_PERIOD) view.month = FIN.MIN_PERIOD;
   const isCur = view.month === cur;
   const [ps, pe] = FIN.periodRange(view.month);
   const nm = FIN.periodLabel(view.month).replace(/^(\d+)年/, "<small>$1年</small>");
-  el.innerHTML = `<button type="button" class="km-b" data-kbm="prev" aria-label="前の月度">‹</button>
+  el.innerHTML = `${view.month <= FIN.MIN_PERIOD ? `<span class="km-b km-off" aria-hidden="true"></span>` : `<button type="button" class="km-b" data-kbm="prev" aria-label="前の月度">‹</button>`}
     <div class="km-c"><b>${nm}</b><span class="num">${md(ps)}〜${md(pe)}</span></div>
     ${isCur ? `<span class="km-b km-off" aria-hidden="true"></span>` : `<button type="button" class="km-b" data-kbm="next" aria-label="次の月度">›</button>`}
     ${isCur ? "" : `<button type="button" class="km-now" data-kbm="now">今月度へ</button>`}`;
@@ -146,8 +149,9 @@ function periodChoices(shown) {
     ...(FIN.pay.months ? FIN.pay.months() : []),
   ].sort();
   const hi = [shiftM(cur, 12), shown || view.month].sort().pop();
+  const lo = [all[0], FIN.MIN_PERIOD].sort().pop(); // 2026年1月より前へは行かない
   const out = [];
-  for (let m = hi; m >= all[0] && out.length < 120; m = shiftM(m, -1)) out.push(m);
+  for (let m = hi; m >= lo && out.length < 120; m = shiftM(m, -1)) out.push(m);
   return out;
 }
 function setMsg(t, err) {

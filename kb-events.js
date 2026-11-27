@@ -546,6 +546,7 @@ function clickLedger(t, d) {
   if (d.kbm) {
     view.month = d.kbm === "now" ? thisPeriod() : shiftM(view.month, d.kbm === "prev" ? -1 : 1);
     if (view.month > thisPeriod()) view.month = thisPeriod();
+    if (view.month < FIN.MIN_PERIOD) view.month = FIN.MIN_PERIOD;
     render();
   } else if (d.gby || d.gper) {
     if (d.gby) {

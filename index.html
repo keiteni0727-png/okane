@@ -119,16 +119,16 @@
   <!-- 計画：返済のざっくり俯瞰と補填のシミュレーション（plan.js） -->
   <section id="v-plan" class="v2 vplan"><div id="planBox"></div></section>
 
-  <!-- 借入・返済（残高と口座＋返済計画） -->
+  <!-- 借入・返済（残高と借入先＋返済計画） -->
   <section id="v-balance" class="v2 vbal">
     <div class="pk" id="bStats"></div>
     <div class="pgrid">
       <div class="pmain">
         <div class="panel bacc">
-          <div class="panel-h"><h2>口座</h2><span class="note">押すと履歴・今後の予定・返済計画が見られます</span></div>
+          <div class="panel-h"><h2>借入先</h2><span class="note">押すと履歴・今後の予定・返済計画が見られます</span></div>
           <div id="bGroups"></div>
         </div>
-        <button type="button" class="panel bplan" data-tab="plan"><span class="bp-i" aria-hidden="true">＋</span><span class="bp-t"><b>補填したらどうなる？</b><span>月ごと・口座ごとに上乗せして、完済の早まり方と減る利息を「計画」で試せます</span></span><span class="bp-go" aria-hidden="true">›</span></button>
+        <button type="button" class="panel bplan" data-tab="plan"><span class="bp-i" aria-hidden="true">＋</span><span class="bp-t"><b>補填したらどうなる？</b><span>月ごと・借入先ごとに上乗せして、完済の早まり方と減る利息を「計画」で試せます</span></span><span class="bp-go" aria-hidden="true">›</span></button>
         <div class="panel broad" data-foldbox="road">
           <div class="panel-h fold-h" data-fold="road" role="button" tabindex="0"><h2>毎月の返済が軽くなっていく日</h2><span class="note">いまの返済条件のまま（家賃などは除く）</span></div>
           <div class="chartbox" id="pChart"></div>
@@ -222,9 +222,9 @@
     <div data-pg="paym"><div class="mu st-desc">支払いの「支払いの方法」に出す選択肢です。⠿での並び替えは支払いの入力欄の並びに反映されます。右上の「編集」で削除ができます。</div>
       <div class="setgrp"><div class="pml" id="mMethods"></div></div>
       <form id="mMethodForm" class="pmadd setadd"><input type="text" id="mMethodIn" placeholder="追加する方法（例：楽天銀行）" aria-label="新しい支払いの方法"><button>＋ 追加</button></form></div>
-    <div data-pg="gen"><div class="mu st-desc">返済中の口座は、次の給料日以降の支払予定を いまの残高・年利・返済条件 から作り直せます（3年分）。延滞分・支払済・口座なしの支払はそのまま残ります。口座の設定を保存したときも、その口座の分は自動で作り直します。</div>
+    <div data-pg="gen"><div class="mu st-desc">返済中の借入先は、次の給料日以降の支払予定を いまの残高・年利・返済条件 から作り直せます（3年分）。延滞分・支払済・借入先なしの支払はそのまま残ります。借入先の設定を保存したときも、その借入先の分は自動で作り直します。</div>
       <div class="setgrp setform"><button class="pri" id="mRegen">今後の支払予定を作り直す</button></div>
-      <div class="mu st-desc mt12">奨学金などの定額の支払は、月を指定してまとめて作れます（同じ月にすでにある口座はとばします）。</div>
+      <div class="mu st-desc mt12">奨学金などの定額の支払は、月を指定してまとめて作れます（同じ月にすでにある借入先はとばします）。</div>
       <div class="setgrp setform"><div class="pgen"><input type="month" id="mGenMonth" aria-label="作成する月"><button class="pri" id="mGen">支払予定を作成</button></div></div></div>
     <div data-pg="imp"><div class="mu st-desc">Notionで管理していた支払いのCSVから、これまでに支払った履歴（金額・元金・利息・支払前の残高）を取り込みます。未来の分と未払の分は取り込みません。</div>
       <div class="setgrp setform" id="impBox"></div></div>

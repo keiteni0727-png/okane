@@ -1,9 +1,9 @@
 /* ===================== Notionからの取り込み（支払いの履歴） =====================
   設定 → 支払い・返済の設定 → 「Notionから取り込む」で、Notionから書き出したCSVを選ぶ。
   ・支払済（Yes）で、今日までの行だけを取り込む（未来の予定・未払は取り込まない）
-  ・サブカテゴリ（a_SMBCゴールド など）を口座に当てはめる。当てはまらない口座は、画面で選び直せる
+  ・サブカテゴリ（a_SMBCゴールド など）を借入先に当てはめる。当てはまらない借入先は、画面で選び直せる
   ・元金・利息・支払前残高をそのまま記録する。いまの残高は変えない（imported の印をつけ、残高に反映済みとしない）
-  ・すでにアプリにある支払（同じ口座・近い日付・同じ金額）は二重に取り込まない
+  ・すでにアプリにある支払（同じ借入先・近い日付・同じ金額）は二重に取り込まない
   列：支出,金額,カテゴリ,サブカテゴリ,支払日,支払方法,支払済,メモ,支払い対象,支払予定,元金,利息,支払前残高 */
 (() => {
   const $ = id => document.getElementById(id);
@@ -95,7 +95,7 @@
     });
     return out;
   }
-  /* サブカテゴリ → 口座（同じ名前の口座があれば自動で当てはめる） */
+  /* サブカテゴリ → 借入先（同じ名前の借入先があれば自動で当てはめる） */
   function autoMap(list) {
     const accs = FIN.pay.imp.accList();
     const subs = [...new Set(list.map(x => x.sub).filter(Boolean))];
@@ -106,7 +106,7 @@
     });
     return subs;
   }
-  /* すでにアプリにある支払と同じものか（同じ口座または同じ名前・前後3日・同じ金額） */
+  /* すでにアプリにある支払と同じものか（同じ借入先または同じ名前・前後3日・同じ金額） */
   function isDup(x, accId, existing) {
     const t = new Date(x.date).getTime();
     return existing.some(
@@ -133,7 +133,7 @@
         used.add(o);
         x.orig = o;
         o.lateRow = x;
-        if (!x.sub) x.sub = o.sub; // 延滞の行は元の請求の口座で取り込む
+        if (!x.sub) x.sub = o.sub; // 延滞の行は元の請求の借入先で取り込む
       }
     });
     const subs = autoMap(list);
@@ -191,17 +191,17 @@
     const p = plan();
     const accs = P.accList();
     const opt = s =>
-      `<select data-impmap="${esc(s)}"><option value="">口座なし（金額だけ記録）</option>${accs.map(a => `<option value="${a.id}"${imp.map[s] === a.id ? " selected" : ""}>${esc(a.name)}</option>`).join("")}<option value="skip"${imp.map[s] === "skip" ? " selected" : ""}>取り込まない</option></select>`;
+      `<select data-impmap="${esc(s)}"><option value="">借入先なし（金額だけ記録）</option>${accs.map(a => `<option value="${a.id}"${imp.map[s] === a.id ? " selected" : ""}>${esc(a.name)}</option>`).join("")}<option value="skip"${imp.map[s] === "skip" ? " selected" : ""}>取り込まない</option></select>`;
     const cnt = s => p.items.filter(i => p.list.find(x => x.date === i.date && x.name === i.name && x.sub === s)).length;
     const first = p.items.length ? p.items.reduce((m, i) => (i.date < m ? i.date : m), p.items[0].date) : null;
     const last = p.items.length ? p.items.reduce((m, i) => (i.date > m ? i.date : m), p.items[0].date) : null;
     el.innerHTML = `<div class="imp-sum"><b>${esc(imp.file)}</b>
       <div>取り込む支払 <b class="num">${p.items.length}件</b>${first ? `（${first.replace(/-/g, "/")}〜${last.replace(/-/g, "/")}）` : ""}・支払った合計 <b class="num">${yen(p.items.filter(i => i.status === "paid").reduce((t, i) => t + i.amount, 0))}</b></div>
       ${p.items.some(i => i.status === "deferred") ? `<div>うち延滞にして翌月に払った請求 <b class="num">${p.items.filter(i => i.status === "deferred").length}件</b>（翌月の「○○（N月）」の行と組み合わせ、延滞利息も記録します）</div>` : ""}
-      <div class="mu">すでにアプリにある分 ${p.dup}件・取り込まない口座 ${p.skip}件は除きます。未来の分・未払の分は取り込みません。</div></div>
-      <div class="imp-h">口座の当てはめ</div>
+      <div class="mu">すでにアプリにある分 ${p.dup}件・取り込まない借入先 ${p.skip}件は除きます。未来の分・未払の分は取り込みません。</div></div>
+      <div class="imp-h">借入先の当てはめ</div>
       <div class="imp-map">${p.subs.map(s => `<div class="imp-r"><span class="imp-s">${esc(s)}</span>${opt(s)}</div>`).join("")}</div>
-      <div class="mu imp-note">元金・利息・支払前残高も記録し、返済の進み具合（借りた合計・増えた額・返した割合）と口座の履歴に反映します。いまの残高は変わりません。</div>
+      <div class="mu imp-note">元金・利息・支払前残高も記録し、返済の進み具合（借りた合計・増えた額・返した割合）と借入先の履歴に反映します。いまの残高は変わりません。</div>
       <div class="row sp imp-acts"><button class="ghost" data-impcancel="1">やめる</button><button class="pri" data-impgo="1"${p.items.length ? "" : " disabled"}>${p.items.length}件を取り込む</button></div>`;
   }
   async function go() {

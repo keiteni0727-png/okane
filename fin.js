@@ -4,7 +4,8 @@
   ・給料日は支払いの設定（config/master の payday）。土日なら直前の平日
   ・家計簿（kb.js）と支払い（pay.js）は、それぞれ FIN.kb / FIN.pay に呼び出せる関数を置く */
 const FIN = {
-  CASH: "現金", // 支払いの「残るお金」から引く、明細の支払い方法
+  CASH: "現金",
+  MIN_PERIOD: "2026-01", // 月度の切り替えでさかのぼれるいちばん前（データはここから）
   paydayNum: () => 25, // 給料日（支払いの設定が読めたら pay.js が差し替える）
   period: null, // 表示中の月度 "YYYY-MM"
   kb: {},

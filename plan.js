@@ -1,7 +1,7 @@
-/* ===================== 計画：返済のざっくり俯瞰と「この月・この口座に補填したら」 =====================
+/* ===================== 計画：返済のざっくり俯瞰と「この月・この借入先に補填したら」 =====================
   支払い ＞ 計画。スプレッドシート（概要・一覧・月別返済計画）の代わり。
   ・上：手取り・毎月の返済・残るお金・すべて完済・利息の合計（補填ありなら、なしとの差も）
-  ・表：月（行）× 口座（列）。マスに「その月の支払額」と「払った後の残高」。マスを押すと補填を入れられる
+  ・表：月（行）× 借入先（列）。マスに「その月の支払額」と「払った後の残高」。マスを押すと補填を入れられる
   ・補填は「その月だけ」か「その月から毎月」。保存は設定（config/master の plan）なので、PCとスマホで同じ
   計算は支払いの返済予定表（pay.js の schedule）と同じ。補填の分だけ、その月の元金に上乗せする */
 (() => {
@@ -18,7 +18,7 @@
     const c = P().S.cfg;
     return { extras: [], living: 0, ...(c.plan || {}) };
   };
-  /* 補填：その口座・その月の上乗せ額（毎月の分も足す） */
+  /* 補填：その借入先・その月の上乗せ額（毎月の分も足す） */
   const extraFn = (extras, id) => ym =>
     extras.filter(x => x.acc === id && (x.every ? ym >= x.ym : ym === x.ym)).reduce((t, x) => t + (x.amt || 0), 0);
 
@@ -56,7 +56,7 @@
       }
       return { a, by, end: bal <= 0 ? FIN.addMonths(ym, -1) : null, int: 0, debt: false };
     });
-    /* 早く完済する口座から左に並べる */
+    /* 早く完済する借入先から左に並べる */
     cols.sort((x, y) => (x.end || "9999") < (y.end || "9999") ? -1 : (x.end || "9999") > (y.end || "9999") ? 1 : 0);
     const months = [...new Set(cols.flatMap(c => Object.keys(c.by)))].sort();
     const last = cols.filter(c => c.debt).reduce((m, c) => (c.end && c.end > m ? c.end : m), "");
@@ -92,7 +92,7 @@
       ${has ? `<div class="pv-ex">${plan.extras
         .map(x => {
           const c = now.cols.find(c => c.a.id === x.acc);
-          return `<span class="pv-chip">${esc(c ? c.a.name : "口座")}・${ymShort(x.ym)}${x.every ? "から毎月" : ""} <b>+${man(x.amt)}</b><button type="button" data-pldel="${x.id}" aria-label="この補填を消す">×</button></span>`;
+          return `<span class="pv-chip">${esc(c ? c.a.name : "借入先")}・${ymShort(x.ym)}${x.every ? "から毎月" : ""} <b>+${man(x.amt)}</b><button type="button" data-pldel="${x.id}" aria-label="この補填を消す">×</button></span>`;
         })
         .join("")}<button type="button" class="pv-clr" data-plclear="1">すべて消す</button></div>` : ""}
     </div>
@@ -100,17 +100,17 @@
     <div class="pv-grid">
       <div class="panel pv-try" id="pvTry">${tryHTML(plan, now)}</div>
       <div class="panel pv-chart"><div class="panel-h"><h2>借金の残高の減り方</h2><span class="note">${has ? '<i class="lg base"></i>補填なし <i class="lg now"></i>補填あり' : "いまの条件のまま"}</span></div>${chartSVG(base, now, has)}</div>
-      <div class="panel pv-tl"><div class="panel-h"><h2>口座ごとの完済</h2><span class="note">早い順</span></div>${timelineHTML(base, now, has)}</div>
+      <div class="panel pv-tl"><div class="panel-h"><h2>借入先ごとの完済</h2><span class="note">早い順</span></div>${timelineHTML(base, now, has)}</div>
       <div class="panel pv-drop"><div class="panel-h"><h2>毎月の返済が軽くなる月</h2><span class="note">手取り ${yen(inc)}<button type="button" class="pv-lk" data-inc="${FIN.currentPeriod()}">変更</button></span></div>${dropHTML(now, inc, plan)}</div>
     </div>
-    <details class="panel pv-tbl"${st.tbl ? " open" : ""}><summary>月ごとの表で見る（口座ごとの支払額と残高）</summary>${tableHTML(base, now, plan, inc)}</details>
+    <details class="panel pv-tbl"${st.tbl ? " open" : ""}><summary>月ごとの表で見る（借入先ごとの支払額と残高）</summary>${tableHTML(base, now, plan, inc)}</details>
     <div class="mu pl-note">計算は支払いの返済予定表と同じ（利息＝残高×年利×前月の日数÷365）。補填は、その月の元金に上乗せします。</div>`;
   }
-  /* 補填をためす：口座・月・額をえらぶと、その場で効果が出る */
+  /* 補填をためす：借入先・月・額をえらぶと、その場で効果が出る */
   function tryHTML(plan, now) {
     const debts = now.cols.filter(c => c.debt || c.a.repayType === "none");
     const c = debts.find(x => x.a.id === st.acc) || debts[0];
-    if (!c) return `<div class="empty">返済中の口座はありません</div>`;
+    if (!c) return `<div class="empty">返済中の借入先はありません</div>`;
     const months = Object.keys(c.by).sort();
     if (!c.by[st.ym]) st.ym = months.find(m => m >= st.ym) || months[0];
     const others = plan.extras.filter(x => !(x.acc === c.a.id && x.ym === st.ym));
@@ -128,7 +128,7 @@
     const top = now.cols.filter(x => x.debt).sort((x, y) => (y.a.rate || 0) - (x.a.rate || 0))[0];
     return `<div class="panel-h"><h2>補填をためす</h2><span class="note">どこに入れると効くか</span></div>
       <div class="pt-body">
-        <div class="pt-lb">口座</div>
+        <div class="pt-lb">借入先</div>
         <div class="pt-accs">${debts
           .map(x => `<button type="button" class="pt-acc${x.a.id === c.a.id ? " on" : ""}" data-placc="${x.a.id}" style="--ac:${COL[x.a.category] || COL.other}"><b>${esc(x.a.name)}</b><small>${x.a.rate ? `年${x.a.rate}%` : "利息なし"}・${man(x.a.balance)}</small>${top && x.a.id === top.a.id ? '<em>利息が高い</em>' : ""}</button>`)
           .join("")}</div>
@@ -147,7 +147,7 @@
         <button type="button" class="pt-add" data-pladd="1"${st.amt > 0 ? "" : " disabled"}>支払予定に「繰上げ返済」として追加する</button>
       </div>`;
   }
-  /* 残高のグラフ：合計の残高（補填なし＝点線・補填あり＝線）と、口座の完済の印 */
+  /* 残高のグラフ：合計の残高（補填なし＝点線・補填あり＝線）と、借入先の完済の印 */
   function chartSVG(base, now, has) {
     const sum = pj => {
       const m = {};
@@ -160,7 +160,7 @@
     };
     const endAll = [base.last, now.last].filter(Boolean).sort().pop();
     const months = (base.months.length >= now.months.length ? base.months : now.months).filter(ym => !endAll || ym <= FIN.addMonths(endAll, 1));
-    if (months.length < 2) return `<div class="empty">返済中の口座はありません</div>`;
+    if (months.length < 2) return `<div class="empty">返済中の借入先はありません</div>`;
     const sb = sum(base),
       sn = sum(now);
     const W = 640, H = 220, L = 46, R = 12, T = 12, B = 26;
@@ -180,10 +180,10 @@
       ${ends.map(([c, i]) => `<circle cx="${x(i)}" cy="${y(sn[months[i]] ?? 0)}" r="4" class="dot"/><title>${esc(c.a.name)} 完済 ${ymLabel(c.end)}</title>`).join("")}
     </svg>`;
   }
-  /* 口座ごとの完済：いまから完済までの帯。補填で縮んだ分はうすく出す */
+  /* 借入先ごとの完済：いまから完済までの帯。補填で縮んだ分はうすく出す */
   function timelineHTML(base, now, has) {
     const cols = now.cols.filter(c => c.debt);
-    if (!cols.length) return `<div class="empty">返済中の口座はありません</div>`;
+    if (!cols.length) return `<div class="empty">返済中の借入先はありません</div>`;
     const start = FIN.currentPeriod();
     const lastB = base.last || now.last;
     const span = Math.max(1, monthsBetween(start, lastB));
@@ -197,7 +197,7 @@
       })
       .join("")}</div>`;
   }
-  /* 毎月の返済が軽くなる月：口座を完済した次の月から、毎月の返済がいくら減るか */
+  /* 毎月の返済が軽くなる月：借入先を完済した次の月から、毎月の返済がいくら減るか */
   function dropHTML(now, inc, plan) {
     const ms = now.months;
     if (!ms.length) return `<div class="empty">—</div>`;
@@ -212,7 +212,7 @@
         const reg = c.by[FIN.addMonths(c.end, -1)]?.pay || c.by[c.end].pay;
         rows.push({ ym: nx, name: c.a.name, pay: tot(nx), drop: reg });
       });
-    const first = tot(ms[1] || ms[0]); // 今月は払い終わった口座があるので、来月をいまの目安にする
+    const first = tot(ms[1] || ms[0]); // 今月は払い終わった借入先があるので、来月をいまの目安にする
     const left = v => inc - v - (plan.living || 0);
     return `<div class="pv-dl">
       <div class="pv-dr now"><span class="pv-dm">いま（${ymShort(ms[1] || ms[0])}〜）</span><span class="pv-dp">毎月 <b class="num">${yen(first)}</b></span><span class="pv-dleft">残る ${yen(left(first))}</span></div>
@@ -220,7 +220,7 @@
       <div class="pv-liv">生活費（毎月）<input type="number" inputmode="numeric" class="num" id="plLiving" value="${plan.living || ""}" placeholder="0"><span>を引いて「残る」を出します</span></div>
     </div>`;
   }
-  /* 月ごとの表（たたんでおく）：月 × 口座の支払額と残高。マスを押すと、その口座・その月を「補填をためす」に入れる */
+  /* 月ごとの表（たたんでおく）：月 × 借入先の支払額と残高。マスを押すと、その借入先・その月を「補填をためす」に入れる */
   function tableHTML(base, now, plan, inc) {
     return `<div class="pl-wrap"><table class="pl-t">
       <thead><tr><th class="pl-m">月</th>${now.cols.map(c => `<th><b>${esc(c.a.name)}</b><small>${yen(c.a.balance)}</small></th>`).join("")}<th class="pl-sum">返済の合計</th><th class="pl-sum">残る</th></tr></thead>
@@ -295,7 +295,7 @@
     render();
     await p.saveCfg();
   }
-  /* 補填を実際の支払予定にする（その月の口座の支払日に、元金だけの「繰上げ返済」を足す） */
+  /* 補填を実際の支払予定にする（その月の借入先の支払日に、元金だけの「繰上げ返済」を足す） */
   async function addToSchedule() {
     const p = P();
     const { id, ym } = st.cell;
@@ -332,7 +332,7 @@
     if (!t) return;
     const d = t.dataset;
     const plan = cfgPlan();
-    /* 補填をためす（画面の中）：口座・月・額・毎月をえらぶ */
+    /* 補填をためす（画面の中）：借入先・月・額・毎月をえらぶ */
     const inTry = !!t.closest("#pvTry");
     if (d.placc) {
       st.acc = d.placc;

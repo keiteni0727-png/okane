@@ -2,7 +2,7 @@
   家計簿の画面（kb.js）とは FIN（fin.js）を通してやりとりする。ここで決めた名前は外に出ない */
 (() => {
   /* ===================== 定数 ===================== */
-  /* 口座の区分。l＝正式名、s＝一覧の短い名前。COLS は「お金の流れ」に並べる区分（個人からの借入は「その他」に入れる） */
+  /* 借入先の区分。l＝正式名、s＝一覧の短い名前。COLS は「お金の流れ」に並べる区分（個人からの借入は「その他」に入れる） */
   const CAT = {
     card: { l: "クレジットカード", s: "カード" },
     loan: { l: "消費者金融", s: "消費者金融" },
@@ -12,7 +12,7 @@
   const COLS = ["card", "loan", "other"];
   const MGMT_START = "2026-10-01"; // この日以降の支払から管理
   const DEFAULT_PAYDAY = 25; // 給料日の既定値（設定で変えられる）
-  const DEFAULT_ACC_DAY = 27; // 口座の支払日の既定値
+  const DEFAULT_ACC_DAY = 27; // 借入先の支払日の既定値
   const REGEN_MONTHS = 36; // 支払予定を作り直す期間（月）
   const SCHEDULE_MAX = 600; // 返済予定表を計算する最大の回数
   const KFOLD = "shiharai.fold"; // 折りたたみの開閉（この端末だけに保存）
@@ -20,10 +20,10 @@
 
   /* ===================== 状態 ===================== */
   const S = {
-    accounts: {}, // 口座 {口座ID: 口座}（クラウドの accounts/）
+    accounts: {}, // 借入先 {借入先ID: 借入先}（クラウドの accounts/）
     months: {}, // 支払 {"YYYY-MM": {items: [...]}}（クラウドの months/）
     cfg: { methods: ["口座引落", "振込", "カード"], income: 0, payday: DEFAULT_PAYDAY }, // 設定（config/master）
-    sched: {}, // 口座ごとの返済予定表（描画のたびに計算し直す）
+    sched: {}, // 借入先ごとの返済予定表（描画のたびに計算し直す）
     _base: null, // 「もしも」の比べる元（データが変わったら捨てる）
     view: "none", // home / balance（家計簿の画面を開いているときは none）
     filter: "all", // 一覧の絞り込み all / unpaid / late
@@ -35,7 +35,7 @@
       }
     })(), // 一覧のまとめ方 week（週ごと）/ day（日付ごと）
     sim: { extra: 0, strat: "rate" }, // 「毎月あと少し返せたら」
-    ad: null, // 開いている口座の画面 {id, tab, from, val, pp}
+    ad: null, // 開いている借入先の画面 {id, tab, from, val, pp}
     fold: {}, // 折りたたみの開閉
     db: null,
     dbFail: false,
@@ -174,7 +174,7 @@
   function schedule(a, opt = {}) {
     if (!a || !a.balance || a.balance <= 0 || !a.repayType || a.repayType === "none")
       return { rows: [], stalled: false };
-    // 今期までに登録済みの未払と延滞分を先に反映し、次の給料日以降は残高・年利・口座の設定の条件で計算する
+    // 今期までに登録済みの未払と延滞分を先に反映し、次の給料日以降は残高・年利・借入先の設定の条件で計算する
     const from = nextStart();
     const ev = allItems().filter(
       i =>
@@ -254,7 +254,7 @@
     const r = s.rows;
     return { months: r.length, end: r.length ? r[r.length - 1].date : null, stalled: s.stalled };
   }
-  // 次の給料日以降の支払予定を、口座ごとの返済予定表から作り直す（延滞分・支払済・手入力の口座なしの支払はそのまま）
+  // 次の給料日以降の支払予定を、借入先ごとの返済予定表から作り直す（延滞分・支払済・手入力の借入先なしの支払はそのまま）
   function regenFuture(ids, months = REGEN_MONTHS) {
     const from = nextStart();
     const lim = addMonths(ymOf(from), months);
@@ -431,7 +431,7 @@
   }
   /* ---------- 返済の進み具合（やる気が続くように：返した額・残り日数・減らせた利息） ---------- */
   const isPrepay = i => i.memo === "繰上げ返済" || /繰上げ返済$/.test(i.name || "");
-  /* 口座ごと：管理を始めてから返した元金（残高に反映済みの支払済）と、そのときの残高 */
+  /* 借入先ごと：管理を始めてから返した元金（残高に反映済みの支払済）と、そのときの残高 */
   /* 取り込んだ履歴（imported）も含める。支払前残高（balanceBefore）が前回の「残高−元金」より増えていたら、
      追加借入・リボの増加として「増えた額」に数える。返した割合＝返した元金 ÷（はじめの残高＋増えた額） */
   function progressOf(a) {
@@ -463,7 +463,7 @@
     const int = s.rows.reduce((t, x) => t + x.interest, 0);
     return { int: Math.max(0, int - (now ? now.interest : 0)), months: Math.max(0, s.rows.length - (now ? now.months : 0)) };
   }
-  /* 全体：総残高に入る口座（個人からの借入は除く）の合計と、いちばん遅い完済日までの日数 */
+  /* 全体：総残高に入る借入先（個人からの借入は除く）の合計と、いちばん遅い完済日までの日数 */
   function goalData() {
     const accs = accList().filter(a => a.category !== "personal" && a.balance != null && a.active !== false);
     const per = accs.map(a => {
@@ -480,7 +480,7 @@
     const saved = per.reduce((t, x) => t + x.saved.int, 0),
       savedM = Math.max(0, ...per.map(x => x.saved.months));
     const nextDone = per.filter(x => x.info && x.info.end).sort((x, y) => (x.info.end < y.info.end ? -1 : 1))[0] || null;
-    /* 段階の目標：返済予定のある口座を、早く完済できる順に1つずつ（完済した口座は先頭に ✓） */
+    /* 段階の目標：返済予定のある借入先を、早く完済できる順に1つずつ（完済した借入先は先頭に ✓） */
     const stages = [
       ...per.filter(x => x.a.balance === 0 && x.total > 0),
       ...per.filter(x => x.a.balance > 0 && x.info && x.info.end).sort((x, y) => (x.info.end < y.info.end ? -1 : 1)),
@@ -542,7 +542,7 @@
         a.bal -= pr;
         budget -= p;
       }
-      // 余り（完済した口座の分＋追加返済）を優先口座へ
+      // 余り（完済した借入先の分＋追加返済）を優先借入先へ
       for (const a of order) {
         if (budget <= 0) break;
         if (a.bal <= 0) continue;
@@ -559,7 +559,7 @@
     return { series, done, totalInt, end: series.length ? series[series.length - 1].ym : null, order, budget: budget0 };
   }
   function simulateBase() {
-    // 口座ごとに今の条件のまま（計画は使わない、繰上げなし）
+    // 借入先ごとに今の条件のまま（計画は使わない、繰上げなし）
     const accs = debtAccs().filter(a => a.balance > 0);
     let totalInt = 0,
       end = null;
@@ -620,7 +620,7 @@
         if (d < 0) p = Math.max(0, p + d);
       }
     } else {
-      // 内訳が入っていない支払（Notionから取り込んだ延滞分など）：口座の毎月のリボ支払額までをリボ、残りをそれ以外として扱う
+      // 内訳が入っていない支払（Notionから取り込んだ延滞分など）：借入先の毎月のリボ支払額までをリボ、残りをそれ以外として扱う
       const bal = it.balanceBefore ?? a.balance ?? 0;
       const ym = bmOf(it);
       i = interestFor(bal, a.rate, it.date);
@@ -651,7 +651,7 @@
     S.months[f.ym] = { items: S.months[f.ym].items.filter(x => x.id !== id) };
     return f.ym;
   }
-  // 「元に戻す」用に、変更前の月と口座を控える
+  // 「元に戻す」用に、変更前の月と借入先を控える
   function snapOf(yms, ids) {
     const m = {},
       a = {};
@@ -1125,7 +1125,7 @@
 
   /* ---------- 借入・返済：完済への道のり（いちばん上の大きな帯） ---------- */
   function goalHTML(g, ol, link) {
-    if (!g.start) return `<div class="goal empty-goal"><b>口座を登録すると、完済までの道のりがここに出ます</b></div>`;
+    if (!g.start) return `<div class="goal empty-goal"><b>借入先を登録すると、完済までの道のりがここに出ます</b></div>`;
     const st = (lb, v, sub, cls = "") => `<div class="g-st ${cls}"><span class="lb">${lb}</span><b class="num">${v}</b>${sub ? `<span class="s">${sub}</span>` : ""}</div>`;
     const c = g.cur;
     const n = g.stages.length,
@@ -1138,7 +1138,7 @@
     const msg = !c
       ? g.left <= 0
         ? "🎉 すべて完済しました。本当におつかれさまでした！"
-        : "返済予定のある口座はすべて完済しました。のこりは定額の口座です"
+        : "返済予定のある借入先はすべて完済しました。のこりは定額の借入先です"
       : `${esc(c.a.name)}を完済すると、毎月の返済が <b class="num">${yen(light)}</b> 軽くなります`;
     /* 目標の並び：✓ 終わった／● いま／○ これから／🏁 ゴール */
     const steps = g.stages
@@ -1153,7 +1153,7 @@
       <div class="g-top">
         <div class="g-cd">
           <span class="g-eb">${c ? `いまの目標 ${k}/${n}` : "完済への道のり"}</span>
-          <div class="g-ttl">${c ? `${esc(c.a.name)}を完済` : g.left <= 0 ? "すべて完済！" : "定額の口座をのこすのみ"}</div>
+          <div class="g-ttl">${c ? `${esc(c.a.name)}を完済` : g.left <= 0 ? "すべて完済！" : "定額の借入先をのこすのみ"}</div>
           ${c ? `<div class="g-when">あと <b class="num">${yen(c.a.balance)}</b>・${c.info.months}ヶ月（${ymLabel(ymOf(c.info.end))}予定）</div>` : ""}
         </div>
         ${ring}
@@ -1162,16 +1162,16 @@
       <div class="g-msg"><span>${msg}</span>${link ? `<button type="button" class="g-link" data-tab="balance">返済を見る ›</button>` : ""}</div>
       <ol class="g-steps">${steps}${goal}</ol>
       <div class="g-stats">
-        ${st("のこり（全体）", yen(g.left), `${g.per.filter(x => x.a.balance > 0).length}口座・全体の${Math.round(g.rate * 100)}%を返済`)}
+        ${st("のこり（全体）", yen(g.left), `${g.per.filter(x => x.a.balance > 0).length}借入先・全体の${Math.round(g.rate * 100)}%を返済`)}
         ${st("繰上げで減らせた利息", yen(g.saved), g.saved ? `完済が約${g.savedM}ヶ月早まりました` : "繰上げするとここに貯まります", g.saved ? "hi" : "")}
         ${st("毎月の返済", yen(ol.curPay), ol.curInt ? `うち利息 約${yen(ol.curInt)}` : "")}
         ${st("すべて完済まで", g.days != null ? `あと${g.days.toLocaleString("ja-JP")}日` : "—", g.days != null ? ymd(g.last.info.end) + "予定" : "")}
       </div>
-      <div class="g-note">返した割合＝返した元金 ÷（はじめの残高＋追加借入・リボで増えた額）。${g.noPlan ? "定額・利息なしの口座（奨学金など）は目標の順番に入れていません。" : ""}</div>
+      <div class="g-note">返した割合＝返した元金 ÷（はじめの残高＋追加借入・リボで増えた額）。${g.noPlan ? "定額・利息なしの借入先（奨学金など）は目標の順番に入れていません。" : ""}</div>
     </div>`;
   }
 
-  /* ---------- 残高と計画：集計・口座 ---------- */
+  /* ---------- 残高と計画：集計・借入先 ---------- */
   function renderBalance() {
     const acc = accList();
     const debt = acc.filter(a => a.balance && a.active !== false);
@@ -1230,7 +1230,7 @@
   function renderOutlook() {
     const d = outlookData();
     if (!d.rows.length) {
-      $("olTop").innerHTML = `<div class="empty">返済中の口座はありません</div>`;
+      $("olTop").innerHTML = `<div class="empty">返済中の借入先はありません</div>`;
       return;
     }
     const stall = d.rows.filter(x => x.stalled && !x.end);
@@ -1239,7 +1239,7 @@
       <div class="ol-kpi"><div><span class="label">毎月の返済</span><b class="num">${yen(d.curPay)}</b></div><div><span class="label">1年後の残高</span><b class="num">${man(d.y1)}</b><small class="ok">−${man(d.now - d.y1)}</small></div></div>
     </div>
     ${stall.length ? `<div class="warnbox ol-warn">${stall.map(x => esc(x.a.name)).join("・")} は返済額が利息以下のため、残高が減りません。</div>` : ""}
-    <div class="ol-next"><span class="label">次に完済する口座</span>${d.next
+    <div class="ol-next"><span class="label">次に完済する借入先</span>${d.next
       .slice(0, 3)
       .map(
         x =>
@@ -1264,7 +1264,7 @@
     renderRoad();
     renderWhatIf();
   }
-  /* 1回だけ繰上げするなら：効果の大きい口座の順 */
+  /* 1回だけ繰上げするなら：効果の大きい借入先の順 */
   function renderRank(amt) {
     const imp = debtAccs()
       .filter(a => a.balance > 0)
@@ -1287,7 +1287,7 @@
             )
             .join("") +
           (imp.length > 3
-            ? `<div class="note rank-more">他の口座：${imp
+            ? `<div class="note rank-more">他の借入先：${imp
                 .slice(3, 6)
                 .map(m => `${esc(m.a.name)} 利息${man(m.interest)}減`)
                 .join("、")}…</div>`
@@ -1310,7 +1310,7 @@
       ? `<span>利息に消えているお金</span><span class="num">毎月 約${yen(ti)}（返済の${tp ? Math.round((ti / tp) * 100) : 0}%）</span>`
       : "";
   }
-  /* 毎月の返済が軽くなっていく日：口座を完済するたびに毎月の返済額が下がるグラフと一覧 */
+  /* 毎月の返済が軽くなっていく日：借入先を完済するたびに毎月の返済額が下がるグラフと一覧 */
   function renderRoad() {
     const accs = debtAccs().filter(a => a.balance > 0);
     const start = ymOf(nextStart());
@@ -1350,7 +1350,7 @@
           r =>
             `<div class="tl"><span class="when">${ymLabel(r.end)}</span><span class="rd"><b>${esc(r.a.name)} 完済</b><span class="note">返済 毎月 ${yen(r.before)} → <b class="num">${yen(r.after)}</b></span></span><span class="diff">−${yen(r.pay)}</span></div>`,
         )
-        .join("") || `<div class="empty">返済中の口座はありません</div>`;
+        .join("") || `<div class="empty">返済中の借入先はありません</div>`;
   }
   /* 毎月の返済額の階段グラフ（スマホは小さく描く） */
   function roadChartSVG(months) {
@@ -1379,7 +1379,7 @@
     <path d="${path}V${y(0)}H${x(0)}Z" fill="var(--u-accent2)"/><path d="${path}" fill="none" stroke="var(--u-accent)" stroke-width="2"/>
   </svg>`;
   }
-  /* 毎月あと少し返せたら：金利の高い口座から返した場合と、いまのままを比べる */
+  /* 毎月あと少し返せたら：金利の高い借入先から返した場合と、いまのままを比べる */
   function renderWhatIf() {
     $("sExtra").value = S.sim.extra;
     $("sExtraV").textContent = S.sim.extra ? `+${yen(S.sim.extra)}／月` : "いまのまま";
@@ -1396,16 +1396,16 @@
       return (c1 - a1) * 12 + (d1 - b1);
     };
     $("sResult").innerHTML =
-      `金利の高い口座から返し、完済した口座の分も次に回すと：すべての完済 <b class="num">${plan.end ? ymLabel(plan.end) : "—"}</b>（${Math.max(0, ml(base.end) - ml(plan.end))}ヶ月早く）、利息 <b class="num t-ok">${yen(Math.max(0, base.totalInt - plan.totalInt))}</b> 減`;
+      `金利の高い借入先から返し、完済した借入先の分も次に回すと：すべての完済 <b class="num">${plan.end ? ymLabel(plan.end) : "—"}</b>（${Math.max(0, ml(base.end) - ml(plan.end))}ヶ月早く）、利息 <b class="num t-ok">${yen(Math.max(0, base.totalInt - plan.totalInt))}</b> 減`;
   }
 
-  /* ---------- 口座の画面：履歴・今後の予定・返済計画 ---------- */
+  /* ---------- 借入先の画面：履歴・今後の予定・返済計画 ---------- */
   function openSchedule(id) {
     const a = S.accounts[id];
     if (!a) return;
     if (!S.ad || S.ad.id !== id) S.ad = { id, tab: "future", from: ymOf(nextStart()), val: null, pp: 10000 };
     openSheet(
-      `<div class="ad-top"><h3>${esc(a.name)}</h3><div class="ad-btns"><button class="sm editbtn" data-editacc="${id}" aria-label="口座を編集">編集</button><button class="sm ghost" data-close="1">閉じる</button></div></div><div id="adBody"></div>`,
+      `<div class="ad-top"><h3>${esc(a.name)}</h3><div class="ad-btns"><button class="sm editbtn" data-editacc="${id}" aria-label="借入先の情報を編集">情報を編集</button><button class="sm ghost" data-close="1">閉じる</button></div></div><div id="adBody"></div>`,
       () => renderAcc(),
       true,
     );
@@ -1422,60 +1422,68 @@
     const paid = allItems()
       .filter(i => i.accountId === id && (i.date >= MGMT_START || i.imported) && i.status === "paid")
       .sort((x, y) => ((y.paidDate || y.date) < (x.paidDate || x.date) ? -1 : 1));
-    const tabs = [
-      ["hist", `履歴 ${paid.length ? `<span class="cnt2">${paid.length}</span>` : ""}`],
-      ["future", "今後の予定"],
-      ...(debt ? [["plan", "返済計画"]] : []),
-    ];
-    if (!tabs.find(t => t[0] === S.ad.tab)) S.ad.tab = "future";
-    const body =
-      S.ad.tab === "hist"
-        ? accHistHTML(paid)
-        : S.ad.tab === "future"
-          ? debt
-            ? accScheduleHTML(a, s, end)
-            : accFutureHTML(a)
-          : acctPlanHTML(a);
+    /* 今後の予定・返済計画は「計画」にまとめたので、ここは履歴だけ */
+    const body = accHistHTML(paid, a);
     box.innerHTML = `<div class="ad-sum">
       <div><span class="label">いまの残高</span><b class="num">${yen(a.balance)}</b></div>
       <div><span class="label">完済予定</span><b class="num ok">${end ? ymLabel(ymOf(end)) : debt ? "見込みなし" : "—"}</b><small>${end ? `あと${r.length}回` : ""}</small></div>
     </div>
     ${isDebt(a) ? `<div class="note ad-cond">年利${a.rate}%・${typeLabel(a)}</div>` : ""}
-    <div class="seg adtabs">${tabs.map(([k, l]) => `<button data-adtab="${k}" aria-pressed="${S.ad.tab === k}">${l}</button>`).join("")}</div>
+    ${debt ? `<button type="button" class="ad-plan" data-adplan="1">今後の予定・補填のシミュレーションは「計画」で見る ›</button>` : ""}
+    <div class="ad-hh">支払いの履歴<span>${paid.length}件</span></div>
     <div class="ad-body">${body}</div>`;
   }
   /* 履歴：支払った合計と、1件ずつ */
-  function accHistHTML(paid) {
-    if (!paid.length) return `<div class="empty">10月以降の支払履歴はまだありません</div>`;
-    const sum = k => paid.reduce((t, i) => t + ((k === "amount" ? (i.paidAmount ?? i.amount) : i[k]) || 0), 0);
-    const rowOf = i => {
-      const sub = [
-        i.method,
-        i.principal != null && i.status === "paid" ? "元金 " + yen(i.principal) : null,
-        i.interest != null && i.status === "paid" ? "利息 " + yen(i.interest) : null,
-      ]
-        .filter(Boolean)
-        .map(esc)
-        .join(" · ");
-      const day = (i.paidDate || i.date)
-        .slice(0, 10)
-        .replace(/^\d{4}-/, "")
-        .replace("-", "/");
-      return `<button class="hrow ${i.status}" data-edit="${i.id}"><span class="hd num">${day}</span><span class="hn">${esc(i.name)}${i.kind === "late" ? ' <span class="chip late">延滞分</span>' : ""}${i.status === "deferred" ? ' <span class="pill def">翌月へ</span>' : ""}<small>${sub}</small></span><b class="num">${yen(i.status === "paid" ? (i.paidAmount ?? i.amount) : i.amount)}</b></button>`;
+  function accHistHTML(paid, acc) {
+    if (!paid.length) return `<div class="empty">支払いの履歴はまだありません</div>`;
+    const amt = i => (i.paidAmount ?? i.amount) || 0;
+    const sum = k => paid.reduce((t, i) => t + ((k === "amount" ? amt(i) : i[k]) || 0), 0);
+    /* 支払方法：銀行名だけ（例 SMBC）だとわからないので「引落・振込」などをそえる */
+    const how = m => {
+      if (!m) return "";
+      if (/引落|振込|振替|カード|現金|払い/.test(m)) return m;
+      return `${m}から引落`;
     };
+    const rowOf = i => {
+      const d = i.paidDate || i.date;
+      const bd = [
+        i.principal ? ["元金", i.principal, "pr"] : null,
+        i.interest ? ["利息", i.interest, "in"] : null,
+        i.other ? ["あわせて", i.other, "ot"] : null,
+        i.lateFee ? ["延滞利息", i.lateFee, "lf"] : null,
+      ].filter(Boolean);
+      const bal = i.balanceBefore != null ? `<span class="hb">残高 ${yen(i.balanceBefore)} → <b>${yen(Math.max(0, i.balanceBefore - (i.principal || 0)))}</b></span>` : "";
+      return `<button class="hrow2${i.kind === "late" ? " late" : ""}" data-edit="${i.id}">
+        <span class="hd2"><b class="num">${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}</b><small>${"日月火水木金土"[pd(d).getDay()]}</small></span>
+        <span class="hm2"><span class="ht2">${i.kind === "late" ? '<span class="hlate">延滞分</span>' : ""}${esc(i.name)}</span>
+          <span class="hs2">${i.method ? `<span class="hmeth">${esc(how(i.method))}</span>` : ""}${bal}</span>
+          ${bd.length ? `<span class="hbd">${bd.map(([l, v, c]) => `<span class="${c}">${l} <b class="num">${yen(v)}</b></span>`).join("")}</span>` : ""}</span>
+        <b class="ha2 num">${yen(amt(i))}</b></button>`;
+    };
+    let h = "",
+      yr = null;
+    paid.forEach(i => {
+      const y = (i.paidDate || i.date).slice(0, 4);
+      if (y !== yr) {
+        yr = y;
+        const ys = paid.filter(x => (x.paidDate || x.date).startsWith(y));
+        h += `<div class="hyr"><b>${y}年</b><span>${ys.length}件・<b class="num">${yen(ys.reduce((t, x) => t + amt(x), 0))}</b></span></div>`;
+      }
+      h += rowOf(i);
+    });
     return `<div class="hsum"><div><span class="label">支払った合計</span><b class="num">${yen(sum("amount"))}</b></div><div><span class="label">うち元金</span><b class="num ok">${yen(sum("principal"))}</b></div><div><span class="label">うち利息</span><b class="num">${yen(sum("interest"))}</b></div></div>
-    <div class="hlist">${paid.map(rowOf).join("")}</div>`;
+    <div class="hlist2">${h}</div>`;
   }
-  /* 今後の予定（返済中でない口座）：登録済みの支払を12件まで */
+  /* 今後の予定（返済中でない借入先）：登録済みの支払を12件まで */
   function accFutureHTML(a) {
     const fut = allItems()
       .filter(i => i.accountId === a.id && i.status === "planned" && i.date >= today())
       .slice(0, 12);
     return fut.length
       ? `<div class="hlist">${fut.map(i => `<button class="hrow" data-edit="${i.id}"><span class="hd num">${md(i.date)}</span><span class="hn">${esc(i.name)}<small>${esc(i.method || "")}</small></span><b class="num">${yen(i.amount)}</b></button>`).join("")}</div>`
-      : `<div class="empty">${a.repayType === "none" ? "この口座は定額の支払として扱っています。" : "残高がないため予定はありません。"}</div>`;
+      : `<div class="empty">${a.repayType === "none" ? "この借入先は定額の支払として扱っています。" : "残高がないため予定はありません。"}</div>`;
   }
-  /* 今後の予定（返済中の口座）：返済予定表。13回目以降はまとめて、最後の回だけ出す */
+  /* 今後の予定（返済中の借入先）：返済予定表。13回目以降はまとめて、最後の回だけ出す */
   function accScheduleHTML(a, s, end) {
     const r = s.rows;
     const first = r.slice(0, 12),
@@ -1602,7 +1610,7 @@
     ]);
   }
 
-  /* ---------- 金額の入力欄（返済中の口座は、リボ支払額・それ以外・利息・元金に分ける） ---------- */
+  /* ---------- 金額の入力欄（返済中の借入先は、リボ支払額・それ以外・利息・元金に分ける） ---------- */
   function moneyInit(it, a) {
     const late = it.kind === "late" ? { late: true, lateFee: it.lateFee ?? null } : {};
     if (!isDebt(a)) {
@@ -1657,7 +1665,7 @@
       $(P + "-feenote").innerHTML = !due
         ? "元の期日がわからないため、カード会社の請求額を入れてください"
         : !rate
-          ? `口座の設定で「遅延損害金（年率）」を入れると自動計算します`
+          ? `借入先の設定で「遅延損害金（年率）」を入れると自動計算します`
           : `${md(due)}の期日から <b>${daysBetween(due, pdt)}日</b> × ${yen(base())} × 年${rate}%${feeManual ? "（手入力中・空にすると自動）" : ""}`;
     };
     /* 内訳の合計と支払総額の差を出し、ボタン1回で合わせられるようにする */
@@ -1788,14 +1796,14 @@
         if (e.target.value !== (it.accountId || "")) {
           note.hidden = false;
           note.textContent = isDebt(na)
-            ? `口座を変更すると、この支払の金額は「${na.name}」の返済条件で計算し直されます（保存すると反映されます）`
-            : "口座を変更します。金額はそのままです（保存すると反映されます）";
+            ? `借入先を変更すると、この支払の金額は「${na.name}」の返済条件で計算し直されます（保存すると反映されます）`
+            : "借入先を変更します。金額はそのままです（保存すると反映されます）";
         } else note.hidden = true;
       });
       $("u-save").onclick = () => saveItemSettings(ctx);
     });
   }
-  /* 「項目の設定」だけを保存する：金額・日付・支払方法・メモは上の欄のまま。口座を変えたときだけ、新しい口座の返済条件で金額を計算し直す */
+  /* 「項目の設定」だけを保存する：金額・日付・支払方法・メモは上の欄のまま。借入先を変えたときだけ、新しい借入先の返済条件で金額を計算し直す */
   async function saveItemSettings({ f, it }) {
     const accountId = $("u-acc").value || null;
     const a = accountId && S.accounts[accountId];
@@ -1834,7 +1842,7 @@
     render();
     toast(
       accChanged && isDebt(a)
-        ? `${esc(n.name)} の口座を変更し、金額を「${esc(a.name)}」の返済条件で計算し直しました`
+        ? `${esc(n.name)} の借入先を変更し、金額を「${esc(a.name)}」の返済条件で計算し直しました`
         : `${esc(n.name)} の設定を保存しました`,
       sn,
     );
@@ -1851,10 +1859,10 @@
   ${bankHTML(it, a)}
   ${debt ? `<div class="after" id="p-after"></div>` : ""}
   <div class="actions act-pay"><button class="warn" id="p-defer">払えない → 延滞</button><button id="p-save">変更を保存</button><button class="primary" id="p-ok">支払済にする</button></div>
-  <button type="button" class="sheetfold-btn" data-sheetfold="p-set" aria-expanded="false"><b>項目の設定</b><span class="note">名前・口座・削除はこちら</span><span aria-hidden="true">▸</span></button>
+  <button type="button" class="sheetfold-btn" data-sheetfold="p-set" aria-expanded="false"><b>項目の設定</b><span class="note">名前・借入先・削除はこちら</span><span aria-hidden="true">▸</span></button>
   <div id="p-set" hidden>
     <div class="form">
-      <div class="field"><label for="u-acc">口座</label><select id="u-acc">${opt([["", "（口座なし）"], ...accList().map(x => [x.id, x.name])], it.accountId || "")}</select></div>
+      <div class="field"><label for="u-acc">借入先</label><select id="u-acc">${opt([["", "（借入先なし）"], ...accList().map(x => [x.id, x.name])], it.accountId || "")}</select></div>
       <div class="field"><label for="u-name">表示名</label><input id="u-name" value="${esc(it.name)}"></div>
       <div class="field" id="u-catf" ${it.accountId ? "hidden" : ""}><label for="u-cat">区分</label><select id="u-cat">${opt(["card", "loan", "other"].map(c => [c, CAT[c].l]), it.category || "other")}</select></div>
       <label class="cb"><input type="checkbox" id="u-late" ${it.kind === "late" ? "checked" : ""}>延滞分</label>
@@ -1864,7 +1872,7 @@
     <div class="actions"><div><button class="u-btn danger" id="u-del">この支払を削除</button></div><div><button class="primary" id="u-save">項目の設定を保存</button></div></div>
   </div>`;
   }
-  /* 延滞分の振込先（口座の設定で登録）。項目ごとにコピーできる */
+  /* 延滞分の振込先（借入先の設定で登録）。項目ごとにコピーできる */
   function bankHTML(it, a) {
     if (it.kind !== "late" || !a) return "";
     const rows = [
@@ -1875,7 +1883,7 @@
     ].filter(r => r[1]);
     if (!rows.length)
       return `<div class="bank empty"><span>振込先が未登録です</span><button class="sm" data-editacc="${esc(it.accountId)}">振込先を登録</button></div>`;
-    return `<div class="bank"><div class="bank-h"><b>振込先</b><button class="sm editbtn" data-editacc="${esc(it.accountId)}" aria-label="振込先の口座を編集">編集</button></div>${rows
+    return `<div class="bank"><div class="bank-h"><b>振込先</b><button class="sm editbtn" data-editacc="${esc(it.accountId)}" aria-label="振込先を編集">編集</button></div>${rows
       .map(
         ([l, v, pre]) =>
           `<div class="bank-r"><span class="bl">${l}</span><span class="bv">${pre ? `<small>${esc(pre)}</small> ` : ""}<b>${esc(v)}</b></span><button class="ghost sm" data-copy="${esc(v)}">コピー</button></div>`,
@@ -1925,7 +1933,7 @@
     toast(`${esc(it.name)} を ${yen(mv.amount)}${date !== it.date ? `・${md(date)}` : ""} に変更しました`, sn);
     await Promise.all([saveMonth(ym), ym !== f.ym ? saveMonth(f.ym) : null]);
   }
-  /* 「支払済にする」：返済中の口座なら元金の分だけ残高を減らし、今後の予定を作り直す */
+  /* 「支払済にする」：返済中の借入先なら元金の分だけ残高を減らし、今後の予定を作り直す */
   async function payDone({ f, it, a, debt }) {
     const mv = moneyRead("p");
     const pr = debt ? mv.principal : it.principal;
@@ -2027,7 +2035,7 @@
         const showFee = () =>
           ($("d-fee").innerHTML = acc?.lateRate
             ? `延滞利息の見込み <b>${yen(feeAt())}</b>（${md(due)}の期日から${daysBetween(due, $("d-date").value || due)}日・年${acc.lateRate}%）。翌月の支払額に足しておきます`
-            : "口座の設定で「遅延損害金（年率）」を入れると、延滞利息を自動で足します");
+            : "借入先の設定で「遅延損害金（年率）」を入れると、延滞利息を自動で足します");
         $("d-amt").addEventListener("input", showFee);
         $("d-date").addEventListener("change", showFee);
         showFee();
@@ -2202,7 +2210,7 @@
           ),
         );
       });
-      /* 口座を変えたら、その口座の名前・支払方法・金額の入れ方に切り替える */
+      /* 借入先を変えたら、その借入先の名前・支払方法・金額の入れ方に切り替える */
       $("e-acc").addEventListener("change", e => {
         const a = S.accounts[e.target.value];
         ctx.accChangedTo = e.target.value;
@@ -2228,13 +2236,13 @@
           };
         } else m = { debt: false, amount: cur.amount || a?.payment || null, ...lt };
         mountMoney(m);
-        /* 口座を変えたら、金額を計算し直したことを黙らずに伝える */
+        /* 借入先を変えたら、金額を計算し直したことを黙らずに伝える */
         const an = $("e-accnote");
         if (an) {
           an.hidden = false;
           an.textContent = isDebt(a)
-            ? `口座を変更しました。金額は「${a.name}」の返済条件で計算し直しています（保存すると反映されます）`
-            : "口座を変更しました。金額はそのままです（保存すると反映されます）";
+            ? `借入先を変更しました。金額は「${a.name}」の返済条件で計算し直しています（保存すると反映されます）`
+            : "借入先を変更しました。金額はそのままです（保存すると反映されます）";
         }
       });
       if (f) $("e-del").onclick = e => armed(e.target, "もう一度押すと削除") && deleteItem(it.id);
@@ -2242,7 +2250,7 @@
     });
   }
   function editItemHTML({ f, it }) {
-    const accs = [["", "（口座なし）"], ...accList().map(a => [a.id, a.name])];
+    const accs = [["", "（借入先なし）"], ...accList().map(a => [a.id, a.name])];
     const stBar =
       f && it.status === "paid"
         ? `<div class="stbar paid"><span>✓ 支払済 ${it.paidDate ? md(it.paidDate) : ""}・${yen(it.paidAmount ?? it.amount)}</span><button class="sm" data-unpay="${it.id}">未払に戻す</button></div>`
@@ -2250,7 +2258,7 @@
           ? `<div class="stbar deferred"><span>→ 延滞にして翌月へ回しました</span><button class="sm" data-undefer="${it.id}">延滞を取り消す</button></div>`
           : "";
     const setFields = `<div class="form">
-    <div class="field"><label for="e-acc">口座</label><select id="e-acc">${opt(accs, it.accountId || "")}</select></div>
+    <div class="field"><label for="e-acc">借入先</label><select id="e-acc">${opt(accs, it.accountId || "")}</select></div>
     <div class="field"><label for="e-name">表示名</label><input id="e-name" value="${esc(it.name)}"></div>
     <div class="field" id="e-catf" ${it.accountId ? "hidden" : ""}><label for="e-cat">区分</label><select id="e-cat">${opt(
       ["card", "loan", "other"].map(c => [c, CAT[c].l]),
@@ -2267,7 +2275,7 @@
     <div class="form full" id="e-money"></div>
     <div class="field full"><label for="e-memo">メモ</label><input id="e-memo" value="${esc(it.memo)}"></div>
   </div>
-  ${f ? `<button type="button" class="sheetfold-btn" data-sheetfold="e-set" aria-expanded="false"><b>項目の設定</b><span class="note">口座・名前・削除はこちら</span><span aria-hidden="true">▸</span></button><div id="e-set" hidden>${setFields}</div>` : setFields}
+  ${f ? `<button type="button" class="sheetfold-btn" data-sheetfold="e-set" aria-expanded="false"><b>項目の設定</b><span class="note">借入先・名前・削除はこちら</span><span aria-hidden="true">▸</span></button><div id="e-set" hidden>${setFields}</div>` : setFields}
   <div class="actions"><div></div><div><button class="ghost" data-close="1">キャンセル</button><button class="primary" id="e-save">保存</button></div></div>`;
   }
   /* 保存：支払済の元金が変わったら、残高に反映済みの分を戻してから引き直す */
@@ -2340,7 +2348,7 @@
     ]);
   }
 
-  /* ---------- 口座の追加・編集 ---------- */
+  /* ---------- 借入先の追加・編集 ---------- */
   function editAccount(id) {
     const a = id
       ? S.accounts[id]
@@ -2384,10 +2392,10 @@
     });
   }
   function editAccountHTML(id, a) {
-    return `<h3>${id ? esc(a.name) + " の設定" : "口座を追加"}</h3>
+    return `<h3>${id ? esc(a.name) + " の設定" : "借入先を追加"}</h3>
   <div class="form">
     <div class="sec full">基本</div>
-    <div class="field"><label for="a-name">口座名</label><input id="a-name" value="${esc(a.name)}"></div>
+    <div class="field"><label for="a-name">借入先の名前</label><input id="a-name" value="${esc(a.name)}"></div>
     <div class="field"><label for="a-cat">区分</label><select id="a-cat">${opt(
       Object.keys(CAT).map(c => [c, CAT[c].l]),
       a.category,
@@ -2407,7 +2415,7 @@
     <div class="field"><label for="a-rate">年利（%）</label><input type="number" id="a-rate" step="0.1" value="${a.rate ?? ""}"></div>
     <div class="field" id="a-ppf"><label for="a-pp">毎月返す元金</label><input type="number" id="a-pp" inputmode="numeric" value="${a.principalPay ?? ""}"></div>
     <div class="field" id="a-payf"><label for="a-pay">毎月の支払額（利息込み）</label><input type="number" id="a-pay" inputmode="numeric" value="${a.payment ?? ""}"></div>
-    <div class="field full"><label for="a-extra">毎月あわせて引かれる額（家賃など）</label><input type="number" id="a-extra" inputmode="numeric" value="${a.extra ?? ""}"><span class="note">返済とは別に、毎月この口座から一緒に引かれる額。なければ空で大丈夫です</span></div>
+    <div class="field full"><label for="a-extra">毎月あわせて引かれる額（家賃など）</label><input type="number" id="a-extra" inputmode="numeric" value="${a.extra ?? ""}"><span class="note">返済とは別に、毎月この借入先から一緒に引かれる額。なければ空で大丈夫です</span></div>
     <div class="note full">利息は、残高と年利から自動で計算します。</div>
   </div>
   <button type="button" class="sheetfold-btn" data-sheetfold="a-set" aria-expanded="false"><b>詳細設定</b><span class="note">極度額・振込先・メモ</span><span aria-hidden="true">▸</span></button>
@@ -2434,7 +2442,7 @@
   </div>
   <div class="actions"><div>${id ? '<button class="u-btn danger" id="a-del">削除</button>' : ""}</div><div><button class="ghost" data-close="1">キャンセル</button><button class="primary" id="a-save">保存</button></div></div>`;
   }
-  /* 保存すると、その口座の今後の支払予定を作り直す */
+  /* 保存すると、その借入先の今後の支払予定を作り直す */
   async function saveAccount(id, a) {
     const name = $("a-name").value.trim();
     if (!name) {
@@ -2655,7 +2663,7 @@
     FIN.renderAll();
     saveCfg().then(ok => ok && toast("保存しました"));
   }
-  /* 引落口座の並び替え：⠿を押さえたまま上下に動かす（しくみは共通の u-core.js） */
+  /* 引落借入先の並び替え：⠿を押さえたまま上下に動かす（しくみは共通の u-core.js） */
   SORT_DONE.paym = (box, rows) => {
     const ms = S.cfg.methods;
     const m = rows.map(x => ms[+x.dataset.mi]).filter(x => x != null);
@@ -2713,6 +2721,9 @@
     else if (d.goto) {
       FIN.kb.setTab(d.goto);
       window.scrollTo(0, 0);
+    } else if (d.adplan) {
+      closeSheet();
+      FIN.kb.setTab("plan");
     } else if (d.tab) {
       /* 支払い管理の中の切り替え（今月の支払い／借入・返済） */
       FIN.kb.setTab(d.tab);
@@ -2741,7 +2752,7 @@
       if (f && f.it.status === "planned") openPay(d.edit);
       else editItem(d.edit);
     } else if (d.edetail) editItem(d.edetail);
-    /* 残高と計画・口座の画面 */ else if (d.editacc) editAccount(d.editacc);
+    /* 残高と計画・借入先の画面 */ else if (d.editacc) editAccount(d.editacc);
     else if (d.acc) openSchedule(d.acc);
     else if (t.id === "mAdd") editAccount(null);
     else if (d.adtab) {
@@ -2788,7 +2799,7 @@
     }
   });
 
-  /* ---------- 入力：返済計画の数字（口座の画面は入力が止まってから描き直す） ---------- */
+  /* ---------- 入力：返済計画の数字（借入先の画面は入力が止まってから描き直す） ---------- */
   document.addEventListener("input", e => {
     const id = e.target.id;
     if (id === "sExtra") {
@@ -2840,7 +2851,7 @@
     render,
     show,
     renderSettings: renderMaster,
-    /* 右上の＋：支払い画面は支払、返済は口座を追加 */
+    /* 右上の＋：支払い画面は支払、返済は借入先を追加 */
     add: k => (k === "acc" ? editAccount(null) : editItem(null)),
     enter,
     cfg: () => S.cfg,
@@ -2863,7 +2874,7 @@
   /* ===================== 起動 ===================== */
   S.fold = loadFold();
   paintSave();
-  /* クラウドに接続して、口座・支払・設定を読み込む（他の端末の変更もここで届く） */
+  /* クラウドに接続して、借入先・支払・設定を読み込む（他の端末の変更もここで届く） */
   (async () => {
     const { db } = await U.store();
     if (!db) {
@@ -2882,7 +2893,7 @@
         S._base = null;
         render();
       },
-      () => status("口座データを読み込めませんでした。", true),
+      () => status("借入先データを読み込めませんでした。", true),
     );
     db.collection("months").onSnapshot(
       s => {
