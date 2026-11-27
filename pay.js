@@ -1252,8 +1252,8 @@
       .join("");
     const goal = `<li class="goalrow${!c && g.left <= 0 ? " done" : ""}"><span class="gs-m" aria-hidden="true">🏁</span><span class="gs-n">ゴール：すべて完済</span><span class="gs-w">${g.days != null ? `${ymLabel(ymOf(g.last.info.end))}・あと${g.days.toLocaleString("ja-JP")}日` : ""}</span></li>`;
     const gf = !link && S.fold.goal;
-    return `<div class="goal${gf ? " gfold" : ""}">
-      ${link ? "" : `<button type="button" class="g-fold" data-gfold="1" aria-expanded="${!gf}" aria-label="${gf ? "目標を開く" : "目標をたたむ"}">${gf ? "開く ▾" : "たたむ ▴"}</button>`}
+    return `<div class="goal${gf ? " gfold" : ""}"${link ? "" : ' data-gfold="1" role="button" tabindex="0"'}>
+      ${link ? "" : `<span class="g-fold" aria-hidden="true">${gf ? "開く ▾" : "たたむ ▴"}</span>`}
       <div class="g-top">
         <div class="g-cd">
           <span class="g-eb">${c ? `いまの目標 ${k}/${n}` : "完済への道のり"}</span>
@@ -1534,10 +1534,13 @@
       .sort((x, y) => (x.date < y.date ? -1 : 1));
     const b0 = hist.length ? hist[0].balanceBefore : null;
     const dec = b0 != null ? b0 - (a.balance || 0) : null;
-    box.innerHTML = `<div class="ad-sum ad-sum3">
-      <div><span class="label">1月の残高</span><b class="num">${b0 != null ? yen(b0) : "—"}</b></div>
-      <div><span class="label">いまの残高</span><b class="num">${yen(a.balance)}</b>${dec != null ? `<small class="${dec >= 0 ? "ok" : "ng"}">${dec >= 0 ? `−${yen(dec)}` : `＋${yen(-dec)}`}</small>` : ""}</div>
-      <div><span class="label">完済予定</span><b class="num ok">${end ? ymLabel(ymOf(end)) : debt ? "見込みなし" : "—"}</b><small>${end ? `あと${r.length}回` : ""}</small></div>
+    const ints = allItems().filter(i => i.accountId === id && i.status === "paid" && i.date >= FIN.MIN_PERIOD + "-01");
+    const intPaid = ints.reduce((t, i) => t + (i.interest || 0) + (i.lateFee || 0), 0);
+    const payPaid = ints.reduce((t, i) => t + ((i.paidAmount ?? i.amount) || 0), 0);
+    box.innerHTML = `<div class="ad-bal">
+      <div class="ab-flow">${b0 != null ? `<span class="ab-from"><small>1月</small><b class="num">${yen(b0)}</b></span><span class="ab-arr">→</span>` : ""}<span class="ab-now"><small>いま</small><b class="num">${yen(a.balance)}</b></span></div>
+      ${dec != null ? `<div class="ab-dec"><b class="num ${dec >= 0 ? "ok" : "ng"}">${dec >= 0 ? "−" : "＋"}${yen(Math.abs(dec))}</b><span>支払った ${yen(payPaid)}・うち利息 ${yen(intPaid)}</span></div>` : ""}
+      <div class="ab-end">${end ? `完済予定 <b>${ymLabel(ymOf(end))}</b>・あと${r.length}回` : debt ? "完済の見込みなし" : ""}</div>
     </div>
     ${isDebt(a) ? `<div class="note ad-cond">年利${a.rate}%・${typeLabel(a)}</div>` : ""}
     <div class="ad-hh">支払いの履歴<span>${paid.length}件</span></div>
@@ -1559,13 +1562,14 @@
       const d = i.paidDate || i.date;
       const after = i.balanceBefore != null ? Math.max(0, i.balanceBefore - (i.principal || 0)) : null;
       const int = (i.interest || 0) + (i.lateFee || 0);
-      return `<button class="hr1${i.kind === "late" ? " late" : ""}" data-edit="${i.id}" title="${esc(i.name)}・${yen(amt(i))}">
-        <span class="h1d num">${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}${i.kind === "late" ? '<em>延滞</em>' : ""}</span>
-        <span class="h1b num">${i.balanceBefore != null ? `${yen(i.balanceBefore)} <i>→</i> <b>${yen(after)}</b>` : "—"}</span>
-        <span class="h1v num pr">${i.principal ? yen(i.principal) : "—"}</span>
-        <span class="h1v num">${int ? yen(int) : "—"}${i.lateFee ? `<small>延滞 ${yen(i.lateFee)}</small>` : ""}</span>
-        <span class="h1v num">${i.other ? yen(i.other) : "—"}${i.other ? `<small>${otherSplit(i, acc)}</small>` : ""}</span>
-        <span class="h1a num">${yen(amt(i))}</span>
+      const n0 = v => Math.round(v).toLocaleString("ja-JP");
+      return `<button class="hr1${i.kind === "late" ? " late" : ""}" data-edit="${i.id}" title="${esc(i.name)}">
+        <span class="h1d num">${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}${i.kind === "late" ? '<i class="h1late" title="延滞分">延</i>' : ""}</span>
+        <span class="h1b num">${i.balanceBefore != null ? `<s>${n0(i.balanceBefore)}</s><i class="h1arr"> → </i><b>${n0(after)}</b>` : "—"}</span>
+        <span class="h1v num pr">${i.principal ? n0(i.principal) : "—"}</span>
+        <span class="h1v num">${int ? n0(int) : "—"}${i.lateFee ? `<small>延滞 ${n0(i.lateFee)}</small>` : ""}</span>
+        <span class="h1v num">${i.other ? n0(i.other) : "—"}</span>
+        <span class="h1a num">${n0(amt(i))}</span>
       </button>`;
     };
     let h = "",
@@ -1580,7 +1584,7 @@
       }
       if (!isF(`hist:${acc ? acc.id : ""}:${yr}`)) h += rowOf(i);
     });
-    return `<div class="hsum"><div><span class="label">支払った合計</span><b class="num">${yen(sum("amount"))}</b></div><div><span class="label">うち元金</span><b class="num ok">${yen(sum("principal"))}</b></div><div><span class="label">うち利息</span><b class="num">${yen(sum("interest") + sum("lateFee"))}</b>${sum("lateFee") ? `<small>うち延滞 ${yen(sum("lateFee"))}</small>` : ""}</div></div>
+    return `<div class="hsum" hidden><div><span class="label">支払った合計</span><b class="num">${yen(sum("amount"))}</b></div><div><span class="label">うち元金</span><b class="num ok">${yen(sum("principal"))}</b></div><div><span class="label">うち利息</span><b class="num">${yen(sum("interest") + sum("lateFee"))}</b>${sum("lateFee") ? `<small>うち延滞 ${yen(sum("lateFee"))}</small>` : ""}</div></div>
     <div class="hlist2 h1"><div class="hr1 hh"><span>日付</span><span>残高の推移</span><span>元金</span><span>利息</span><span>その他</span><span>支払額</span></div>${h}</div>`;
   }
   /* 今後の予定（返済中でない借入先）：登録済みの支払を12件まで */
@@ -2056,8 +2060,10 @@
       dropItem(it.id);
     }
     const ym = putItem(n);
+    const linkYms = syncLinked(n);
     closeSheet();
     render();
+    linkYms.forEach(y => saveMonth(y));
     toast(`${esc(it.name)} を ${yen(mv.amount)}${date !== it.date ? `・${md(date)}` : ""} に変更しました`, sn);
     await Promise.all([saveMonth(ym), ym !== f.ym ? saveMonth(f.ym) : null]);
   }
@@ -2393,7 +2399,12 @@
       f && it.status === "paid"
         ? `<div class="stbar paid"><span>✓ 支払済 ${it.paidDate ? md(it.paidDate) : ""}・${yen(it.paidAmount ?? it.amount)}</span><button class="sm" data-unpay="${it.id}">未払に戻す</button></div>`
         : f && it.status === "deferred"
-          ? `<div class="stbar deferred"><span>→ 延滞にして翌月へ回しました</span><button class="sm" data-undefer="${it.id}">延滞を取り消す</button></div>`
+          ? `<div class="stbar deferred"><span>${(() => {
+              const l = it.deferredTo && findItem(it.deferredTo);
+              if (!l) return "→ 延滞にして翌月へ回しました";
+              const x = l.it;
+              return `→ ${md(x.date)} に延滞分として${x.status === "paid" ? "支払済" : "支払予定"}：${yen(x.amount)}${x.lateFee ? `（延滞利息 ${yen(x.lateFee)}）` : ""}`;
+            })()}</span><button class="sm" data-undefer="${it.id}">延滞を取り消す</button></div>`
           : "";
     const setFields = `<div class="form">
     <div class="field"><label for="e-acc">借入先</label><select id="e-acc">${opt(accs, it.accountId || "")}</select></div>
@@ -2417,6 +2428,31 @@
   <div class="actions"><div>${f ? '<button class="u-btn danger" id="e-del">この支払を削除</button>' : ""}</div><div><button class="ghost" data-close="1">キャンセル</button><button class="primary" id="e-save">保存</button></div></div>`;
   }
   /* 保存：支払済の元金が変わったら、残高に反映済みの分を戻してから引き直す */
+  /* 延滞の組（元の請求 ⇔ 翌月の延滞分）を連動させる。元の請求＝延滞分 − 延滞利息。返す値は保存し直す月 */
+  function syncLinked(n) {
+    const yms = [];
+    const BD = ["principal", "interest", "other", "otherRent", "otherUse"];
+    if (n.status === "deferred" && n.deferredTo) {
+      const l = findItem(n.deferredTo);
+      if (l && !l.it.applied) {
+        const m = { ...l.it };
+        BD.forEach(k => (n[k] !== undefined ? (m[k] = n[k]) : null));
+        m.amount = (n.amount || 0) + (m.lateFee || 0);
+        delete m._m;
+        yms.push(putItem(m));
+      }
+    } else if (n.kind === "late" && n.origin) {
+      const o = findItem(n.origin);
+      if (o && o.it.status === "deferred") {
+        const m = { ...o.it };
+        BD.forEach(k => (n[k] !== undefined ? (m[k] = n[k]) : null));
+        m.amount = Math.max(0, (n.amount || 0) - (n.lateFee || 0));
+        delete m._m;
+        yms.push(putItem(m));
+      }
+    }
+    return yms;
+  }
   async function saveItem(ctx) {
     const { f, it } = ctx;
     const date = $("e-date").value;
@@ -2473,12 +2509,13 @@
       accCh.add(accountId);
     }
     const ym = putItem(n);
+    const linkYms = syncLinked(n);
     const rg = accCh.size ? regenFuture([...accCh]) : [];
     S.period = periodOf(date);
     closeSheet();
     FIN.renderAll();
     toast(`${esc(n.name)} を${f ? "保存" : "追加"}しました`, sn);
-    await Promise.all([
+    await Promise.all([...linkYms.map(saveMonth), 
       saveMonth(ym),
       old && old !== ym ? saveMonth(old) : null,
       ...[...accCh].map(saveAcc),
@@ -2852,6 +2889,15 @@
       return;
     }
     /* 日付・年の見出しの折りたたみ（中のボタンを押したときは除く） */
+    const gf = e.target.closest(".goal[data-gfold]");
+    if (gf && !e.target.closest("button:not([data-gfold]),a,input")) {
+      S.fold.goal = !S.fold.goal;
+      try {
+        localStorage.setItem(KFOLD, JSON.stringify(S.fold));
+      } catch (_) {}
+      render();
+      return;
+    }
     const fh = e.target.closest("[data-f2]");
     if (fh && !e.target.closest("button:not([data-f2]),a,input")) {
       togF(fh.dataset.f2);
