@@ -47,7 +47,7 @@ function markTabs(t) {
     .forEach(b => (KBV.includes(t) ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
 }
 /* 上の帯：今いる画面の名前（エンタメ管理と同じく、アイコンと名前を出す） */
-const TAB_NAME = { dash: "ホーム", list: "家計簿", home: "支払い", graph: "家計簿のグラフ", balance: "支払い", plan: "支払い", rules: "設定" };
+const TAB_NAME = { dash: "ホーム", list: "家計簿", home: "支払い", graph: "家計簿のグラフ", balance: "返済", plan: "計画", rules: "設定" };
 /* 家計簿の一番上の支出カード：総額の行だけ出して、内訳・件数などはたたむ（最初はたたむ。この端末に保存） */
 const KSUMF = "okane.sumfold";
 const sumFolded = () => lsRaw(KSUMF) !== "0";
