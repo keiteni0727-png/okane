@@ -1982,11 +1982,11 @@
     <div class="field"><label for="p-date">支払日</label><input type="date" id="p-date" value="${esc(it.date)}"></div>
     <div class="field"><label for="p-me">支払方法</label><select id="p-me">${mopt(it.method)}</select></div>
     ${moneyHTML("p", moneyInit(it, a), "支払額")}
-    <div class="field full"><label for="p-memo">メモ</label><input id="p-memo" value="${esc(it.memo)}"></div>
+    <div class="field full"><label for="p-memo">メモ</label><input id="p-memo" value="${esc(it.memo)}" placeholder="メモ"></div>
   </div>
   ${bankHTML(it, a)}
   ${debt ? `<div class="after" id="p-after"></div>` : ""}
-  <div class="actions act-pay"><button class="warn" id="p-defer">払えない → 延滞</button><button id="p-save">変更を保存</button><button class="primary" id="p-ok">支払済にする</button></div>
+  <div class="actions act-pay"><button class="warn" id="p-defer">延滞にする</button><button id="p-save">変更を保存</button><button class="primary" id="p-ok">支払済にする</button></div>
   <button type="button" class="sheetfold-btn" data-sheetfold="p-set" aria-expanded="false"><b>項目の設定</b><span class="note">借入先・表示名・延滞分の印</span><span class="sf-ic" aria-hidden="true">▸</span></button>
   <div id="p-set" class="sfbox" hidden>
     <div class="form">
@@ -2412,7 +2412,7 @@
     <div class="field"><label for="e-date">支払日</label><input type="date" id="e-date" value="${esc(it.date)}"></div>
     <div class="field"><label for="e-me">支払方法</label><select id="e-me">${mopt(it.method)}</select></div>
     <div class="form full" id="e-money"></div>
-    <div class="field full"><label for="e-memo">メモ</label><input id="e-memo" value="${esc(it.memo)}"></div>
+    <div class="field full"><label for="e-memo">メモ</label><input id="e-memo" value="${esc(it.memo)}" placeholder="メモ"></div>
   </div>
   ${f ? `<button type="button" class="sheetfold-btn" data-sheetfold="e-set" aria-expanded="false"><b>項目の設定</b><span class="note">借入先・表示名・延滞分の印</span><span class="sf-ic" aria-hidden="true">▸</span></button><div id="e-set" class="sfbox" hidden>${setFields}</div>` : setFields}
   <div class="actions"><div>${f ? '<button class="u-btn danger" id="e-del">この支払を削除</button>' : ""}</div><div><button class="ghost" data-close="1">キャンセル</button><button class="primary" id="e-save">保存</button></div></div>`;
