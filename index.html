@@ -235,6 +235,8 @@
       <div class="setgrp setform"><button class="pri" id="mRegen">今後の支払予定を作り直す</button></div>
       <div class="mu st-desc mt12">奨学金などの定額の支払は、月を指定してまとめて作れます（同じ月にすでにある口座はとばします）。</div>
       <div class="setgrp setform"><div class="pgen"><input type="month" id="mGenMonth" aria-label="作成する月"><button class="pri" id="mGen">支払予定を作成</button></div></div></div>
+    <div data-pg="imp"><div class="mu st-desc">Notionで管理していた支払いのCSVから、これまでに支払った履歴（金額・元金・利息・支払前の残高）を取り込みます。未来の分と未払の分は取り込みません。</div>
+      <div class="setgrp setform" id="impBox"></div></div>
     <div id="pmsg" class="mu"></div>
   </div>
   </div>
@@ -244,6 +246,7 @@
 <script src="ui.js"></script>
 <script src="fin.js"></script>
 <script src="pay.js"></script>
+<script src="pay-import.js"></script>
 <script src="kb.js"></script>
 <script src="kb-view.js"></script>
 <script src="kb-events.js"></script>

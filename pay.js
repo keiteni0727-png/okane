@@ -16,7 +16,7 @@
   const REGEN_MONTHS = 36; // 支払予定を作り直す期間（月）
   const SCHEDULE_MAX = 600; // 返済予定表を計算する最大の回数
   const KFOLD = "shiharai.fold"; // 折りたたみの開閉（この端末だけに保存）
-  const FOLD_DEF = { flow: true, outlook: false, once: true, int: true, road: true, "g-personal": true, "g-other": true }; // true＝最初は閉じておく
+  const FOLD_DEF = { flow: innerWidth < 900, outlook: false, once: true, int: true, road: true, "g-personal": true, "g-other": true }; // true＝最初は閉じておく
 
   /* ===================== 状態 ===================== */
   const S = {
@@ -430,12 +430,28 @@
   /* ---------- 返済の進み具合（やる気が続くように：返した額・残り日数・減らせた利息） ---------- */
   const isPrepay = i => i.memo === "繰上げ返済" || /繰上げ返済$/.test(i.name || "");
   /* 口座ごと：管理を始めてから返した元金（残高に反映済みの支払済）と、そのときの残高 */
+  /* 取り込んだ履歴（imported）も含める。支払前残高（balanceBefore）が前回の「残高−元金」より増えていたら、
+     追加借入・リボの増加として「増えた額」に数える。返した割合＝返した元金 ÷（はじめの残高＋増えた額） */
   function progressOf(a) {
-    const its = allItems().filter(i => i.accountId === a.id && i.status === "paid" && i.applied && !i.noBal);
+    const its = allItems()
+      .filter(i => i.accountId === a.id && i.status === "paid" && (i.applied || i.imported) && (!i.noBal || i.imported))
+      .sort((x, y) => (x.date < y.date ? -1 : x.date > y.date ? 1 : 0));
     const paid = its.reduce((t, i) => t + (i.principal || 0), 0);
     const pre = its.filter(isPrepay).reduce((t, i) => t + (i.principal || 0), 0);
-    const start = (a.balance || 0) + paid;
-    return { paid, pre, start, rate: start ? paid / start : 0 };
+    const pts = its.filter(i => i.balanceBefore != null);
+    let inc = 0;
+    for (let k = 1; k < pts.length; k++) {
+      const exp = pts[k - 1].balanceBefore - (pts[k - 1].principal || 0);
+      if (pts[k].balanceBefore > exp + 1) inc += pts[k].balanceBefore - exp;
+    }
+    if (pts.length) {
+      const last = pts[pts.length - 1];
+      const exp = last.balanceBefore - (last.principal || 0);
+      if ((a.balance || 0) > exp + 1) inc += (a.balance || 0) - exp;
+    }
+    const start = pts.length ? pts[0].balanceBefore : (a.balance || 0) + paid;
+    const total = start + inc;
+    return { paid, pre, start, inc, total, rate: total ? Math.min(1, paid / total) : 0 };
   }
   /* 繰上げ返済で減らせた利息（繰上げしなかった場合の返済予定と比べた見込み）と、早まった月数 */
   function savedOf(a, pre) {
@@ -453,7 +469,8 @@
       return { a, ...pg, saved: savedOf(a, pg.pre), info: a.balance > 0 ? payoffInfo(a) : null };
     });
     const paid = per.reduce((t, x) => t + x.paid, 0),
-      start = per.reduce((t, x) => t + x.start, 0),
+      start = per.reduce((t, x) => t + x.total, 0),
+      inc = per.reduce((t, x) => t + x.inc, 0),
       left = per.reduce((t, x) => t + (x.a.balance || 0), 0);
     const ends = per.filter(x => x.info && x.info.end).sort((x, y) => (x.info.end < y.info.end ? 1 : -1));
     const last = ends[0] || null;
@@ -463,11 +480,11 @@
     const nextDone = per.filter(x => x.info && x.info.end).sort((x, y) => (x.info.end < y.info.end ? -1 : 1))[0] || null;
     /* 段階の目標：返済予定のある口座を、早く完済できる順に1つずつ（完済した口座は先頭に ✓） */
     const stages = [
-      ...per.filter(x => x.a.balance === 0 && x.start > 0),
+      ...per.filter(x => x.a.balance === 0 && x.total > 0),
       ...per.filter(x => x.a.balance > 0 && x.info && x.info.end).sort((x, y) => (x.info.end < y.info.end ? -1 : 1)),
     ];
     const cur = stages.find(x => x.a.balance > 0) || null;
-    return { per, paid, start, left, rate: start ? paid / start : 0, last, days, saved, savedM, nextDone, stages, cur, noPlan: per.filter(x => x.a.balance > 0 && !x.info).length };
+    return { per, paid, start, inc, left, rate: start ? Math.min(1, paid / start) : 0, last, days, saved, savedM, nextDone, stages, cur, noPlan: per.filter(x => x.a.balance > 0 && !x.info).length };
   }
   /* 次の節目（10%きざみ）までの残り */
   function nextMark(g) {
@@ -1028,9 +1045,9 @@
     const over = i.status === "planned" && i.date < today();
     const lbl = stLbl(i, over, late);
     const cls = i.status === "paid" ? "done" : i.status === "deferred" ? "def" : over || late ? "warn" : "unpaid";
-    const bd = i.accountId ? [`元金 ${yen(i.principal || 0)}`, `利息 ${yen(i.interest || 0)}`, ...(i.other ? [`その他 ${yen(i.other)}`] : [])].join(" ・ ") : "—";
+    const bd = i.accountId && (i.principal || i.interest || i.other) ? [`元金 ${yen(i.principal || 0)}`, `利息 ${yen(i.interest || 0)}`, ...(i.other ? [`その他 ${yen(i.other)}`] : [])].join(" ・ ") : "—";
     return `<tr class="trow${i.status === "paid" ? " paid" : ""}" data-edit="${i.id}" role="button" tabindex="0">
-      <td class="tname">${showDate ? `<span class="tdate num">${md(i.date)}<small>${wd(i.date)}</small></span>` : ""}<span class="chip ${c}">${CAT[c]?.s || ""}</span>${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}</td>
+      <td class="tname">${showDate ? `<span class="tdate num">${md(i.date)}<small>${wd(i.date)}</small></span>` : ""}<span class="chip ${c}">${CAT[c]?.s || ""}</span>${esc(i.name)}${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}${i.nobal ? '<span class="tnote">残高に反映しない</span>' : ""}${bd !== "—" || i.memo ? `<div class="tsub">${bd !== "—" ? `<span>${bd}</span>` : ""}${i.balanceBefore != null && i.accountId ? `<span>支払前の残高 ${yen(i.balanceBefore)}</span>` : ""}${i.memo ? `<span class="tmemo">${esc(i.memo)}</span>` : ""}</div>` : ""}</td>
       <td>${i.method ? `<span class="mtag">${esc(i.method)}</span>` : "—"}</td>
       <td class="r" title="${bd === "—" ? "" : bd}">${yen(amtOf(i))}</td>
       <td class="bd">${bd}</td>
@@ -1134,7 +1151,7 @@
         </div>
         ${ring}
       </div>
-      ${c ? `<div class="g-bar"><span class="g-track"><i style="width:${Math.min(100, pct)}%"></i></span><div class="g-bl"><span>返した元金 <b class="num">${yen(c.paid)}</b></span><span>はじめの残高 <b class="num">${yen(c.start)}</b></span></div></div>` : ""}
+      ${c ? `<div class="g-bar"><span class="g-track"><i style="width:${Math.min(100, pct)}%"></i></span><div class="g-bl"><span>返した元金 <b class="num">${yen(c.paid)}</b></span><span>${c.inc ? `借りた合計 <b class="num">${yen(c.total)}</b>（うち途中で増えた ${yen(c.inc)}）` : `はじめの残高 <b class="num">${yen(c.start)}</b>`}</span></div></div>` : ""}
       <div class="g-msg"><span>${msg}</span>${link ? `<button type="button" class="g-link" data-tab="balance">返済を見る ›</button>` : ""}</div>
       <ol class="g-steps">${steps}${goal}</ol>
       <div class="g-stats">
@@ -1143,7 +1160,7 @@
         ${st("毎月の返済", yen(ol.curPay), ol.curInt ? `うち利息 約${yen(ol.curInt)}` : "")}
         ${st("すべて完済まで", g.days != null ? `あと${g.days.toLocaleString("ja-JP")}日` : "—", g.days != null ? ymd(g.last.info.end) + "予定" : "")}
       </div>
-      <div class="g-note">はじめの残高＝いまの残高＋このアプリで「支払済」にした元金。${g.noPlan ? "定額・利息なしの口座（奨学金など）は目標の順番に入れていません。" : ""}</div>
+      <div class="g-note">返した割合＝返した元金 ÷（はじめの残高＋追加借入・リボで増えた額）。${g.noPlan ? "定額・利息なしの口座（奨学金など）は目標の順番に入れていません。" : ""}</div>
     </div>`;
   }
 
@@ -1390,7 +1407,7 @@
     const r = s.rows;
     const end = r.length && r[r.length - 1].after === 0 ? r[r.length - 1].date : null;
     const paid = allItems()
-      .filter(i => i.accountId === id && i.date >= MGMT_START && i.status === "paid")
+      .filter(i => i.accountId === id && (i.date >= MGMT_START || i.imported) && i.status === "paid")
       .sort((x, y) => ((y.paidDate || y.date) < (x.paidDate || x.date) ? -1 : 1));
     const tabs = [
       ["hist", `履歴 ${paid.length ? `<span class="cnt2">${paid.length}</span>` : ""}`],
@@ -2820,6 +2837,8 @@
     paintSave,
     months: () => Object.keys(S.months), // 月度の選択肢に入れる月
     ready: () => !!S.db && S.loaded.m,
+    /* Notionからの取り込み（pay-import.js）で使う */
+    imp: { S, accList, allItems, putItem, saveMonths, snapOf, render, uid, CAT, toast },
   });
 
   /* ===================== 起動 ===================== */

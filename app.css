@@ -2937,3 +2937,28 @@ body[data-tab="balance"] .kb .hcur .mic{color:#1e3a64}
 /* 差額を入れるボタン：4つになったので、2つずつ並べて折り返す（スマホで枠からはみ出していた） */
 .pay .diffbox .dbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .pay .diffbox .dbtns button{white-space:normal;line-height:1.3;min-height:36px}
+/* Notionからの取り込み */
+.kb .imp-drop,.imp-drop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px 12px;border:2px dashed var(--u-strong);border-radius:12px;cursor:pointer;text-align:center}
+.imp-drop input{display:none}
+.imp-drop b{color:var(--u-acct)}
+.imp-drop span{font-size:var(--fs-s);color:var(--u-sub)}
+.imp-sum{display:flex;flex-direction:column;gap:4px;font-size:var(--fs-base)}
+.imp-h{font-size:var(--fs-s);font-weight:700;color:var(--u-sub);margin-top:12px}
+.imp-map{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.imp-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center}
+.imp-s{font-weight:700;font-size:var(--fs-base);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imp-r select{width:100%;min-width:0;height:36px;font-size:var(--fs-base)!important}
+.imp-note{margin-top:10px}
+.imp-acts{margin-top:12px}
+/* 支払い（PC）：表は左に詰め、「この期間のお金の流れ」は右に。1行に内訳（元金・利息・その他）と支払前の残高も */
+@media (min-width:900px){
+  .pay #v-home .pgrid{display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+  .pay #v-home .pmain{display:flex!important;flex-direction:column;gap:12px;min-width:0}
+  .pay #v-home .pside{display:flex!important;flex-direction:column;gap:12px;position:sticky;top:calc(var(--abh) + 12px)}
+  .pay #v-home .pflow{max-width:none}
+}
+.pay .v2 .ptable .tsub{display:flex;flex-wrap:wrap;gap:2px 12px;margin-top:2px;font-size:10.5px;font-weight:400;color:var(--u-sub)}
+.pay .v2 .ptable .tsub .tmemo{color:var(--u-ink)}
+.pay .v2 .ptable .tname{white-space:normal}
+.pay .v2 .ptable tr.trow td{padding-top:6px;padding-bottom:6px;vertical-align:top}
+.pay .v2 .ptable tr.trow td.r,.pay .v2 .ptable tr.trow td:has(.tst),.pay .v2 .ptable tr.trow td:has(.mtag){padding-top:8px}

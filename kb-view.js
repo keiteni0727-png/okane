@@ -626,12 +626,13 @@ const SET_IC = {
   gen: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v4M10 15h4"/>',
   save: '<path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/><path d="m9.5 13.5 2 2 3.5-4"/>',
   out: '<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/>',
+  imp: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>',
 };
 const setIc = k => `<svg class="seti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SET_IC[k]}</svg>`;
 const SET_CV = `<svg class="setcv" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>`;
-const SET_PG = { home: "設定", rules: "自動分類ルール", cats: "分類", mets: "明細の支払い方法", inc: "収入と給料日", paym: "支払いの方法", gen: "支払予定の作成" };
+const SET_PG = { home: "設定", rules: "自動分類ルール", cats: "分類", mets: "明細の支払い方法", inc: "収入と給料日", paym: "支払いの方法", gen: "支払予定の作成", imp: "Notionから取り込む" };
 const SET_EDIT = { rules: "rules", cats: "master", mets: "master", paym: "paym" };
-const PAY_PG = ["inc", "paym", "gen"];
+const PAY_PG = ["inc", "paym", "gen", "imp"];
 /* 設定の一覧（家計簿の設定・支払い管理の設定・共通） */
 function renderSetHome() {
   const th = U.theme();
@@ -641,7 +642,7 @@ function renderSetHome() {
   $("st-home").innerHTML = `<div class="setsec">家計簿の設定</div>
     <div class="setgrp">${row("cats", "分類", CATS.length)}${row("mets", "明細の支払い方法", METHODS.length)}${row("rules", "自動分類ルール", `${rules.length}件`)}</div>
     <div class="setsec">支払い・返済の設定</div>
-    <div class="setgrp">${row("inc", "収入と給料日", `${cfg.income ? yen(cfg.income) + "・" : ""}${FIN.paydayNum()}日`)}${row("paym", "支払いの方法", (cfg.methods || []).length)}${row("gen", "支払予定の作成", "作り直す・作成")}</div>
+    <div class="setgrp">${row("inc", "収入と給料日", `${cfg.income ? yen(cfg.income) + "・" : ""}${FIN.paydayNum()}日`)}${row("paym", "支払いの方法", (cfg.methods || []).length)}${row("gen", "支払予定の作成", "作り直す・作成")}${row("imp", "Notionから取り込む", "支払いの履歴")}</div>
     <div class="setsec">共通</div>
     <div class="setgrp"><div class="setrow static">${setIc("theme")}<span class="setl">テーマ</span><div class="seg thseg" role="group" aria-label="テーマ">${[["auto", "自動"], ["light", "ライト"], ["dark", "ダーク"]].map(([v, l]) => `<button type="button" data-theme="${v}"${th === v ? ' aria-current="page"' : ""}>${l}</button>`).join("")}</div></div>
     <div class="setrow static">${setIc("save")}<span class="setl">保存と同期</span><span class="setv"><span class="${sv ? sv.className : "savest"}">${sv ? esc(sv.textContent) : ""}</span></span></div><button type="button" class="setrow danger" data-logout="1">${setIc("out")}<span class="setl">ログアウト</span></button></div>`;
@@ -667,6 +668,7 @@ function renderSettings() {
     renderMaster();
   }
   if (PAY_PG.includes(pg) && FIN.pay.renderSettings) FIN.pay.renderSettings();
+  if (pg === "imp" && FIN.payImport) FIN.payImport.render();
 }
 /* 設定のその項目を開いているか（支払いの設定を描き直すかどうか） */
 const settingsOpen = tab => !$("rulepanel").hidden && (tab === "pay" ? PAY_PG.includes(setting.tab) : setting.tab === tab);
