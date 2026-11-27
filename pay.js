@@ -941,7 +941,7 @@
     let its = [...st.its].sort(byDateAmt).filter(FILTER_FN[S.filter] || Boolean);
     S.shownN = its.length;
     const wkm = false; // 日付ごとだけ（週ごとはなくした）
-    $("cFbar").innerHTML = `<div class="fline fchips">${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
+    $("cFbar").innerHTML = `<div class="fline fchips">${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"], ["deferred", "翌月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => S.filter === "deferred" || i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
     if (!its.length)
       $("cList").innerHTML =
         S.filter !== "all"
@@ -1028,7 +1028,7 @@
           byM[m] = (byM[m] || 0) + (x.amount || 0);
         });
         const need = Object.entries(byM).sort((a, b) => b[1] - a[1]);
-        h += `<tr class="grp"><td colspan="2">${md(cur)}（${wd(cur)}）</td><td class="r">${yen(sum)}</td><td class="gnote" colspan="3">${need.length ? `未払 ${need.map(([m, v]) => `${esc(m)} ${yen(v)}`).join(" ・ ")}` : "✓ 支払済"}</td></tr>`;
+        h += `<tr class="grp"><td colspan="2">${md(cur)}（${wd(cur)}）</td><td class="r">${yen(sum)}</td><td class="gnote" colspan="3">${need.length ? `未払 ${need.map(([m, v]) => `${esc(m)} ${yen(v)}`).join(" ・ ")}` : day.length ? "✓ 支払済" : "→ 翌月へ延滞"}</td></tr>`;
       }
       h += trowHTML(i);
     });
@@ -1039,6 +1039,7 @@
     const tO = live.reduce((s, i) => s + (i.accountId ? i.other || 0 : 0), 0);
     const bd = tP || tI || tO ? [`元金 ${yen(tP)}`, `利息 ${yen(tI)}`, ...(tO ? [`その他 ${yen(tO)}`] : [])].join(" ・ ") : "—";
     const un = its.filter(i => i.status === "planned").reduce((s, i) => s + amtOf(i), 0);
+    if (S.filter === "deferred") return h + "</tbody>"; // 翌月へ回した分だけのときは、合計の行を出さない
     h += `</tbody><tfoot><tr><td colspan="2">合計（${live.length}件）</td><td class="r">${yen(tA)}</td><td class="bd">${bd}</td><td class="tunpaid">未払 ${yen(un)}</td><td></td></tr></tfoot>`;
     return h;
   }
@@ -1059,7 +1060,7 @@
   }
   /* 一覧の絞り込み：状態（未払・前月延滞分）。ボタンは一覧の上に常時表示（data-f で切り替え）
      前月延滞分＝前の月から回ってきた延滞分だけ。この月に払わず翌月へ回した分（deferred）は出さない */
-  const FILTER_FN = { unpaid: i => i.status === "planned", late: i => i.kind === "late" && i.status !== "deferred" };
+  const FILTER_FN = { unpaid: i => i.status === "planned", late: i => i.kind === "late" && i.status !== "deferred", deferred: i => i.status === "deferred" };
   /* 最初に出す月度：いまの月度の支払を全部処理し終えていたら（未払が残っていなければ）翌月度 */
   function autoPeriod() {
     const cur = periodOf(today());

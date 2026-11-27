@@ -2881,9 +2881,9 @@ body[data-tab="list"] .kb #lhead{margin-bottom:0!important;padding-bottom:12px}
 .pay #v-home .plist,.pay #v-home #cAlert{width:100%}
 .pay #v-home .fchip3{white-space:nowrap}
 @media (max-width:639px){
-  .pay #v-home .v2 .fline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-  .pay #v-home .v2 .fcnt{grid-column:1/-1;grid-row:2;margin:0;justify-content:flex-end}
-  .pay #v-home .v2 .fchip3{padding:3px 4px;font-size:var(--fs-xs)}
+  .pay #v-home.v2 .fline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .pay #v-home.v2 .fcnt{grid-column:1/-1;grid-row:2;margin:0;justify-content:flex-end}
+  .pay #v-home.v2 .fchip3{padding:3px 4px;font-size:var(--fs-xs)}
 }
 
 /* ======================================================================
@@ -3204,3 +3204,7 @@ body[data-tab="plan"] .kb .fab{display:none!important}
 .pay .pt-acc{max-width:150px}
 .pay .pt-acc b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pay .pv-res small{font-size:var(--fs-xs);font-weight:500;opacity:.75}
+@media (max-width:639px){
+  .pay #v-home.v2 .fchip3{order:0!important;grid-row:1}
+  .pay #v-home.v2 .fcnt{order:1!important;grid-row:2!important;grid-column:1/-1!important}
+}
