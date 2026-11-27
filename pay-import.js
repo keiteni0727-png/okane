@@ -54,6 +54,12 @@
     return m ? `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}` : null;
   };
   const norm = s => String(s || "").replace(/^[a-z]_/i, "").replace(/[\s　（）()]/g, "").toLowerCase();
+  /* 延滞の行の名前「エポス（9月）」「SMBC(11月)」から、元の名前と月を取り出す */
+  const lateBase = s => String(s || "").replace(/\s*[（(].*$/, "").trim();
+  const lateMonth = s => {
+    const m = String(s || "").match(/[（(]\s*(\d{1,2})\s*月/);
+    return m ? Number(m[1]) : null;
+  };
   const subName = r => String(r["サブカテゴリ"] || "").replace(/^[a-z]_/i, "").trim();
 
   /* ---------- 取り込む行を作る ---------- */
@@ -81,6 +87,10 @@
         sub,
         late: cat === "延滞",
         catLabel: cat,
+        /* 支払い対象 = No：その月は払わずに延滞にした請求（翌月の「○○（N月）」の延滞の行で払っている） */
+        deferred: String(r["支払い対象"] || "").toLowerCase() === "no" && cat !== "延滞",
+        base: lateBase(r["支出"]),
+        billMonth: lateMonth(r["支出"]),
       });
     });
     return out;
@@ -110,33 +120,56 @@
     const P = FIN.pay.imp;
     const existing = P.allItems();
     const list = build(imp.rows || []);
+    /* 延滞の組み合わせ：延滞の行（○○（N月））ごとに、元の請求（支払い対象 No・同じ名前・それより前）を1つ探す */
+    const used = new Set();
+    list.forEach(x => {
+      if (!x.late) return;
+      const cand = list.filter(
+        o => o.deferred && !used.has(o) && o.date < x.date && (norm(o.base) === norm(x.base) || norm(o.sub).includes(norm(x.base)) || norm(x.base).includes(norm(o.sub || o.base))),
+      );
+      const byMonth = cand.filter(o => x.billMonth && (Number(o.date.slice(5, 7)) === x.billMonth || Number(o.date.slice(5, 7)) === (x.billMonth % 12) + 1));
+      const o = (byMonth.length ? byMonth : cand).sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+      if (o) {
+        used.add(o);
+        x.orig = o;
+        o.lateRow = x;
+        if (!x.sub) x.sub = o.sub; // 延滞の行は元の請求の口座で取り込む
+      }
+    });
     const subs = autoMap(list);
     let dup = 0,
       skip = 0;
+    list.forEach(x => (x.id = FIN.pay.imp.uid() + Math.random().toString(36).slice(2, 5)));
     const items = [];
     list.forEach(x => {
       const accId = x.sub ? imp.map[x.sub] : "";
       if (accId === "skip") return skip++;
       if (isDup(x, accId, existing)) return dup++;
       const a = accId && P.S.accounts[accId];
-      const pr = x.principal,
-        inr = x.interest;
-      const other = pr != null && inr != null ? Math.max(0, x.amount - pr - inr) : null;
+      const src = x.orig || x; // 延滞の行は、元の請求の元金・利息・残高を使う
+      const pr = src.principal,
+        inr = src.interest;
+      const other = pr != null && inr != null ? Math.max(0, src.amount - pr - inr) : null;
+      x.id = x.id || P.uid();
+      if (x.lateRow) x.lateRow.id = x.lateRow.id || P.uid();
+      const fee = x.orig ? Math.max(0, x.amount - x.orig.amount) : 0;
       items.push({
-        id: P.uid(),
+        id: x.id,
         name: x.name,
         date: x.date,
         amount: x.amount,
         accountId: a ? accId : null,
         category: a ? a.category || "other" : x.late ? "other" : "other",
         method: x.method,
-        status: "paid",
-        paidDate: x.date,
+        /* 元の請求で延滞の行が見つかったもの＝「延滞→翌月へ」、延滞の行＝「延滞分」として支払済 */
+        status: x.lateRow ? "deferred" : "paid",
+        ...(x.lateRow ? { deferredTo: x.lateRow.id } : { paidDate: x.date }),
         kind: x.late ? "late" : "normal",
+        ...(x.orig ? { origin: x.orig.id, dueDate: x.orig.date, lateFee: fee || null } : {}),
         principal: a ? pr : null,
         interest: a ? inr : null,
         other: a ? other : null,
-        balanceBefore: a ? x.before : null,
+        balanceBefore: a ? src.before : null,
         memo: x.memo,
         applied: false,
         imported: true, // 取り込んだ履歴：いまの残高には反映しない
@@ -163,7 +196,8 @@
     const first = p.items.length ? p.items.reduce((m, i) => (i.date < m ? i.date : m), p.items[0].date) : null;
     const last = p.items.length ? p.items.reduce((m, i) => (i.date > m ? i.date : m), p.items[0].date) : null;
     el.innerHTML = `<div class="imp-sum"><b>${esc(imp.file)}</b>
-      <div>取り込む支払 <b class="num">${p.items.length}件</b>${first ? `（${first.replace(/-/g, "/")}〜${last.replace(/-/g, "/")}）` : ""}・合計 <b class="num">${yen(p.items.reduce((t, i) => t + i.amount, 0))}</b></div>
+      <div>取り込む支払 <b class="num">${p.items.length}件</b>${first ? `（${first.replace(/-/g, "/")}〜${last.replace(/-/g, "/")}）` : ""}・支払った合計 <b class="num">${yen(p.items.filter(i => i.status === "paid").reduce((t, i) => t + i.amount, 0))}</b></div>
+      ${p.items.some(i => i.status === "deferred") ? `<div>うち延滞にして翌月に払った請求 <b class="num">${p.items.filter(i => i.status === "deferred").length}件</b>（翌月の「○○（N月）」の行と組み合わせ、延滞利息も記録します）</div>` : ""}
       <div class="mu">すでにアプリにある分 ${p.dup}件・取り込まない口座 ${p.skip}件は除きます。未来の分・未払の分は取り込みません。</div></div>
       <div class="imp-h">口座の当てはめ</div>
       <div class="imp-map">${p.subs.map(s => `<div class="imp-r"><span class="imp-s">${esc(s)}</span>${opt(s)}</div>`).join("")}</div>
