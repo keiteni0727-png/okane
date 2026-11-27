@@ -226,6 +226,8 @@
         stalled = true;
         break;
       }
+      /* 計画（plan.js）の補填：その月だけ・その月から毎月、元金に上乗せする */
+      if (opt.extra) pr += opt.extra(ym) || 0;
       pr = Math.min(pr, bal);
       rows.push({ date: d, bm: ym, before: bal, interest, principal: pr, payment: pr + interest, after: bal - pr });
       bal -= pr;
@@ -740,6 +742,7 @@
   function render() {
     computeSched();
     const view = {
+      plan: () => FIN.plan && FIN.plan.render(),
       dash: renderDash,
       home: renderHome,
       balance: () => {
@@ -1245,6 +1248,12 @@
   }
   /* ---------- 残高と計画：返済の計画 ---------- */
   function renderPlan() {
+    /* 「繰上げ返済の相談」は「計画」に移した（欄がなければ描かない） */
+    if (!$("pAmt")) {
+      renderInterest();
+      renderRoad();
+      return;
+    }
     const amt = Math.max(0, Number($("pAmt").value) || 0);
     document
       .querySelectorAll("#pQuick button")
@@ -2846,6 +2855,8 @@
     ready: () => !!S.db && S.loaded.m,
     /* Notionからの取り込み（pay-import.js）で使う */
     imp: { S, accList, allItems, putItem, saveMonths, snapOf, render, uid, CAT, toast },
+    /* 計画（plan.js）で使う */
+    plan: { S, accList, schedule, saveCfg, nextStart, interestFor, incomeOf, CAT, toast, putItem, saveMonth, uid, render, isDebt },
   });
 
   /* ===================== 起動 ===================== */

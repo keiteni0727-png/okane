@@ -36,7 +36,7 @@
   <button type="button" class="u-btn icon soft hact" id="gear" aria-label="設定" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 </div></header>
 <!-- 支払い／返済の切り替え：月度の切り替えより上に置き、返済（月度なし）に切り替えても位置がずれないように -->
-<div class="pay u-btns"><div class="wrap psegw"><nav class="pseg" aria-label="支払いの画面"><button type="button" data-tab="home">支払い</button><button type="button" data-tab="balance">返済</button></nav></div></div>
+<div class="pay u-btns"><div class="wrap psegw"><nav class="pseg" aria-label="支払いの画面"><button type="button" data-tab="home">支払い</button><button type="button" data-tab="balance">返済</button><button type="button" data-tab="plan">計画</button></nav></div></div>
 <!-- 日付（月度の切り替え）は上の帯の下に -->
 <div class="wrap mbar">
   <button type="button" class="mcur" id="mcur">当月</button>
@@ -116,6 +116,9 @@
     </div>
   </section>
 
+  <!-- 計画：返済のざっくり俯瞰と補填のシミュレーション（plan.js） -->
+  <section id="v-plan" class="v2 vplan"><div id="planBox"></div></section>
+
   <!-- 借入・返済（残高と口座＋返済計画） -->
   <section id="v-balance" class="v2 vbal">
     <div class="pk" id="bStats"></div>
@@ -125,21 +128,7 @@
           <div class="panel-h"><h2>口座</h2><span class="note">押すと履歴・今後の予定・返済計画が見られます</span></div>
           <div id="bGroups"></div>
         </div>
-        <div class="panel bboost">
-          <div class="panel-h"><h2>繰上げ返済の相談：1回だけ繰上げするなら</h2><span class="note">今期に1回だけ繰上げした場合</span></div>
-          <div class="boost-h">
-            <div class="field"><label for="pAmt">繰上げに回す額</label>
-              <div class="amtbox"><span>¥</span><input type="number" id="pAmt" inputmode="numeric" step="1000" value="10000"></div>
-            </div>
-            <div class="quick" id="pQuick"><button data-qa="5000">5千</button><button data-qa="10000">1万</button><button data-qa="30000">3万</button><button data-qa="50000">5万</button></div>
-          </div>
-          <div id="pRank"></div>
-          <div class="whatif">
-            <div class="bar-row"><label for="sExtra" class="label">毎月あと少し返せたら</label><b class="num" id="sExtraV"></b></div>
-            <input type="range" id="sExtra" min="0" max="50000" step="1000" value="0">
-            <div class="note" id="sResult"></div>
-          </div>
-        </div>
+        <button type="button" class="panel bplan" data-tab="plan"><span class="bp-i" aria-hidden="true">＋</span><span class="bp-t"><b>補填したらどうなる？</b><span>月ごと・口座ごとに上乗せして、完済の早まり方と減る利息を「計画」で試せます</span></span><span class="bp-go" aria-hidden="true">›</span></button>
         <div class="panel broad" data-foldbox="road">
           <div class="panel-h fold-h" data-fold="road" role="button" tabindex="0"><h2>毎月の返済が軽くなっていく日</h2><span class="note">いまの返済条件のまま（家賃などは除く）</span></div>
           <div class="chartbox" id="pChart"></div>
@@ -175,6 +164,7 @@
   <div class="acts"><button class="pri" id="qmerge">1件に合算</button><button id="selpost">詳細編集</button><button id="qrule">ルールにする</button><button class="ghost" id="qdel">削除</button></div>
 </div></div>
 <div id="kbSheet" class="kbsheet" hidden></div>
+<div id="planSheet" class="plsheet" hidden></div>
 <button type="button" id="fab" class="fab" aria-label="追加"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="fab-l">追加</span></button>
 <button type="button" id="toTop" class="totop hide" aria-label="ページの先頭に戻る" tabindex="-1" aria-hidden="true"><span aria-hidden="true">↑</span>トップへ</button>
 <datalist id="memos"></datalist>
@@ -248,6 +238,7 @@
 <script src="fin.js"></script>
 <script src="pay.js"></script>
 <script src="pay-import.js"></script>
+<script src="plan.js"></script>
 <script src="kb.js"></script>
 <script src="kb-view.js"></script>
 <script src="kb-events.js"></script>

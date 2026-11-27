@@ -2997,3 +2997,102 @@ body[data-tab="balance"] .kb .hcur .mic{color:#1e3a64}
 .pay .sheet .sumtot{background:var(--u-accent2);padding:10px 12px}
 .pay .sheet .sumtot span{font-weight:700;color:var(--u-acct)}
 .pay .sheet .sumtot b{font-size:26px!important}
+
+/* ======================================================================
+   計画（支払い ＞ 計画）：俯瞰の数字＋月×口座の表。マスを押して補填を試す
+   ====================================================================== */
+body:not([data-tab="plan"]) #v-plan{display:none}
+body[data-tab="plan"] #payWrap{display:block!important}
+body[data-tab="plan"] .kb .mbar,body[data-tab="plan"] .kb .layout{display:none!important}
+body[data-tab="plan"]{--u-accent:#1e3a64;--u-accent2:#e6ebf3;--u-acct:#1e3a64;--u-bg:#eef0f3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-tab="plan"]{--u-accent:#9db8e0;--u-accent2:#1c2634;--u-acct:#b6cbea;--u-bg:#0e1014}}
+:root[data-theme="dark"] body[data-tab="plan"]{--u-accent:#9db8e0;--u-accent2:#1c2634;--u-acct:#b6cbea;--u-bg:#0e1014}
+body[data-tab="plan"] .kb .hcur .mic{color:#1e3a64}
+.pay .vplan{gap:12px}
+.pay .pl-top{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--u-surface);border:1px solid var(--u-line);border-top:3px solid var(--u-accent);border-radius:6px;overflow:hidden}
+.pay .pl-k{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-left:1px solid var(--u-soft);min-width:0}
+.pay .pl-k:first-child{border-left:0}
+.pay .pl-k .lb{font-size:var(--fs-xs);color:var(--u-sub);font-weight:700}
+.pay .pl-k b{font-size:var(--fs-xl);font-weight:600;white-space:nowrap}
+.pay .pl-k .s{font-size:var(--fs-xs);color:var(--u-sub);line-height:1.5}
+.pay .pl-k.main{background:var(--u-accent2)} .pay .pl-k.main b{color:var(--u-acct)}
+.pay .pl-k.ok b{color:var(--u-ok)} .pay .pl-k.neg b{color:var(--u-danger)}
+.pay .pl-good{color:var(--u-ok);font-weight:800}
+.pay .pl-lk{border:0;background:none;color:var(--u-acct);font:inherit;font-size:var(--fs-xs);font-weight:700;padding:0;cursor:pointer;text-decoration:underline}
+.pay .pl-liv{width:6.5em!important;height:24px!important;padding:0 6px!important;font-size:var(--fs-s)!important;display:inline-block;margin:0 2px}
+@media (max-width:899px){
+  .pay .pl-top{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pay .pl-k:nth-child(odd){border-left:0}
+  .pay .pl-k{border-top:1px solid var(--u-soft)}
+  .pay .pl-k.main{grid-column:1/-1;grid-row:1;border-top:0}
+  .pay .pl-k b{font-size:var(--fs-l)}
+}
+.pay .pl-bar{display:flex;flex-direction:column;gap:8px}
+.pay .pl-hint{font-size:var(--fs-s);color:var(--u-sub)}
+.pay .pl-hint b{color:var(--u-acct)}
+.pay .pl-ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pay .pl-chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 4px 0 10px;border-radius:4px;background:var(--u-accent2);color:var(--u-acct);font-size:var(--fs-s);font-weight:600}
+.pay .pl-chip button{width:22px;height:22px;border:0;border-radius:4px;background:none;color:inherit;font-size:15px;cursor:pointer;padding:0}
+.pay .pl-clr{border:0;background:none;color:var(--u-danger);font:inherit;font-size:var(--fs-s);font-weight:700;cursor:pointer}
+/* 表：月の列と見出しは固定、横にスクロール */
+.pay .pl-wrap{overflow:auto;max-height:calc(100dvh - var(--abh) - 120px);background:var(--u-surface);border:1px solid var(--u-line);border-radius:6px;-webkit-overflow-scrolling:touch}
+.pay .pl-t{border-collapse:separate;border-spacing:0;font-size:var(--fs-s);width:max-content;min-width:100%}
+.pay .pl-t th,.pay .pl-t td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--u-soft);border-left:1px solid var(--u-soft);white-space:nowrap;background:var(--u-surface)}
+.pay .pl-t thead th{position:sticky;top:0;z-index:3;background:var(--u-chip);vertical-align:bottom;text-align:right;font-weight:400;border-bottom:1px solid var(--u-line)}
+.pay .pl-t thead th b{display:block;font-size:var(--fs-s);color:var(--u-ink);font-weight:700}
+.pay .pl-t thead th small{display:block;font-size:10px;color:var(--u-sub)}
+.pay .pl-t thead th .pl-end em{color:var(--u-ok);font-style:normal;font-weight:700}
+.pay .pl-t .pl-m{position:sticky;left:0;z-index:2;text-align:left;font-weight:700;min-width:3.4em;border-left:0}
+.pay .pl-t thead .pl-m{z-index:4}
+.pay .pl-t tr.pl-yr td{position:sticky;left:0;background:var(--u-accent2);color:var(--u-acct);font-weight:800;text-align:left;font-size:var(--fs-xs);padding:3px 8px}
+.pay .pl-c{cursor:pointer;min-width:4.6em;position:relative}
+.pay .pl-c b{display:block;font-size:var(--fs-s);font-weight:600}
+.pay .pl-c small{display:block;font-size:10px;color:var(--u-sub)}
+.pay .pl-c em{position:absolute;top:1px;left:3px;font-style:normal;font-size:9.5px;font-weight:800;color:#fff;background:var(--u-ok);border-radius:3px;padding:0 3px;line-height:1.4}
+.pay .pl-c.ex{background:color-mix(in srgb,var(--u-ok) 10%,var(--u-surface))}
+.pay .pl-c.fin{background:color-mix(in srgb,var(--u-ok) 16%,var(--u-surface))}
+.pay .pl-c.fin small{color:var(--u-ok);font-weight:700}
+@media (hover:hover){.pay .pl-c:hover{background:var(--u-accent2)}}
+.pay .pl-done{background:repeating-linear-gradient(135deg,transparent 0 6px,var(--u-soft) 6px 7px)!important}
+.pay .pl-sum{font-weight:700;background:var(--u-chip)!important}
+.pay .pl-sum.ok{color:var(--u-ok)} .pay .pl-sum.neg{color:var(--u-danger)}
+.pay .pl-note{font-size:var(--fs-xs)}
+/* 補填のシート */
+.plsheet{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;font-family:var(--u-f)}
+.plsheet[hidden]{display:none}
+.plsheet .pls-scrim{position:absolute;inset:0;background:var(--u-scrim)}
+.plsheet .pls{position:relative;width:100%;max-width:460px;background:var(--u-surface);color:var(--u-ink);border-radius:14px 14px 0 0;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;max-height:calc(100dvh - 20px);overflow:auto}
+@media (min-width:900px){.plsheet{align-items:center}.plsheet .pls{border-radius:10px}}
+.plsheet .pls-h{display:flex;align-items:center;justify-content:space-between}
+.plsheet .pls-h b{font-size:var(--fs-l)}
+.plsheet .pls-x{width:32px;height:32px;border:0;border-radius:50%;background:var(--u-chip);font-size:18px;cursor:pointer;color:var(--u-sub)}
+.plsheet .pls-cur{display:flex;gap:4px 16px;flex-wrap:wrap;font-size:var(--fs-s);color:var(--u-sub)}
+.plsheet .pls-cur b{color:var(--u-ink)}
+.plsheet .pls-lb{font-size:var(--fs-xs);font-weight:700;color:var(--u-sub)}
+.plsheet .pls-in{display:flex;align-items:center;gap:6px;border:2px solid var(--u-accent);border-radius:8px;padding:0 12px;height:52px}
+.plsheet .pls-in span{font-size:var(--fs-l);color:var(--u-sub);font-weight:700}
+.plsheet .pls-in input{flex:1;min-width:0;border:0;background:none;font-size:26px;font-weight:700;color:var(--u-ink);text-align:right;outline:none}
+.plsheet .pls-q{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+.plsheet .pls-q button,.plsheet .pls-seg button{height:34px;border:1px solid var(--u-line);border-radius:6px;background:var(--u-surface);color:var(--u-ink);font:inherit;font-size:var(--fs-s);font-weight:700;cursor:pointer}
+.plsheet .pls-q button[aria-pressed="true"],.plsheet .pls-seg button[aria-pressed="true"]{background:#1e3a64;border-color:#1e3a64;color:#fff}
+.plsheet .pls-seg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.plsheet .pls-eff{display:flex;flex-direction:column;gap:6px;background:color-mix(in srgb,var(--u-ok) 10%,var(--u-surface));border-radius:8px;padding:10px 12px}
+.plsheet .pls-eff>div{display:flex;align-items:baseline;gap:8px;font-size:var(--fs-s)}
+.plsheet .pls-eff span{color:var(--u-sub);min-width:7em}
+.plsheet .pls-eff b{font-size:var(--fs-base)}
+.plsheet .pls-eff em{font-style:normal;color:var(--u-ok);font-weight:800}
+.plsheet .pls-f{display:flex;justify-content:space-between;gap:8px}
+.plsheet .pls-f .pri{flex:1;height:46px;border:0;border-radius:8px;background:#1e3a64;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.plsheet .pls-f .pri:disabled{opacity:.4}
+.plsheet .pls-f .ghost,.plsheet .pls-f2 .ghost{border:1px solid var(--u-line);border-radius:8px;background:none;color:var(--u-sub);font:inherit;font-weight:700;padding:0 12px;cursor:pointer}
+.plsheet .pls-f2{display:flex;justify-content:center}
+.plsheet .pls-f2 .ghost{height:34px;font-size:var(--fs-s)}
+/* 返済の画面：計画への入口 */
+.pay .bplan{display:flex;align-items:center;gap:12px;width:100%;padding:14px;border:1px solid var(--u-line);text-align:left;font:inherit;color:inherit;cursor:pointer;order:3}
+.pay .bp-i{width:36px;height:36px;border-radius:8px;background:var(--u-ok2);color:var(--u-ok);display:grid;place-items:center;font-size:20px;font-weight:800;flex:none}
+.pay .bp-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.pay .bp-t span{font-size:var(--fs-s);color:var(--u-sub)}
+.pay .bp-go{font-size:var(--fs-xl);color:var(--u-sub)}
+body[data-tab="plan"] .pay .psegw{display:block!important}
+body[data-tab="plan"] .kb .fab{display:none!important}
+.plsheet .pls-q button{white-space:nowrap;padding:0 2px}
