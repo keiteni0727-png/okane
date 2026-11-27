@@ -3675,3 +3675,33 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 /* 行の右端は金額と「›」だけ（押すと支払う・編集） */
 .pay #v-home .row .rgo{color:var(--u-strong);font-size:var(--fs-xl);line-height:1}
 .pay #v-home .row .rright{min-width:0!important;gap:10px}
+/* 返済（スマホ）：目標カードを短く。数字は「のこり」と「すべて完済まで」だけ（ほかは計画で） */
+@media (max-width:639px){
+  .pay .vbal .goal{padding:12px 14px;gap:8px}
+  .pay .vbal .g-ring{width:64px;height:64px;margin-right:0}
+  .pay .vbal .g-fold{top:10px;right:10px}
+  .pay .vbal .g-top{padding-right:56px}
+  .pay .vbal .g-bl span:last-child{display:none}
+  .pay .vbal .g-msg{font-size:var(--fs-xs);padding:6px 10px}
+  .pay .vbal .g-steps li{padding:2px 0;font-size:var(--fs-xs)}
+  .pay .vbal .g-steps li.now{font-size:var(--fs-s)}
+  .pay .vbal .gs-m{width:20px;height:20px;font-size:10px}
+  .pay .vbal .g-steps li:not(:last-child)::after{left:10px;top:22px}
+  .pay .vbal .g-steps li{grid-template-columns:22px minmax(0,1fr) auto}
+  .pay .vbal .g-stats .g-st:nth-child(2),.pay .vbal .g-stats .g-st:nth-child(3){display:none}
+  .pay .vbal .g-stats{grid-template-columns:1fr 1fr}
+  .pay .vbal .g-stats .g-st:nth-child(4){border-left:1px solid color-mix(in srgb,currentColor 20%,transparent);padding-left:12px}
+}
+.pay .g-when .nw{white-space:nowrap}
+/* 借入先の画面の上の3つ：折り返さない */
+.pay .ad-sum.ad-sum3 .label{white-space:nowrap}
+.pay .ad-sum.ad-sum3 b{white-space:nowrap}
+.pay .ad-sum.ad-sum3 small{white-space:nowrap}
+@media (max-width:639px){.pay .ad-sum.ad-sum3 b{font-size:var(--fs-base)}.pay .ad-sum.ad-sum3>div{padding:8px 10px}}
+.pay .hsum small{white-space:nowrap}
+@media (max-width:639px){
+  .pay .vbal .g-when .nw{display:none}
+  .pay .vbal .g-when{font-size:var(--fs-s);white-space:nowrap}
+  .pay .vbal .g-top{padding-right:60px}
+  .pay .vbal .g-ttl{font-size:20px}
+}

@@ -1267,11 +1267,11 @@
       <ol class="g-steps">${steps}${goal}</ol>
       <div class="g-stats">
         ${st("のこり（全体）", yen(g.left), `${g.per.filter(x => x.a.balance > 0).length}借入先・全体の${Math.round(g.rate * 100)}%を返済`)}
-        ${st("繰上げで減らせた利息", yen(g.saved), g.saved ? `完済が約${g.savedM}ヶ月早まりました` : "繰上げするとここに貯まります", g.saved ? "hi" : "")}
+        ${st("繰上げで減らせた利息", yen(g.saved), g.saved ? `約${g.savedM}ヶ月早まった` : "", g.saved ? "hi" : "")}
         ${st("毎月の返済", yen(ol.curPay), ol.curInt ? `うち利息 約${yen(ol.curInt)}` : "")}
         ${st("すべて完済まで", g.days != null ? `あと${g.days.toLocaleString("ja-JP")}日` : "—", g.days != null ? ymd(g.last.info.end) + "予定" : "")}
       </div>
-      <div class="g-note">返した割合＝返した元金 ÷（はじめの残高＋追加借入・リボで増えた額）。${g.noPlan ? "定額・利息なしの借入先（奨学金など）は目標の順番に入れていません。" : ""}</div>
+      
     </div>`;
   }
 
@@ -1535,8 +1535,8 @@
     const b0 = hist.length ? hist[0].balanceBefore : null;
     const dec = b0 != null ? b0 - (a.balance || 0) : null;
     box.innerHTML = `<div class="ad-sum ad-sum3">
-      <div><span class="label">2026年1月時点の残高</span><b class="num">${b0 != null ? yen(b0) : "—"}</b></div>
-      <div><span class="label">いまの残高</span><b class="num">${yen(a.balance)}</b>${dec != null ? `<small class="${dec >= 0 ? "ok" : "ng"}">${dec >= 0 ? `1月から ${yen(dec)} 減った` : `1月から ${yen(-dec)} 増えた`}</small>` : ""}</div>
+      <div><span class="label">1月の残高</span><b class="num">${b0 != null ? yen(b0) : "—"}</b></div>
+      <div><span class="label">いまの残高</span><b class="num">${yen(a.balance)}</b>${dec != null ? `<small class="${dec >= 0 ? "ok" : "ng"}">${dec >= 0 ? `−${yen(dec)}` : `＋${yen(-dec)}`}</small>` : ""}</div>
       <div><span class="label">完済予定</span><b class="num ok">${end ? ymLabel(ymOf(end)) : debt ? "見込みなし" : "—"}</b><small>${end ? `あと${r.length}回` : ""}</small></div>
     </div>
     ${isDebt(a) ? `<div class="note ad-cond">年利${a.rate}%・${typeLabel(a)}</div>` : ""}
@@ -1580,7 +1580,7 @@
       }
       if (!isF(`hist:${acc ? acc.id : ""}:${yr}`)) h += rowOf(i);
     });
-    return `<div class="hsum"><div><span class="label">支払った合計</span><b class="num">${yen(sum("amount"))}</b></div><div><span class="label">うち元金</span><b class="num ok">${yen(sum("principal"))}</b></div><div><span class="label">うち利息</span><b class="num">${yen(sum("interest") + sum("lateFee"))}</b>${sum("lateFee") ? `<small>（通常 ${yen(sum("interest"))}・延滞 ${yen(sum("lateFee"))}）</small>` : ""}</div></div>
+    return `<div class="hsum"><div><span class="label">支払った合計</span><b class="num">${yen(sum("amount"))}</b></div><div><span class="label">うち元金</span><b class="num ok">${yen(sum("principal"))}</b></div><div><span class="label">うち利息</span><b class="num">${yen(sum("interest") + sum("lateFee"))}</b>${sum("lateFee") ? `<small>うち延滞 ${yen(sum("lateFee"))}</small>` : ""}</div></div>
     <div class="hlist2 h1"><div class="hr1 hh"><span>日付</span><span>残高の推移</span><span>元金</span><span>利息</span><span>その他</span><span>支払額</span></div>${h}</div>`;
   }
   /* 今後の予定（返済中でない借入先）：登録済みの支払を12件まで */
