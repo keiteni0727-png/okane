@@ -3271,3 +3271,64 @@ body[data-tab="list"] .kb .layout,body[data-tab="graph"] .kb .layout{padding-top
   .kb .kbmon,.pay .pymon{margin:0!important;justify-content:center}
 }
 .pay .vbal #bStats.pk{border:0!important;background:none!important;border-radius:0!important;overflow:visible}
+
+/* ======================================================================
+   返済・借入先・支払いのシートの修正
+   ====================================================================== */
+/* 目標の折りたたみ（たたむと、目標の名前とバーだけ） */
+.pay .goal{position:relative}
+.pay .g-fold{position:absolute;top:12px;right:14px;z-index:2;border:0;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font:inherit;font-size:var(--fs-xs);font-weight:700;padding:4px 10px;cursor:pointer}
+.pay .vbal .goal .g-ring{margin-right:64px}
+.pay .goal.gfold .g-ring,.pay .goal.gfold .g-msg,.pay .goal.gfold .g-steps,.pay .goal.gfold .g-stats,.pay .goal.gfold .g-note,.pay .goal.gfold .g-bl,.pay .goal.gfold .g-when{display:none}
+.pay .goal.gfold{gap:8px;padding-block:12px}
+.pay .goal.gfold .g-ttl{font-size:var(--fs-xl)}
+/* 借入先の一覧：マウスを乗せても青くしない */
+@media (hover:hover){.pay .vbal .acc:hover{background:var(--u-chip)!important;border-color:var(--u-soft)!important}}
+/* 借入先の画面：2026年1月時点・いまの残高 */
+.pay .ad-sum.ad-sum3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.pay .ad-sum small.ok{color:var(--u-ok);font-weight:700}
+.pay .ad-sum small.ng{color:var(--u-danger);font-weight:700}
+.pay .hbd small{font-size:10px;margin-left:2px;opacity:.85}
+.pay .hsum small{display:block;font-size:var(--fs-xs);color:var(--u-sub)}
+/* シートの下：項目の設定（たたむ）と削除 */
+.pay .sheetfold-btn{margin-top:4px}
+.pay .sheetfold-btn .sf-ic{margin-left:6px;transition:transform .15s}
+.pay .sheetfold-btn[aria-expanded="true"] .sf-ic{transform:rotate(90deg)}
+.pay .sheetfold-btn[aria-expanded="true"]{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.pay .sfbox{border:1px solid var(--u-line);border-top:0;border-radius:0 0 var(--u-r) var(--u-r);padding:12px;margin-top:-12px;display:flex;flex-direction:column;gap:10px}
+.pay .sfbox .actions{margin:0}
+.pay .act-del{justify-content:flex-start;border-top:1px solid var(--u-soft);padding-top:10px}
+/* 延滞利息の計算の補足：小さく、延滞利息の欄の下に */
+.pay .feenote.full{grid-column:1/-1;font-size:10.5px!important;line-height:1.5;color:var(--u-sub);margin-top:-6px}
+
+/* ======================================================================
+   モニター（幅1280px以上）を基本に：文字を一回り大きく、横幅を広く、シートも広く
+   ====================================================================== */
+@media (min-width:1280px){
+  :root{--fs-xs:12px;--fs-s:13px;--fs-m:14px;--fs-base:15px;--fs-l:17px;--fs-xl:20px;--fs-2xl:30px;--abh:58px}
+  .kb .wrap,.pay .wrap,.kb .appbar .wrap{max-width:1360px!important}
+  .kb .mbar{right:calc(max(16px,(100vw - 1360px)/2 + 16px) + 90px)!important}
+  .kb .hcur{font-size:var(--fs-l)!important}
+  .pay .sheet{max-width:640px}
+  .pay .sheet.wide{max-width:980px}
+  .pay .v2 .ptable{font-size:var(--fs-m)}
+  .pay .v2 .ptable tr.trow td{height:42px}
+  .pay #v-home .pgrid{grid-template-columns:minmax(0,1fr) 360px!important}
+  .pay .pv-grid{grid-template-columns:420px minmax(0,1fr)!important}
+  .kb #v-list{grid-template-columns:minmax(0,1fr) 400px!important}
+  .pay .vbal .pgrid{grid-template-columns:minmax(0,1fr) 380px!important}
+  .kb #list .it3{min-height:52px}
+  .kb .itm3 .i-t{font-size:var(--fs-l)}
+  .kb #list .amt{font-size:var(--fs-l)!important}
+  .pay .dn-v{font-size:24px}
+  .pay .g-ttl{font-size:34px}
+  .kbsheet .es{max-width:960px}
+  .pay .hrow2{padding:11px 14px}
+  .pay .ht2{font-size:var(--fs-l)}
+}
+@media (min-width:1600px){
+  .u-app{zoom:1}
+  :root{--fs-base:16px;--fs-l:18px;--fs-xl:22px}
+  .kb .wrap,.pay .wrap,.kb .appbar .wrap{max-width:1480px!important}
+  .kb .mbar{right:calc(max(16px,(100vw - 1480px)/2 + 16px) + 90px)!important}
+}
