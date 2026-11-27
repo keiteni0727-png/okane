@@ -83,7 +83,7 @@
     el.innerHTML = `
     <div class="pv-hero">
       <span class="pv-eb">${has ? "補填を入れた計画" : "いまの条件のまま"}</span>
-      <div class="pv-big"><span>すべて完済</span><b>${now.last ? ymLabel(now.last) : "見込みなし"}</b>${now.last ? `<span>あと${now.months.length}ヶ月</span>` : ""}</div>
+      <div class="pv-big"><span>すべて完済</span><b>${now.last ? ymLabel(now.last) : "見込みなし"}</b>${now.last ? `<span>あと${now.months.filter(m => m <= now.last).length}ヶ月</span>` : ""}</div>
       <div class="pv-res">
         <div><span>早まる</span><b class="num">${has && early > 0 ? `${early}ヶ月` : has ? "0ヶ月" : '<small>補填すると出ます</small>'}</b></div>
         <div><span>減る利息</span><b class="num">${has && saved > 0 ? yen(saved) : has ? "¥0" : '<small>補填すると出ます</small>'}</b></div>
@@ -97,15 +97,105 @@
         .join("")}<button type="button" class="pv-clr" data-plclear="1">すべて消す</button></div>` : ""}
     </div>
     ${now.stalled.length ? `<div class="warnbox">${now.stalled.map(c => esc(c.a.name)).join("・")} は返済額が利息以下のため、残高が減りません。</div>` : ""}
-    <nav class="pv-tabs" aria-label="計画の画面">${[["sum", "見通し"], ["try", "補填をためす"], ["drop", "毎月の返済"], ["tbl", "月ごとの表"]].map(([k, l]) => `<button type="button" data-pvtab="${k}" aria-current="${(st.ptab || "sum") === k ? "page" : "false"}">${l}</button>`).join("")}</nav>
+    <nav class="pv-tabs" aria-label="計画の画面">${[["sum", "見通し"], ["mon", "月ごと・補填"], ["drop", "毎月の返済"]].map(([k, l]) => `<button type="button" data-pvtab="${k}" aria-current="${(st.ptab || "sum") === k ? "page" : "false"}">${l}</button>`).join("")}</nav>
     ${(() => {
-      const tab = st.ptab || "sum";
+      let tab = st.ptab || "sum";
+      if (tab === "try" || tab === "tbl") tab = st.ptab = "mon";
+      if (tab === "mon") return monthHTML(base, now, plan, inc, has);
       if (tab === "try") return `<div class="pv-one"><div class="panel pv-try" id="pvTry">${tryHTML(plan, now)}</div><div class="panel pv-tl"><div class="panel-h"><h2>借入先ごとの完済</h2><span class="note">補填で縮んだ分はうすい緑</span></div>${timelineHTML(base, now, has)}</div></div>`;
       if (tab === "drop") return `<div class="pv-one"><div class="panel pv-drop"><div class="panel-h"><h2>毎月の返済が軽くなる月</h2><span class="note">手取り ${yen(inc)}<button type="button" class="pv-lk" data-inc="${FIN.currentPeriod()}">変更</button></span></div>${dropHTML(now, inc, plan)}</div>${outlookMini(now)}</div>`;
       if (tab === "tbl") return `<div class="panel pv-tbl">${tableHTML(base, now, plan, inc)}</div>`;
       return `<div class="pv-two"><div class="panel pv-chart"><div class="panel-h"><h2>借金の残高の減り方</h2><span class="note">${has ? '<i class="lg base"></i>補填なし <i class="lg now"></i>補填あり' : "いまの条件のまま"}</span></div>${chartSVG(base, now, has)}</div><div class="panel pv-tl"><div class="panel-h"><h2>借入先ごとの完済</h2><span class="note">早い順</span></div>${timelineHTML(base, now, has)}</div></div>`;
     })()}
     <div class="mu pl-note">計算は支払いの返済予定表と同じ（利息＝残高×年利×前月の日数÷365）。補填は、その月の元金に上乗せします。</div>`;
+  }
+  /* ---------- 月ごと・補填：月をえらぶ → その月に残るお金 → 借入先を押して補填 ---------- */
+  function monthHTML(base, now, plan, inc, has) {
+    const ms = now.months;
+    if (!ms.length) return `<div class="panel"><div class="empty">返済中の借入先はありません</div></div>`;
+    if (!st.ym || !ms.includes(st.ym)) st.ym = ms[0];
+    const ym = st.ym,
+      k = ms.indexOf(ym);
+    const tot = m => now.cols.reduce((t, c) => t + (c.by[m]?.pay || 0), 0);
+    const exOf = m => plan.extras.reduce((t, x) => t + extraFn([x], x.acc)(m), 0);
+    const leftOf = m => inc - tot(m) - (plan.living || 0);
+    /* PC：左に月の一覧（返済の合計・残る・補填の印） */
+    let yr = "";
+    const list = ms
+      .map(m => {
+        const h = m.slice(0, 4) !== yr ? `<div class="pm-yr">${(yr = m.slice(0, 4))}年</div>` : "";
+        const lf = leftOf(m),
+          ex = exOf(m);
+        return `${h}<button type="button" class="pm-li${m === ym ? " on" : ""}" data-pmym="${m}"><span class="pm-m">${ymShort(m)}</span><span class="pm-p num">${man(tot(m))}</span><span class="pm-l num ${lf < 0 ? "ng" : ""}">残 ${man(lf)}</span>${ex ? `<em>+${man(ex)}</em>` : "<i></i>"}</button>`;
+      })
+      .join("");
+    const T = tot(ym),
+      EX = exOf(ym),
+      L = leftOf(ym);
+    const rows = now.cols
+      .filter(c => c.by[ym])
+      .sort((x, y) => (y.a.rate || 0) - (x.a.rate || 0));
+    const topRate = rows[0] && rows[0].a.rate;
+    const rowHTML = c => {
+      const v = c.by[ym];
+      const ex = extraFn(plan.extras, c.a.id)(ym);
+      const open = st.oacc === c.a.id;
+      return `<div class="pm-acc${open ? " open" : ""}">
+        <button type="button" class="pm-ah" data-pmacc="${c.a.id}">
+          <span class="pm-an"><b>${esc(c.a.name)}</b><small>${c.a.rate ? `年${c.a.rate}%` : "利息なし"}${c.a.rate && c.a.rate === topRate ? '<em class="pm-hi">利息が高い</em>' : ""}</small></span>
+          <span class="pm-av num"><b>${yen(v.pay)}</b><small>残高 ${man(v.after)}${c.end ? `・完済 ${c.end.slice(2, 4)}/${Number(c.end.slice(5))}` : ""}</small></span>
+          ${ex ? `<span class="pm-ex num">+${man(ex)}</span>` : `<span class="pm-add">補填 ＋</span>`}
+        </button>
+        ${open ? editHTML(c, v, plan, L + ex) : ""}
+      </div>`;
+    };
+    const detail = `<div class="panel pm-d" id="pvTry">
+      <div class="pm-nav"><button type="button" data-pmstep="-1"${k <= 0 ? " disabled" : ""} aria-label="前の月">‹</button><b>${ymLabel(ym)}</b><button type="button" data-pmstep="1"${k >= ms.length - 1 ? " disabled" : ""} aria-label="次の月">›</button></div>
+      <div class="pm-money">
+        <div><span>手取り</span><b class="num">${yen(inc)}</b></div>
+        <div><span>− 返済${EX ? `（補填 ${man(EX)} こみ）` : ""}</span><b class="num">${yen(T)}</b></div>
+        ${plan.living ? `<div><span>− 生活費</span><b class="num">${yen(plan.living)}</b></div>` : ""}
+        <div class="pm-left ${L < 0 ? "ng" : ""}"><span>この月に残るお金</span><b class="num">${yen(L)}</b></div>
+      </div>
+      <div class="pm-lh">借入先<span>押すと補填を入れられます</span></div>
+      <div class="pm-accs">${rows.map(rowHTML).join("")}</div>
+    </div>`;
+    return `<div class="pm">
+      <div class="panel pm-list">${list}</div>
+      ${detail}
+    </div>
+    <details class="panel pv-tbl pm-tbl"${st.tbl ? " open" : ""}><summary>借入先 × 月の表で見る</summary>${tableHTML(base, now, plan, inc)}</details>`;
+  }
+  /* 借入先の行を開いたところ：額・この月だけ／毎月・効果・計画に入れる */
+  function editHTML(c, v, plan, room) {
+    const id = c.a.id,
+      ym = st.ym;
+    st.acc = id;
+    const others = plan.extras.filter(x => !(x.acc === id && x.ym === ym));
+    const trial = st.amt > 0 ? [...others, { id: "t", acc: id, ym, amt: st.amt, every: st.every }] : others;
+    const b = project(others),
+      a = project(trial);
+    const cb = b.cols.find(x => x.a.id === id),
+      ca = a.cols.find(x => x.a.id === id);
+    const e1 = cb?.end && ca?.end ? monthsBetween(ca.end, cb.end) : 0;
+    const e2 = b.last && a.last ? monthsBetween(a.last, b.last) : 0;
+    const sv = (cb?.int || 0) - (ca?.int || 0);
+    const exist = plan.extras.find(x => x.acc === id && x.ym === ym);
+    const q = [
+      [10000, "1万"],
+      [30000, "3万"],
+      [50000, "5万"],
+      ...(room > 0 ? [[Math.floor(room / 2000) * 1000, "残りの半分"], [Math.floor(room / 1000) * 1000, "残り全部"]] : []),
+    ].filter(([n]) => n > 0);
+    return `<div class="pm-ed">
+      <div class="pm-in"><span>¥</span><input type="number" inputmode="numeric" id="plAmt" class="num" value="${st.amt || ""}" placeholder="0"></div>
+      <div class="pm-q">${q.map(([n, l]) => `<button type="button" data-plq="${n}"${st.amt === n ? ' aria-pressed="true"' : ""}>${l}<small>${n >= 10000 && !/万/.test(l) ? man(n) : ""}</small></button>`).join("")}</div>
+      <div class="pm-seg"><button type="button" data-plev="0" aria-pressed="${!st.every}">この月だけ</button><button type="button" data-plev="1" aria-pressed="${st.every}">この月から毎月</button></div>
+      <div class="pm-eff${st.amt > 0 ? "" : " off"}">${st.amt > 0 ? `<span><b>${e1 > 0 ? `${e1}ヶ月` : "—"}</b>早く完済</span><span><b>${sv > 0 ? man(sv) : "—"}</b>利息が減る</span><span><b>${e2 > 0 ? `${e2}ヶ月` : "—"}</b>すべて早く</span>` : "額を入れると効果が出ます"}</div>
+      ${st.amt > room && room >= 0 ? `<div class="pm-warn">この月に残るお金（${yen(room)}）より多いです</div>` : ""}
+      <div class="pm-f">${exist ? `<button type="button" class="ghost" data-pldelcur="1">消す</button>` : ""}<button type="button" class="pri" data-plsave="1"${st.amt > 0 ? "" : " disabled"}>計画に入れる</button></div>
+      <button type="button" class="pm-sch" data-pladd="1"${st.amt > 0 ? "" : " disabled"}>支払予定に「繰上げ返済」として追加</button>
+    </div>`;
   }
   /* 返済の「完済の見通し」から移した数字：1年後の残高・毎月の利息 */
   function outlookMini(now) {
@@ -360,6 +450,24 @@
       render();
       return;
     }
+    const pm = e.target.closest("[data-pmym],[data-pmstep],[data-pmacc]");
+    if (pm) {
+      const d2 = pm.dataset;
+      const ms = project(cfgPlan().extras).months;
+      if (d2.pmym) st.ym = d2.pmym;
+      else if (d2.pmstep) {
+        const k = ms.indexOf(st.ym) + Number(d2.pmstep);
+        if (ms[k]) st.ym = ms[k];
+      } else if (d2.pmacc) {
+        st.oacc = st.oacc === d2.pmacc ? null : d2.pmacc;
+        const ex = cfgPlan().extras.find(x => x.acc === d2.pmacc && x.ym === st.ym);
+        st.amt = ex ? ex.amt : 10000;
+        st.every = ex ? !!ex.every : false;
+      }
+      if (!d2.pmacc) st.oacc = null;
+      render();
+      return;
+    }
     const yh = e.target.closest("[data-plyr]");
     if (yh) {
       FIN.pay.fold.togF(yh.dataset.plyr);
@@ -387,7 +495,8 @@
       return;
     } else if (d.plpick) {
       [st.acc, st.ym] = d.plpick.split("|");
-      st.ptab = "try";
+      st.oacc = st.acc;
+      st.ptab = "mon";
       const ex = plan.extras.find(x => x.acc === st.acc && x.ym === st.ym);
       if (ex) {
         st.amt = ex.amt;
