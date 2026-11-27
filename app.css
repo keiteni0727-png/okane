@@ -3506,3 +3506,24 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 }
 .pay .pv-one>*,.pay .pv-two>*{grid-area:auto!important}
 @media (min-width:1100px){.pay .sheet:has(#e-money) .form,.pay .sheet:has(#p-tot) .form,.pay .sheet:has(#p-amt) .form{align-items:start}}
+/* 入力欄の見出し：短く、自動計算は小さな印 */
+.pay .lauto{font-size:9.5px;font-weight:700;color:var(--u-acct);background:var(--u-accent2);border-radius:3px;padding:0 4px;margin-left:5px;vertical-align:1px}
+/* スマホの支払い・編集シート：画面いっぱい、上の見出しと下のボタンは固定、欄は2列でそろえる */
+@media (max-width:639px){
+  .pay .scrim:has(#e-money),.pay .scrim:has(#p-tot),.pay .scrim:has(#p-amt){align-items:stretch!important;padding:0!important}
+  .pay .sheet:has(#e-money),.pay .sheet:has(#p-tot),.pay .sheet:has(#p-amt){max-height:100dvh!important;height:100dvh;border-radius:0!important;padding:0 14px calc(10px + env(safe-area-inset-bottom,0px))!important;gap:10px}
+  .pay .sheet:has(#e-money) .ad-top,.pay .sheet:has(#p-tot) .ad-top,.pay .sheet:has(#p-amt) .ad-top{position:sticky;top:0;z-index:3;background:var(--u-surface);padding:12px 0 8px;margin:0;border-bottom:1px solid var(--u-soft)}
+  .pay .sheet:has(#e-money)>.actions:last-child,.pay .sheet:has(#p-tot) .act-pay{position:sticky;bottom:0;z-index:3;background:var(--u-surface);padding:10px 0 4px;margin:0;border-top:1px solid var(--u-soft)}
+  .pay .sheet .form{gap:8px 10px!important}
+  .pay .sheet .field label{font-size:var(--fs-xs)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pay .sheet input:not([type=checkbox]):not([type=range]),.pay .sheet select{height:42px!important;font-size:16px!important}
+  .pay .sheet .totbox{padding:8px 10px!important}
+  .pay .sheet .totin{height:46px!important}
+  .pay .sheet .totin input{font-size:22px!important}
+  .pay .sheet .totsub{display:none}
+  .pay .sheet .bdh{margin:2px 0 -4px;padding-top:6px}
+  .pay .sheet .sumline{padding:8px 10px!important;font-size:var(--fs-s)}
+  .pay .sheet .stbar{padding:8px 10px;font-size:var(--fs-s)}
+  .pay .sheet .act-pay{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+  .pay .sheet .act-pay #p-defer{grid-column:1/-1;order:3}
+}

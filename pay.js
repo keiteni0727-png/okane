@@ -131,6 +131,36 @@
   };
   /* その他の内容：エポスは家賃、ほかは当月利用分（入力では選ばない） */
   const otherKind = acc => (acc && /エポス/.test(acc.name || "") ? "家賃" : "当月利用分");
+  /* 家賃の額：その支払のメモ（家賃：113,330）→ 元の請求（延滞にした分）のメモ → その借入先で最後に分かっている家賃 */
+  function rentOf(i) {
+    const fromMemo = m => {
+      const mm = String(m || "").match(/家賃[：:]\s*([\d,]+)/);
+      return mm ? Number(mm[1].replace(/,/g, "")) : null;
+    };
+    let v = i.otherRent ?? fromMemo(i.memo);
+    if (v == null && i.origin) {
+      const o = findItem(i.origin);
+      if (o) v = o.it.otherRent ?? fromMemo(o.it.memo);
+    }
+    if (v == null) {
+      const prev = allItems()
+        .filter(x => x.accountId === i.accountId && x.id !== i.id && (x.otherRent != null || fromMemo(x.memo) != null))
+        .sort((a, b) => (Math.abs(pd(a.date) - pd(i.date)) < Math.abs(pd(b.date) - pd(i.date)) ? -1 : 1))[0];
+      if (prev) v = prev.otherRent ?? fromMemo(prev.memo);
+    }
+    return v || 0;
+  }
+  /* その他の内訳の表示：エポスは「家賃 ¥x・当月 ¥y」、ほかは「当月利用分」 */
+  function otherSplit(i, acc, withAmt) {
+    if (otherKind(acc) !== "家賃") return withAmt ? `当月利用分 <b class="num">${yen(i.other)}</b>` : "当月利用分";
+    let rent = i.otherRent,
+      use = i.otherUse;
+    if (rent == null) {
+      rent = Math.min(rentOf(i), i.other || 0);
+      use = Math.max(0, (i.other || 0) - rent);
+    }
+    return `家賃 ${withAmt ? `<b class="num">${yen(rent)}</b>` : yen(rent)}・当月 ${withAmt ? `<b class="num">${yen(use)}</b>` : yen(use)}`;
+  }
   const isDebt = a => !!(a && a.repayType && a.repayType !== "none");
   const amtOf = i => (i.status === "paid" ? (i.paidAmount ?? i.amount) : i.amount) || 0;
   const byDateAmt = (a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : amtOf(b) - amtOf(a));
@@ -1178,7 +1208,7 @@
     return `<div class="row st-${st}${over ? " over" : ""}" data-edit="${i.id}" role="button" tabindex="0">
       <span class="sico" aria-hidden="true">${ico}</span>
       <div class="rmain"><div class="nm">${showDate ? `<span class="rdate num">${md(i.date)}（${wd(i.date)}）</span>` : ""}<span class="rname">${esc(i.name)}</span>${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}</div>
-      <div class="sub"><span class="chip ${c}">${CAT[c]?.s || ""}</span>${i.method ? `<span class="smet">${esc(i.method)}</span>` : ""}<span class="slbl">${lbl}</span>${i.memo ? `<span class="smemo">${esc(i.memo.split(" / ")[0])}</span>` : ""}</div>${i.accountId && (i.principal || i.interest) ? `<div class="rbd"><span class="pr">元金 <b class="num">${yen(i.principal || 0)}</b></span><span class="in">利息 <b class="num">${yen((i.interest || 0) + (i.lateFee || 0))}</b>${i.lateFee ? `<small>（延滞 ${yen(i.lateFee)}）</small>` : ""}</span>${i.other ? `<span class="ot">${otherKind(S.accounts[i.accountId])} <b class="num">${yen(i.other)}</b></span>` : ""}${i.balanceBefore != null ? `<span class="bb">残高 ${yen(i.balanceBefore)} → <b class="num">${yen(Math.max(0, i.balanceBefore - (i.principal || 0)))}</b></span>` : ""}</div>` : ""}</div>
+      <div class="sub"><span class="chip ${c}">${CAT[c]?.s || ""}</span>${i.method ? `<span class="smet">${esc(i.method)}</span>` : ""}<span class="slbl">${lbl}</span>${i.memo ? `<span class="smemo">${esc(i.memo.split(" / ")[0])}</span>` : ""}</div>${i.accountId && (i.principal || i.interest) ? `<div class="rbd"><span class="pr">元金 <b class="num">${yen(i.principal || 0)}</b></span><span class="in">利息 <b class="num">${yen((i.interest || 0) + (i.lateFee || 0))}</b>${i.lateFee ? `<small>（延滞 ${yen(i.lateFee)}）</small>` : ""}</span>${i.other ? `<span class="ot">${otherSplit(i, S.accounts[i.accountId], true)}</span>` : ""}${i.balanceBefore != null ? `<span class="bb">残高 ${yen(i.balanceBefore)} → <b class="num">${yen(Math.max(0, i.balanceBefore - (i.principal || 0)))}</b></span>` : ""}</div>` : ""}</div>
       <div class="rright"><div class="amt">${yen(amtOf(i))}</div>${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</div>
     </div>`;
   }
@@ -1535,7 +1565,7 @@
         <span class="h1b num">${i.balanceBefore != null ? `${yen(i.balanceBefore)} <i>→</i> <b>${yen(after)}</b>` : "—"}</span>
         <span class="h1v num pr">${i.principal ? yen(i.principal) : "—"}</span>
         <span class="h1v num">${int ? yen(int) : "—"}${i.lateFee ? `<small>延滞 ${yen(i.lateFee)}</small>` : ""}</span>
-        <span class="h1v num">${i.other ? yen(i.other) : "—"}${i.other ? `<small>${otherKind(acc)}</small>` : ""}</span>
+        <span class="h1v num">${i.other ? yen(i.other) : "—"}${i.other ? `<small>${otherSplit(i, acc)}</small>` : ""}</span>
         <span class="h1a num">${yen(amt(i))}</span>
       </button>`;
     };
@@ -1704,12 +1734,20 @@
     }
     const x = splitOf(it, a);
     const total = it.status === "paid" ? (it.paidAmount ?? it.amount) : it.amount;
-    return { debt: true, total, other: x.other, otherKind: otherKind(a), interest: x.interest, principal: x.principal, ...late };
+    const kind = otherKind(a);
+    /* エポス：家賃と当月利用分に分ける（取り込んだ分はメモの「家賃：113,330」から） */
+    let rent = it.otherRent,
+      use = it.otherUse;
+    if (kind === "家賃" && rent == null) {
+      rent = Math.min(rentOf(it), x.other || 0);
+      use = Math.max(0, (x.other || 0) - rent);
+    }
+    return { debt: true, total, other: x.other, otherKind: kind, otherRent: rent, otherUse: use, interest: x.interest, principal: x.principal, ...late };
   }
   /* 延滞分だけ、延滞手数料の欄と根拠の一行を出す */
   function feeHTML(P, m) {
     if (!m.late) return "";
-    return `<div class="field"><label for="${P}-fee">延滞利息（自動計算）</label><input type="number" id="${P}-fee" inputmode="numeric" value="${m.lateFee ?? ""}"></div>
+    return `<div class="field"><label for="${P}-fee">延滞利息<small class="lauto">自動</small></label><input type="number" id="${P}-fee" inputmode="numeric" value="${m.lateFee ?? ""}"></div>
   <div class="feenote full" id="${P}-feenote"></div>`;
   }
   /* 支払総額の大きな欄：ラベル・¥・数字を1つの枠にまとめ、シートの中でいちばん目立たせる */
@@ -1723,10 +1761,11 @@
     // 支払総額（カード会社の確定額）を先に入れ、内訳（元金・利息・それ以外・延滞手数料）を合わせていく
     return `${totHTML(`${P}-tot`, "支払総額", m.total, m.late ? "延滞利息こみ" : "")}
   <div class="bdh full">内訳</div>
-  <div class="field"><label for="${P}-pr">うち元金</label><input type="number" id="${P}-pr" inputmode="numeric" value="${m.principal ?? ""}"></div>
-  <div class="field"><label for="${P}-in">うち利息（通常利息・自動計算）</label><input type="number" id="${P}-in" inputmode="numeric" value="${m.interest ?? ""}"></div>
+  <div class="field"><label for="${P}-pr">元金</label><input type="number" id="${P}-pr" inputmode="numeric" value="${m.principal ?? ""}"></div>
+  <div class="field"><label for="${P}-in">利息<small class="lauto">自動</small></label><input type="number" id="${P}-in" inputmode="numeric" value="${m.interest ?? ""}"></div>
   <div class="sumline full"><span>リボ支払額（元金＋利息）</span><b class="num" id="${P}-revo"></b></div>
-  <div class="field"><label for="${P}-oth">うち、その他（${m.otherKind || "当月利用分"}）</label><input type="number" id="${P}-oth" inputmode="numeric" value="${m.other || ""}" placeholder="0"></div>
+  <div class="field"><label for="${P}-oth">当月利用分</label><input type="number" id="${P}-oth" inputmode="numeric" value="${(m.otherKind === "家賃" ? m.otherUse : m.other) || ""}" placeholder="0"></div>
+  ${m.otherKind === "家賃" ? `<div class="field"><label for="${P}-rent">家賃</label><input type="number" id="${P}-rent" inputmode="numeric" value="${m.otherRent || ""}" placeholder="0"></div>` : ""}
   ${feeHTML(P, m)}
   <div class="diffbox full" id="${P}-diff" hidden></div>`;
   }
@@ -1738,7 +1777,7 @@
     let feeManual = !!(ctx.feeManual && feeEl && feeEl.value !== "");
     const num = k => Number($(P + k)?.value) || 0;
     // 延滞手数料の基準になる額（延滞手数料を除いた分）
-    const base = () => (debt ? num("-pr") + num("-in") + num("-oth") : num("-amt"));
+    const base = () => (debt ? num("-pr") + num("-in") + num("-oth") + num("-rent") : num("-amt"));
     const fee = () => {
       if (!feeEl) return;
       const a = ctx.acc(),
@@ -1764,7 +1803,7 @@
         if (d) {
           const btn = (k, l) => `<button type="button" data-fix="${k}">${l}に入れる</button>`;
           box.innerHTML = `<div class="dmsg">内訳が支払総額より <b class="num">${yen(Math.abs(d))}</b> ${d > 0 ? "足りません" : "多いです"}</div>
-            <div class="dbtns">${btn("-in", "利息")}${btn("-pr", "元金")}${btn("-oth", "その他")}${feeEl ? btn("-fee", "延滞利息") : ""}</div>`;
+            <div class="dbtns">${btn("-in", "利息")}${btn("-pr", "元金")}${btn("-oth", "当月利用分")}${$(P + "-rent") ? btn("-rent", "家賃") : ""}${feeEl ? btn("-fee", "延滞利息") : ""}</div>`;
           box.querySelectorAll("[data-fix]").forEach(
             b =>
               (b.onclick = () => {
@@ -1798,6 +1837,7 @@
     };
     if (debt) {
       ["-tot", "-pr", "-oth"].forEach(k => $(P + k).addEventListener("input", feePs));
+      $(P + "-rent") && $(P + "-rent").addEventListener("input", feePs);
       $(P + "-in").addEventListener("input", () => {
         $(P + "-in").dataset.manual = "1";
         feePs();
@@ -1826,12 +1866,14 @@
       fee = feeEl ? Number(feeEl.value) || 0 : 0,
       fx = feeEl ? { lateFee: fee, lateFeeManual: !!feeEl.dataset.manual } : {};
     if ($(P + "-tot")) {
-      const other = Number($(P + "-oth").value) || 0,
+      const use = Number($(P + "-oth").value) || 0,
+        rent = $(P + "-rent") ? Number($(P + "-rent").value) || 0 : 0,
+        other = use + rent,
         interest = Number($(P + "-in").value) || 0,
         principal = Number($(P + "-pr").value) || 0,
         tot = numOrNull($(P + "-tot").value);
-      const ol = $(P + "-othl") ? $(P + "-othl").value.trim() : "";
-      return { amount: tot ?? principal + interest + other + fee, other, otherLabel: other ? ol : "", interest, principal, ...fx };
+      
+      return { amount: tot ?? principal + interest + other + fee, other, ...($(P + "-rent") ? { otherRent: rent, otherUse: use } : {}), interest, principal, ...fx };
     }
     return { amount: (numOrNull($(P + "-amt").value) || 0) + fee, ...fx };
   }
@@ -2003,7 +2045,7 @@
       ...it,
       date,
       amount: mv.amount,
-      ...(debt ? { principal: mv.principal, interest: mv.interest, other: mv.other, otherLabel: mv.otherLabel } : {}),
+      ...(debt ? { principal: mv.principal, interest: mv.interest, other: mv.other, otherRent: mv.otherRent, otherUse: mv.otherUse } : {}),
       ...lateOf(mv),
       method: $("p-me").value,
       memo: $("p-memo").value,
@@ -2035,7 +2077,8 @@
       principal: pr,
       interest: debt ? mv.interest : it.interest,
       other: debt ? mv.other : it.other,
-      otherLabel: debt ? mv.otherLabel : it.otherLabel,
+      otherRent: debt ? mv.otherRent : it.otherRent,
+      otherUse: debt ? mv.otherUse : it.otherUse,
       ...lateOf(mv),
       method: $("p-me").value,
       memo: $("p-memo").value,
@@ -2381,7 +2424,7 @@
       if (f && !ctx.moneyDirty) return {};
       const mv = moneyRead("e");
       return isDebt(a)
-        ? { amount: mv.amount, principal: mv.principal, interest: mv.interest, other: mv.other, otherLabel: mv.otherLabel, ...lateOf(mv) }
+        ? { amount: mv.amount, principal: mv.principal, interest: mv.interest, other: mv.other, otherRent: mv.otherRent, otherUse: mv.otherUse, ...lateOf(mv) }
         : { amount: mv.amount, principal: null, interest: null, other: null, ...lateOf(mv) };
     };
     const n = {
