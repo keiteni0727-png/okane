@@ -1054,8 +1054,9 @@
       <td><span class="tst ${cls}">${lbl}</span></td>
       <td class="r">${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</td></tr>`;
   }
-  /* 一覧の絞り込み：状態（未払・前月延滞分）。ボタンは一覧の上に常時表示（data-f で切り替え） */
-  const FILTER_FN = { unpaid: i => i.status === "planned", late: i => i.kind === "late" || i.status === "deferred" };
+  /* 一覧の絞り込み：状態（未払・前月延滞分）。ボタンは一覧の上に常時表示（data-f で切り替え）
+     前月延滞分＝前の月から回ってきた延滞分だけ。この月に払わず翌月へ回した分（deferred）は出さない */
+  const FILTER_FN = { unpaid: i => i.status === "planned", late: i => i.kind === "late" && i.status !== "deferred" };
   /* 最初に出す月度：いまの月度の支払を全部処理し終えていたら（未払が残っていなければ）翌月度 */
   function autoPeriod() {
     const cur = periodOf(today());
@@ -1104,13 +1105,15 @@
       <div class="rright"><div class="amt">${yen(amtOf(i))}</div>${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</div>
     </div>`;
   }
-  /* この期間のお金の流れ：手取り − 区分ごとの支払 = 残るお金 */
+  /* この期間のお金の流れ：手取り − 前月延滞分 − 区分ごとの支払（カード・消費者金融・その他）= 残るお金
+     前月延滞分は区分に関係なく1行にまとめ、区分の行には入れない（二重に数えない） */
+  const FLOW_ROWS = [["late", "前月延滞分"], ...COLS.map(c => [c, CAT[c].l])];
   function flowHTML(st) {
-    const by = c =>
-      st.its.filter(i => i.status !== "deferred" && colOf(i) === c).reduce((s, i) => s + (i.amount || 0), 0);
+    const live = st.its.filter(i => i.status !== "deferred");
+    const by = c => live.filter(i => (i.kind === "late" ? "late" : colOf(i)) === c).reduce((s, i) => s + (i.amount || 0), 0);
     const { inc, cash, rest, real } = moneyOf(st);
     return `<button class="kv kvbtn" data-inc="${st.p}"><span>手取り（${md(st.s)}）${real ? '<span class="pill done">実績</span>' : '<span class="note">標準</span>'}</span><span class="num">${yen(inc)} <span class="edit">✎</span></span></button>
-  ${COLS.map(c => `<div class="kv"><span>− ${CAT[c].l}</span><span class="num">${yen(by(c))}</span></div>`).join("")}
+  ${FLOW_ROWS.map(([c, l]) => `<div class="kv${c === "late" ? " kv-late" : ""}"><span>− ${l}</span><span class="num">${yen(by(c))}</span></div>`).join("")}
   <div class="kv total"><span>残るお金</span><span class="num ${rest + cash < 0 ? "t-danger" : "t-ok"}">${yen(rest + cash)}</span></div>
   <div class="kv"><span>− 現金の支出（明細）</span><span class="num">${yen(cash)}</span></div>
   <div class="kv total"><span>手元に残るお金</span><span class="num ${rest < 0 ? "t-danger" : "t-ok"}">${yen(rest)}</span></div>`;
@@ -1606,13 +1609,17 @@
     return `<div class="field"><label for="${P}-fee">延滞利息（自動計算）</label><input type="number" id="${P}-fee" inputmode="numeric" value="${m.lateFee ?? ""}"></div>
   <div class="feenote" id="${P}-feenote"></div>`;
   }
+  /* 支払総額の大きな欄：ラベル・¥・数字を1つの枠にまとめ、シートの中でいちばん目立たせる */
+  const totHTML = (id, label, val, sub) =>
+    `<div class="field full totbox"><label for="${id}">${label}</label><div class="totin"><span class="yen" aria-hidden="true">¥</span><input type="number" id="${id}" class="num" inputmode="numeric" value="${val ?? ""}" placeholder="0"></div>${sub ? `<span class="totsub">${sub}</span>` : ""}</div>`;
   function moneyHTML(P, m, amtLabel) {
     if (!m.debt)
-      return `<div class="field"><label for="${P}-amt">${m.late ? "延滞している額" : amtLabel || "支払額"}</label><input type="number" id="${P}-amt" inputmode="numeric" value="${m.amount ?? ""}"></div>${
-        m.late ? `${feeHTML(P, m)}<div class="sumline full"><span>支払額 合計</span><b class="num" id="${P}-sum"></b></div>` : ""
-      }`;
+      return m.late
+        ? `<div class="field"><label for="${P}-amt">延滞している額</label><input type="number" id="${P}-amt" inputmode="numeric" value="${m.amount ?? ""}"></div>${feeHTML(P, m)}<div class="sumline full sumtot"><span>支払総額</span><b class="num" id="${P}-sum"></b></div>`
+        : totHTML(`${P}-amt`, amtLabel || "支払額", m.amount);
     // 支払総額（カード会社の確定額）を先に入れ、内訳（元金・利息・それ以外・延滞手数料）を合わせていく
-    return `<div class="field full"><label for="${P}-tot">支払総額${m.late ? "（延滞利息こみ）" : ""}</label><input type="number" id="${P}-tot" inputmode="numeric" value="${m.total ?? ""}"></div>
+    return `${totHTML(`${P}-tot`, "支払総額", m.total, m.late ? "延滞利息こみ" : "")}
+  <div class="bdh full">内訳</div>
   <div class="field"><label for="${P}-pr">うち元金</label><input type="number" id="${P}-pr" inputmode="numeric" value="${m.principal ?? ""}"></div>
   <div class="field"><label for="${P}-in">うち利息（自動計算）</label><input type="number" id="${P}-in" inputmode="numeric" value="${m.interest ?? ""}"></div>
   <div class="sumline full"><span>リボ支払額（元金＋利息）</span><b class="num" id="${P}-revo"></b></div>

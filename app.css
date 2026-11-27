@@ -2962,3 +2962,38 @@ body[data-tab="balance"] .kb .hcur .mic{color:#1e3a64}
 .pay .v2 .ptable .tname{white-space:normal}
 .pay .v2 .ptable tr.trow td{padding-top:6px;padding-bottom:6px;vertical-align:top}
 .pay .v2 .ptable tr.trow td.r,.pay .v2 .ptable tr.trow td:has(.tst),.pay .v2 .ptable tr.trow td:has(.mtag){padding-top:8px}
+/* ---------- 支払い／返済の切り替え：月度の切り替えより上（どちらに切り替えても同じ位置） ---------- */
+.pay .wrap.psegw{padding-block:12px 0}
+@media (max-width:899px){
+  body[data-tab="home"] .kb .mbar{padding-top:8px}
+}
+
+/* ---------- お金の流れ：前月延滞分の行 ---------- */
+.pay .cf .kv-late>span:first-child{color:var(--u-danger);font-weight:600}
+
+/* ---------- シートの入力欄：ラベルと中の文字のつり合い（ラベルは読める大きさ、枠は文字に余白を） ---------- */
+.pay .sheet .form{gap:12px 10px}
+.pay .sheet .field{gap:5px}
+.pay .sheet .form .field label,.pay .sheet .field label{font-size:var(--fs-m);line-height:1.3;font-weight:600;color:var(--u-sub);letter-spacing:.02em}
+.pay .sheet input:not([type=checkbox]):not([type=range]):not([type=radio]),.pay .sheet select{height:44px;padding:0 12px;font-size:16px;line-height:1.2;border-radius:var(--r-m,8px)}
+.pay .sheet select{padding-right:28px}
+.pay .sheet input[type=date]{min-height:0;padding-right:8px}
+.pay .sheet .form>.cb{align-self:end;min-height:44px;display:flex;align-items:center;gap:8px;font-size:var(--fs-base)}
+.pay .sheet .form>.cb.full{align-self:start;min-height:0;flex-wrap:wrap;gap:4px 8px}
+.pay .sheet .form>.cb input{width:20px;height:20px;margin:0}
+.pay .sheet #e-money{gap:12px 10px}
+.pay .sheet #e-money>.field:only-child{grid-column:1/-1}
+
+/* ---------- 支払総額：シートの中でいちばん目立つ数字 ---------- */
+.pay .sheet .totbox{background:var(--u-accent2);border-radius:var(--r-l,12px);padding:10px 12px 12px;gap:6px}
+.pay .sheet .totbox label{color:var(--u-acct)!important;font-size:var(--fs-base)!important;font-weight:700!important}
+.pay .sheet .totin{display:flex;align-items:center;gap:6px;background:var(--u-surface);border:1.5px solid var(--u-accent);border-radius:var(--r-m,8px);padding:0 12px;height:56px}
+.pay .sheet .totin:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--u-accent) 25%,transparent)}
+.pay .sheet .totin .yen{font-family:var(--u-num);font-size:22px;font-weight:600;color:var(--u-sub)}
+.pay .sheet .totin input{flex:1;min-width:0;height:100%!important;border:0!important;background:none!important;box-shadow:none!important;padding:0!important;font-family:var(--u-num);font-size:28px!important;font-weight:700;color:var(--u-ink);text-align:right;letter-spacing:.02em}
+.pay .sheet .totin input::placeholder{color:var(--u-strong)}
+.pay .sheet .totsub{font-size:var(--fs-s);color:var(--u-sub)}
+.pay .sheet .bdh{font-size:var(--fs-s);font-weight:700;color:var(--u-sub);letter-spacing:.08em;border-top:1px solid var(--u-line);padding-top:8px;margin-top:2px}
+.pay .sheet .sumtot{background:var(--u-accent2);padding:10px 12px}
+.pay .sheet .sumtot span{font-weight:700;color:var(--u-acct)}
+.pay .sheet .sumtot b{font-size:26px!important}
