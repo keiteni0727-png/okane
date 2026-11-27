@@ -844,7 +844,22 @@
   }
 
   /* ---------- 支払い：アラート・次の引き落とし・集計 ---------- */
+  /* 支払い専用の月度の切り替え（タブの横・枠の外。家計簿と同じ形）。2026年1月より前へは戻れない */
+  function renderPyMon() {
+    const el = $("pyMon");
+    if (!el) return;
+    const p = S.period,
+      cur = periodOf(today());
+    const [ps, pe] = periodRange(p);
+    const nm = periodLabel(p).replace(/^(\d+)年/, "<small>$1年</small>");
+    const first = p <= FIN.MIN_PERIOD;
+    el.innerHTML = `${first ? `<span class="km-b km-off" aria-hidden="true"></span>` : `<button type="button" class="km-b" data-pym="-1" aria-label="前の月度">‹</button>`}
+      <div class="km-c"><b>${nm}</b><span class="num">${md(ps)}〜${md(pe)}</span></div>
+      <button type="button" class="km-b" data-pym="1" aria-label="次の月度">›</button>
+      ${p === cur ? "" : `<button type="button" class="km-now" data-pym="0">今月度へ</button>`}`;
+  }
   function renderHome() {
+    renderPyMon();
     document.querySelectorAll(".pay .cnote").forEach(n => {
       n.textContent = `集計期間は給料日（毎月${S.cfg.payday || DEFAULT_PAYDAY}日、土日の場合は直前の平日）から次の給料日の前日までです。家計簿の明細のうち支払い方法が「${FIN.CASH}」のものは、残るお金から引いています。`;
     });
@@ -2721,6 +2736,12 @@
     else if (d.goto) {
       FIN.kb.setTab(d.goto);
       window.scrollTo(0, 0);
+    } else if (d.pym !== undefined) {
+      const v = d.pym === "0" ? periodOf(today()) : addMonths(S.period, Number(d.pym));
+      ui.manualP = true;
+      S.period = v < FIN.MIN_PERIOD ? FIN.MIN_PERIOD : v;
+      render();
+      FIN.kb.render && FIN.kb.render(true);
     } else if (d.adplan) {
       closeSheet();
       FIN.kb.setTab("plan");

@@ -3233,3 +3233,15 @@ body[data-tab="plan"] .kb .fab{display:none!important}
 .pay .hbd b{font-weight:700}
 .pay .ha2{font-size:var(--fs-base);font-weight:600;white-space:nowrap}
 .kb .mnav .ib:disabled{opacity:.25}
+/* 支払い：月度の切り替えはタブの横（枠の外）。上の共通の帯は出さない */
+body[data-tab="home"] .kb .mbar{display:none!important}
+.pay .pymon{display:none}
+body[data-tab="home"] .pay .pymon{display:flex}
+body[data-tab="home"] .pay .psegw{display:flex!important;align-items:center;gap:10px;flex-wrap:wrap}
+.pay .pymon .km-b{background:var(--u-chip);color:var(--u-acct)}
+.pay .pymon .km-b.km-off{background:none}
+.pay .pymon .km-now{background:var(--u-accent);color:var(--u-on)}
+@media (max-width:639px){
+  body[data-tab="home"] .pay .psegw{flex-direction:column;align-items:stretch;gap:8px}
+  .pay .pymon{margin:0;justify-content:center}
+}
