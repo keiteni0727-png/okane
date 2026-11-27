@@ -1586,7 +1586,7 @@
   /* 延滞分だけ、延滞手数料の欄と根拠の一行を出す */
   function feeHTML(P, m) {
     if (!m.late) return "";
-    return `<div class="field"><label for="${P}-fee">延滞手数料（自動計算）</label><input type="number" id="${P}-fee" inputmode="numeric" value="${m.lateFee ?? ""}"></div>
+    return `<div class="field"><label for="${P}-fee">延滞利息（自動計算）</label><input type="number" id="${P}-fee" inputmode="numeric" value="${m.lateFee ?? ""}"></div>
   <div class="feenote" id="${P}-feenote"></div>`;
   }
   function moneyHTML(P, m, amtLabel) {
@@ -1595,12 +1595,12 @@
         m.late ? `${feeHTML(P, m)}<div class="sumline full"><span>支払額 合計</span><b class="num" id="${P}-sum"></b></div>` : ""
       }`;
     // 支払総額（カード会社の確定額）を先に入れ、内訳（元金・利息・それ以外・延滞手数料）を合わせていく
-    return `<div class="field full"><label for="${P}-tot">支払総額${m.late ? "（延滞手数料こみ）" : ""}</label><input type="number" id="${P}-tot" inputmode="numeric" value="${m.total ?? ""}"></div>
+    return `<div class="field full"><label for="${P}-tot">支払総額${m.late ? "（延滞利息こみ）" : ""}</label><input type="number" id="${P}-tot" inputmode="numeric" value="${m.total ?? ""}"></div>
   <div class="field"><label for="${P}-pr">うち元金</label><input type="number" id="${P}-pr" inputmode="numeric" value="${m.principal ?? ""}"></div>
   <div class="field"><label for="${P}-in">うち利息（自動計算）</label><input type="number" id="${P}-in" inputmode="numeric" value="${m.interest ?? ""}"></div>
+  <div class="sumline full"><span>リボ支払額（元金＋利息）</span><b class="num" id="${P}-revo"></b></div>
   <div class="field"><label for="${P}-oth">うち、あわせて引かれる額</label><input type="number" id="${P}-oth" inputmode="numeric" value="${m.other || ""}" placeholder="0"></div>
   ${feeHTML(P, m)}
-  <div class="sumline full"><span>リボ支払額（元金＋利息）</span><b class="num" id="${P}-revo"></b></div>
   <div class="diffbox full" id="${P}-diff" hidden></div>`;
   }
   /* ctx: acc / date（利息の基準日）/ bal / onChange / dateEl、延滞分は due（元の期日）/ payDate / payDateEl / feeManual */
@@ -1637,7 +1637,7 @@
         if (d) {
           const btn = (k, l) => `<button type="button" data-fix="${k}">${l}に入れる</button>`;
           box.innerHTML = `<div class="dmsg">内訳が支払総額より <b class="num">${yen(Math.abs(d))}</b> ${d > 0 ? "足りません" : "多いです"}</div>
-            <div class="dbtns">${btn("-in", "利息")}${btn("-pr", "元金")}${btn("-oth", "あわせて引かれる額")}</div>`;
+            <div class="dbtns">${btn("-in", "利息")}${btn("-pr", "元金")}${btn("-oth", "あわせて引かれる額")}${feeEl ? btn("-fee", "延滞利息") : ""}</div>`;
           box.querySelectorAll("[data-fix]").forEach(
             b =>
               (b.onclick = () => {
@@ -1646,6 +1646,10 @@
                 if (v < 0) return toast("その欄だけでは合わせられません（マイナスになります）");
                 $(P + k).value = v;
                 if (k === "-in") $(P + "-in").dataset.manual = "1";
+                if (k === "-fee") {
+                  feeManual = true; // 手で合わせた延滞利息は、自動計算で上書きしない
+                  feeEl.dataset.manual = "1";
+                }
                 ps();
               }),
           );
@@ -1988,8 +1992,8 @@
         const feeAt = () => lateFeeFor(numOrNull($("d-amt").value) || 0, acc?.lateRate, due, $("d-date").value);
         const showFee = () =>
           ($("d-fee").innerHTML = acc?.lateRate
-            ? `延滞手数料の見込み <b>${yen(feeAt())}</b>（${md(due)}の期日から${daysBetween(due, $("d-date").value || due)}日・年${acc.lateRate}%）。翌月の支払額に足しておきます`
-            : "口座の設定で「遅延損害金（年率）」を入れると、延滞手数料を自動で足します");
+            ? `延滞利息の見込み <b>${yen(feeAt())}</b>（${md(due)}の期日から${daysBetween(due, $("d-date").value || due)}日・年${acc.lateRate}%）。翌月の支払額に足しておきます`
+            : "口座の設定で「遅延損害金（年率）」を入れると、延滞利息を自動で足します");
         $("d-amt").addEventListener("input", showFee);
         $("d-date").addEventListener("change", showFee);
         showFee();

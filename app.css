@@ -2903,3 +2903,37 @@ body[data-tab="balance"] .kb .hcur .mic{color:#1e3a64}
 /* ホームの入口は「支払い」と「家計簿」の2つ（返済は支払いの中へ） */
 .pay .dnav{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (max-width:639px){.pay .dnav{grid-template-columns:minmax(0,1fr)}}
+
+/* ======================================================================
+   支払い：状態（支払済・未払・前月延滞・翌月延滞）をひと目で → 色の札と左の色の線
+   ====================================================================== */
+.pay #v-home .row .slbl,.pay #v-home .ptable .tst{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:4px;font-size:10.5px;font-weight:800;letter-spacing:.04em;white-space:nowrap}
+/* 支払済＝緑 */
+.pay #v-home .row.st-paid .slbl,.pay #v-home .ptable .tst.done{background:var(--u-ok2);color:var(--u-ok)}
+/* 未払＝紺の枠 */
+.pay #v-home .row.st-planned .slbl,.pay #v-home .ptable .tst.unpaid{background:none;color:var(--u-acct);box-shadow:inset 0 0 0 1.5px var(--u-acct)}
+/* 前月延滞（延滞分）・期日超過＝赤 */
+.pay #v-home .row.st-late .slbl,.pay #v-home .row.over .slbl,.pay #v-home .ptable .tst.warn{background:var(--u-danger);color:#fff;box-shadow:none}
+/* 翌月延滞（延滞にして翌月へ回した）＝橙 */
+.pay #v-home .row.st-deferred .slbl,.pay #v-home .ptable .tst.def{background:var(--u-warn2);color:var(--u-warn)}
+/* カード（スマホ）：左の色の線 */
+.pay #v-home .row{box-shadow:inset 4px 0 0 var(--st-c,transparent)}
+.pay #v-home .row.st-paid{--st-c:var(--u-ok)} .pay #v-home .row.st-planned{--st-c:var(--u-acct)} .pay #v-home .row.st-late,.pay #v-home .row.over{--st-c:var(--u-danger)} .pay #v-home .row.st-deferred{--st-c:var(--u-warn)}
+.pay #v-home .row.st-late{background:var(--u-danger2)}
+/* 支払済は目立たせない（文字をうすく） */
+.pay #v-home .row.st-paid .rname,.pay #v-home .row.st-paid .amt{color:var(--u-sub)}
+/* 表（PC）：行の左に色の線 */
+.pay #v-home .ptable tr.trow td:first-child{box-shadow:inset 4px 0 0 var(--st-c,transparent)}
+.pay #v-home .ptable tr.trow:has(.tst.done){--st-c:var(--u-ok)} .pay #v-home .ptable tr.trow:has(.tst.unpaid){--st-c:var(--u-acct)} .pay #v-home .ptable tr.trow:has(.tst.warn){--st-c:var(--u-danger)} .pay #v-home .ptable tr.trow:has(.tst.def){--st-c:var(--u-warn)}
+/* 状態の札は2行目の先頭に（右端で折り返して離れないように） */
+.pay #v-home .row .sub{flex-wrap:wrap}
+.pay #v-home .row .slbl{order:-1;margin-left:0!important}
+/* iPhone：日付・プルダウンの欄が枠からはみ出す（Safariは日付の欄に決まった幅を持つ）→ 欄の幅に収める */
+.pay .sheet input[type=date],.pay .sheet input[type=month],.pay .sheet select,.pay .sheet input{box-sizing:border-box;width:100%;max-width:100%;min-width:0}
+.pay .sheet input[type=date]{-webkit-appearance:none;appearance:none;display:block;padding-right:6px}
+.pay .sheet input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+.pay .sheet .form>*,.pay .sheet .field{min-width:0}
+.pay .sheet{overflow-x:hidden}
+/* 差額を入れるボタン：4つになったので、2つずつ並べて折り返す（スマホで枠からはみ出していた） */
+.pay .diffbox .dbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.pay .diffbox .dbtns button{white-space:normal;line-height:1.3;min-height:36px}
