@@ -912,22 +912,21 @@
         : over.length
           ? `期日を過ぎた支払いが <b>${over.length}件</b> あります。先に済ませましょう`
           : `あと <b>${st.n - st.np}件</b>・<b class="num">${yen(st.unpaid)}</b> で、この月度の支払いは完了です`;
-    return `<div class="ph">
-      <div class="ph-top">
-        <div class="ph-l">
-          <span class="ph-eb">${periodLabel(S.period)}の支払い</span>
-          <div class="ph-big"><b class="num">${yen(st.unpaid)}</b><span>のこり</span></div>
-          <div class="ph-sub">支払予定 ${yen(st.t)}・支払済 ${yen(st.paid)}</div>
+    const fo = !isF("pay:flow-closed") && isF("pay:flow");
+    return `<div class="pc2">
+      <div class="pc2-top">
+        <div class="pc2-l"><span class="pc2-lb">のこり</span><b class="num pc2-big">${yen(st.unpaid)}</b></div>
+        <div class="pc2-kv">
+          <div><span>支払予定</span><b class="num">${yen(st.t)}</b></div>
+          <div><span>支払済</span><b class="num ok">${yen(st.paid)}</b></div>
+          <div><span>手元に残る</span><b class="num ${m.rest < 0 ? "ng" : ""}">${yen(m.rest)}</b></div>
         </div>
-        <svg class="g-ring ph-ring" viewBox="0 0 80 80" role="img" aria-label="支払済 ${pct}%"><circle cx="40" cy="40" r="${R}" class="g-rt"/><circle cx="40" cy="40" r="${R}" class="g-rf" stroke-dasharray="${((C * pct) / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="38" class="g-rp">${pct}%</text><text x="40" y="52" class="g-rl">${st.np}/${st.n}件</text></svg>
+        <div class="pc2-pct"><b class="num">${pct}%</b><small>${st.np}/${st.n}件</small></div>
       </div>
-      <span class="g-track ph-track"><i style="width:${pct}%"></i></span>
-      <div class="g-msg ph-msg">${msg}</div>
-      <div class="ph-stats">
-        <div><span>次の支払い</span><b>${nx ? `${md(nx.date)}（${wd(nx.date)}）` : "—"}</b><small>${nx ? `${esc(nx.name)}・${yen(nx.amount)}・${when}` : "予定なし"}</small></div>
-        <div><span>手元に残るお金</span><b class="num">${yen(m.rest)}</b><small>手取り ${yen(m.inc)} から</small></div>
-        <div><span>期日どおり</span><b class="num">${st.np ? `${st.its.filter(i => i.status === "paid" && (!i.paidDate || i.paidDate <= i.date)).length}/${st.np}件` : "—"}</b><small>支払済のうち</small></div>
-      </div>
+      <span class="pc2-bar"><i style="width:${pct}%"></i></span>
+      ${over.length ? `<div class="pc2-warn">期日を過ぎた支払いが ${over.length}件 あります</div>` : !st.unpaid && st.n ? `<div class="pc2-done">🎉 この月度の支払いはすべて済みました</div>` : ""}
+      <button type="button" class="pc2-fold" data-f2="pay:flow" aria-expanded="${fo}">${FIC(!fo)}<span>お金の流れ（手取りから手元に残るまで）</span></button>
+      ${fo ? `<div class="cf pc2-flow">${flowHTML(st)}</div>` : ""}
     </div>`;
   }
   /* 支払い専用の月度の切り替え（タブの横・枠の外。家計簿と同じ形）。2026年1月より前へは戻れない */
@@ -1158,7 +1157,7 @@
       <td class="r" title="${bd === "—" ? "" : bd}">${yen(amtOf(i))}</td>
       <td class="bd">${bd}</td>
       <td><span class="tst ${cls}">${lbl}</span></td>
-      <td class="r">${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</td></tr>`;
+      <td class="r"></td></tr>`;
   }
   /* 一覧の絞り込み：状態（未払・前月延滞分）。ボタンは一覧の上に常時表示（data-f で切り替え）
      前月延滞分＝前の月から回ってきた延滞分だけ。この月に払わず翌月へ回した分（deferred）は出さない */
@@ -1209,7 +1208,7 @@
       <span class="sico" aria-hidden="true">${ico}</span>
       <div class="rmain"><div class="nm">${showDate ? `<span class="rdate num">${md(i.date)}（${wd(i.date)}）</span>` : ""}<span class="rname">${esc(i.name)}</span>${i.manual && i.status === "planned" ? '<span class="edited" title="金額を変更済み">✎</span>' : ""}</div>
       <div class="sub"><span class="chip ${c}">${CAT[c]?.s || ""}</span>${i.method ? `<span class="smet">${esc(i.method)}</span>` : ""}<span class="slbl">${lbl}</span>${i.memo ? `<span class="smemo">${esc(i.memo.split(" / ")[0])}</span>` : ""}</div>${i.accountId && (i.principal || i.interest) ? `<div class="rbd"><span class="pr">元金 <b class="num">${yen(i.principal || 0)}</b></span><span class="in">利息 <b class="num">${yen((i.interest || 0) + (i.lateFee || 0))}</b>${i.lateFee ? `<small>（延滞 ${yen(i.lateFee)}）</small>` : ""}</span>${i.other ? `<span class="ot">${otherSplit(i, S.accounts[i.accountId], true)}</span>` : ""}${i.balanceBefore != null ? `<span class="bb">残高 ${yen(i.balanceBefore)} → <b class="num">${yen(Math.max(0, i.balanceBefore - (i.principal || 0)))}</b></span>` : ""}</div>` : ""}</div>
-      <div class="rright"><div class="amt">${yen(amtOf(i))}</div>${i.status === "planned" ? `<button class="primary sm paybtn" data-pay="${i.id}">支払う</button>` : ""}</div>
+      <div class="rright"><div class="amt">${yen(amtOf(i))}</div><span class="rgo" aria-hidden="true">›</span></div>
     </div>`;
   }
   /* この期間のお金の流れ：手取り − 前月延滞分 − 区分ごとの支払（カード・消費者金融・その他）= 残るお金
