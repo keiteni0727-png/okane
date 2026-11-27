@@ -3435,3 +3435,74 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay #v-home .row .rbd{flex-basis:100%;margin-top:0}
 .pay #v-home .row{padding-top:9px;padding-bottom:9px}
 @media (max-width:639px){.pay #v-home .row .rmain .sub{flex-wrap:wrap}}
+
+/* ======================================================================
+   返済：完済の見通し・補填したら・軽くなる日は「計画」へ。返済は目標と借入先だけ
+   ====================================================================== */
+.pay .vbal .outlook,.pay .vbal .bplan,.pay .vbal .broad,.pay .vbal .pside{display:none!important}
+@media (min-width:900px){.pay .vbal .pgrid{grid-template-columns:minmax(0,1fr)!important}}
+
+/* ======================================================================
+   計画：上は小さな結果の帯、下はタブ（見通し／補填をためす／毎月の返済／月ごとの表）で1つずつ
+   ====================================================================== */
+.pay .vplan .pv-hero{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px 24px;padding:12px 18px}
+.pay .vplan .pv-eb{flex-basis:100%;margin-bottom:-6px}
+.pay .vplan .pv-big b{font-size:28px}
+.pay .vplan .pv-res{border-top:0;padding-top:0;flex:1;min-width:280px;grid-template-columns:repeat(3,auto);justify-content:end;gap:0}
+.pay .vplan .pv-res>div{padding:0 16px}
+.pay .vplan .pv-ex{flex-basis:100%}
+.pay .pv-tabs{display:flex;gap:0;border-bottom:1px solid var(--u-line);overflow-x:auto;scrollbar-width:none}
+.pay .pv-tabs button{flex:none;height:42px;padding:0 18px;border:0;background:none;color:var(--u-sub);font:inherit;font-size:var(--fs-base);font-weight:700;border-bottom:3px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.pay .pv-tabs button[aria-current="page"]{color:var(--u-acct);border-bottom-color:var(--u-accent)}
+.pay .pv-one,.pay .pv-two{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media (min-width:900px){
+  .pay .pv-two{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:start}
+  .pay .pv-one{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+  .pay .pv-try{position:static!important}
+}
+.pay .pv-tbl{overflow:hidden}
+.pay .pv-tbl .pl-wrap{max-height:calc(100dvh - 300px)}
+.pay .pv-ol{padding:14px}
+.pay .pv-olg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.pay .pv-olg>div{display:flex;flex-direction:column;gap:2px;padding:0 12px;border-left:1px solid var(--u-soft)}
+.pay .pv-olg>div:first-child{border-left:0;padding-left:0}
+.pay .pv-olg span{font-size:var(--fs-xs);color:var(--u-sub)}
+.pay .pv-olg b{font-size:var(--fs-l)}
+.pay .pv-olg small{font-size:var(--fs-xs);color:var(--u-sub)} .pay .pv-olg small.ok{color:var(--u-ok);font-weight:700}
+@media (max-width:639px){.pay .vplan .pv-res{justify-content:start}.pay .vplan .pv-res>div:first-child{padding-left:0}}
+
+/* ======================================================================
+   支払いの行：ラベルを決まった場所に（名前｜状態｜区分｜支払方法｜金額）。2行目は内訳
+   ====================================================================== */
+@media (min-width:900px){
+  .pay #v-home .row .rmain{display:grid!important;grid-template-columns:minmax(0,1fr) 9.5em 6.5em 6.5em;grid-template-areas:"nm st cat met" "bd bd bd bd";align-items:center;gap:2px 10px}
+  .pay #v-home .row .nm{grid-area:nm;min-width:0}
+  .pay #v-home .row .sub{display:contents}
+  .pay #v-home .row .slbl{grid-area:st;justify-self:start;order:0!important}
+  .pay #v-home .row .sub .chip{grid-area:cat;justify-self:start}
+  .pay #v-home .row .smet{grid-area:met;justify-self:start;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+  .pay #v-home .row .smemo{display:none}
+  .pay #v-home .row .rbd{grid-area:bd}
+  .pay #v-home .row .rright{min-width:11em;justify-content:flex-end}
+  .pay #v-home .row .amt{min-width:6.5em;text-align:right}
+}
+
+/* ======================================================================
+   支払いの編集・支払うシート（モニター）：スクロールなしで収まるよう4列に詰める
+   ====================================================================== */
+@media (min-width:1100px){
+  .pay .sheet:has(#e-money),.pay .sheet:has(#p-tot),.pay .sheet:has(#p-amt){max-width:980px!important;max-height:calc(100dvh - 32px);gap:10px;padding:16px 20px}
+  .pay .sheet:has(#e-money) .form,.pay .sheet:has(#p-tot) .form,.pay .sheet:has(#p-amt) .form{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 12px}
+  .pay .sheet .form .totbox{grid-column:span 2!important}
+  .pay .sheet .form .sumline.full:not(.sumtot){grid-column:span 2!important}
+  .pay .sheet .form .bdh{display:none}
+  .pay .sheet .totin{height:44px}
+  .pay .sheet .totin input{font-size:22px!important}
+  .pay .sheet input:not([type=checkbox]):not([type=range]),.pay .sheet select{height:36px!important;font-size:var(--fs-base)!important}
+  .pay .sheet .field label{font-size:var(--fs-xs)}
+  .pay .sheet .act-pay{gap:8px}
+  .pay .sheet .after{padding:8px 12px}
+  .pay .sheet .bank{padding:8px 12px}
+}
+.pay .pv-one>*,.pay .pv-two>*{grid-area:auto!important}
+@media (min-width:1100px){.pay .sheet:has(#e-money) .form,.pay .sheet:has(#p-tot) .form,.pay .sheet:has(#p-amt) .form{align-items:start}}

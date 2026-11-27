@@ -97,14 +97,35 @@
         .join("")}<button type="button" class="pv-clr" data-plclear="1">すべて消す</button></div>` : ""}
     </div>
     ${now.stalled.length ? `<div class="warnbox">${now.stalled.map(c => esc(c.a.name)).join("・")} は返済額が利息以下のため、残高が減りません。</div>` : ""}
-    <div class="pv-grid">
-      <div class="panel pv-try" id="pvTry">${tryHTML(plan, now)}</div>
-      <div class="panel pv-chart"><div class="panel-h"><h2>借金の残高の減り方</h2><span class="note">${has ? '<i class="lg base"></i>補填なし <i class="lg now"></i>補填あり' : "いまの条件のまま"}</span></div>${chartSVG(base, now, has)}</div>
-      <div class="panel pv-tl"><div class="panel-h"><h2>借入先ごとの完済</h2><span class="note">早い順</span></div>${timelineHTML(base, now, has)}</div>
-      <div class="panel pv-drop"><div class="panel-h"><h2>毎月の返済が軽くなる月</h2><span class="note">手取り ${yen(inc)}<button type="button" class="pv-lk" data-inc="${FIN.currentPeriod()}">変更</button></span></div>${dropHTML(now, inc, plan)}</div>
-    </div>
-    <details class="panel pv-tbl"${st.tbl ? " open" : ""}><summary>月ごとの表で見る（借入先ごとの支払額と残高）</summary>${tableHTML(base, now, plan, inc)}</details>
+    <nav class="pv-tabs" aria-label="計画の画面">${[["sum", "見通し"], ["try", "補填をためす"], ["drop", "毎月の返済"], ["tbl", "月ごとの表"]].map(([k, l]) => `<button type="button" data-pvtab="${k}" aria-current="${(st.ptab || "sum") === k ? "page" : "false"}">${l}</button>`).join("")}</nav>
+    ${(() => {
+      const tab = st.ptab || "sum";
+      if (tab === "try") return `<div class="pv-one"><div class="panel pv-try" id="pvTry">${tryHTML(plan, now)}</div><div class="panel pv-tl"><div class="panel-h"><h2>借入先ごとの完済</h2><span class="note">補填で縮んだ分はうすい緑</span></div>${timelineHTML(base, now, has)}</div></div>`;
+      if (tab === "drop") return `<div class="pv-one"><div class="panel pv-drop"><div class="panel-h"><h2>毎月の返済が軽くなる月</h2><span class="note">手取り ${yen(inc)}<button type="button" class="pv-lk" data-inc="${FIN.currentPeriod()}">変更</button></span></div>${dropHTML(now, inc, plan)}</div>${outlookMini(now)}</div>`;
+      if (tab === "tbl") return `<div class="panel pv-tbl">${tableHTML(base, now, plan, inc)}</div>`;
+      return `<div class="pv-two"><div class="panel pv-chart"><div class="panel-h"><h2>借金の残高の減り方</h2><span class="note">${has ? '<i class="lg base"></i>補填なし <i class="lg now"></i>補填あり' : "いまの条件のまま"}</span></div>${chartSVG(base, now, has)}</div><div class="panel pv-tl"><div class="panel-h"><h2>借入先ごとの完済</h2><span class="note">早い順</span></div>${timelineHTML(base, now, has)}</div></div>`;
+    })()}
     <div class="mu pl-note">計算は支払いの返済予定表と同じ（利息＝残高×年利×前月の日数÷365）。補填は、その月の元金に上乗せします。</div>`;
+  }
+  /* 返済の「完済の見通し」から移した数字：1年後の残高・毎月の利息 */
+  function outlookMini(now) {
+    const ms = now.months;
+    const debts = now.cols.filter(c => c.debt);
+    const at = ym => debts.reduce((t, c) => {
+      const ks = Object.keys(c.by).sort();
+      if (c.by[ym]) return t + c.by[ym].after;
+      return t + (ym < ks[0] ? c.a.balance : 0);
+    }, 0);
+    const nowBal = debts.reduce((t, c) => t + (c.a.balance || 0), 0);
+    const y1 = ms[11] ? at(ms[11]) : 0;
+    const m1 = ms[1] || ms[0];
+    const int = m1 ? debts.reduce((t, c) => t + (c.by[m1]?.int || 0), 0) : 0;
+    const pay = m1 ? debts.reduce((t, c) => t + (c.by[m1]?.pay || 0), 0) : 0;
+    return `<div class="panel pv-ol"><div class="pv-olg">
+      <div><span>いまの残高</span><b class="num">${man(nowBal)}</b></div>
+      <div><span>1年後の残高</span><b class="num">${man(y1)}</b><small class="ok">−${man(nowBal - y1)}</small></div>
+      <div><span>毎月の利息</span><b class="num">${yen(int)}</b><small>返済の${pay ? Math.round((int / pay) * 100) : 0}%</small></div>
+    </div></div>`;
   }
   /* 補填をためす：借入先・月・額をえらぶと、その場で効果が出る */
   function tryHTML(plan, now) {
@@ -333,6 +354,12 @@
   }
 
   document.addEventListener("click", e => {
+    const pt = e.target.closest("[data-pvtab]");
+    if (pt) {
+      st.ptab = pt.dataset.pvtab;
+      render();
+      return;
+    }
     const yh = e.target.closest("[data-plyr]");
     if (yh) {
       FIN.pay.fold.togF(yh.dataset.plyr);
@@ -360,6 +387,7 @@
       return;
     } else if (d.plpick) {
       [st.acc, st.ym] = d.plpick.split("|");
+      st.ptab = "try";
       const ex = plan.extras.find(x => x.acc === st.acc && x.ym === st.ym);
       if (ex) {
         st.amt = ex.amt;
