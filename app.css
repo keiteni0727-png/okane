@@ -3395,3 +3395,22 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay .rbd .pr::after,.pay .rbd .in::after{content:none}
 /* 状態の札は、はっきり塗る（支払済＝緑の塗り・白文字） */
 .pay #v-home .row.st-paid .slbl{background:var(--u-ok)!important;color:#fff!important}
+/* 支払いの行全体を状態の色に：支払済＝緑、未払（通常）＝青、未払（前月延滞分）＝赤、翌月へ延滞＝橙 */
+.pay #v-home .row{border-left:4px solid var(--st-c,transparent)!important;background:var(--st-bg,var(--u-surface))!important}
+.pay #v-home .row.st-paid{--st-c:#2e9a5e;--st-bg:color-mix(in srgb,#2e9a5e 9%,var(--u-surface))}
+.pay #v-home .row.st-planned{--st-c:#3b5bdb;--st-bg:color-mix(in srgb,#3b5bdb 7%,var(--u-surface))}
+.pay #v-home .row.st-planned.over{--st-c:#d0453a;--st-bg:color-mix(in srgb,#d0453a 8%,var(--u-surface))}
+.pay #v-home .row.st-late{--st-c:#d0453a;--st-bg:color-mix(in srgb,#d0453a 12%,var(--u-surface))}
+.pay #v-home .row.st-deferred{--st-c:#d98a1c;--st-bg:color-mix(in srgb,#d98a1c 11%,var(--u-surface))}
+.pay #v-home .row.st-deferred{background-image:repeating-linear-gradient(135deg,transparent 0 8px,color-mix(in srgb,#d98a1c 10%,transparent) 8px 9px)!important}
+.pay #v-home .row.st-paid .rname,.pay #v-home .row.st-paid .amt{color:var(--u-ink)}
+@media (hover:hover){.pay #v-home .row:hover{filter:brightness(.97)}}
+/* 未払（通常）の札も青に、前月延滞分は赤の塗り */
+.pay #v-home .row.st-planned:not(.over) .slbl{background:#3b5bdb!important;color:#fff!important;box-shadow:none!important}
+/* 一覧の上に色の見本 */
+.pay .stlg{display:flex;flex-wrap:wrap;gap:4px 12px;padding:6px 16px;font-size:var(--fs-xs);color:var(--u-sub);border-bottom:1px solid var(--u-soft)}
+.pay .stlg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.pay #v-home .ptoolbar{flex-direction:column;align-items:stretch;padding:0!important}
+.pay #v-home .ptoolbar #cFbar .fline{padding:10px 14px}
+.pay #v-home .stlg{border-top:1px solid var(--u-soft);border-bottom:0}
+@media (max-width:639px){.pay .rbd{gap:0 10px}.pay .rbd>span+span::before{content:none}}

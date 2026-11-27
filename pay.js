@@ -993,7 +993,7 @@
     let its = [...st.its].sort(byDateAmt).filter(FILTER_FN[S.filter] || Boolean);
     S.shownN = its.length;
     const wkm = false; // 日付ごとだけ（週ごとはなくした）
-    $("cFbar").innerHTML = `<div class="fline fchips">${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"], ["deferred", "翌月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => S.filter === "deferred" || i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div>`;
+    $("cFbar").innerHTML = `<div class="fline fchips">${[["all", "すべて"], ["unpaid", "未払"], ["late", "前月延滞分"], ["deferred", "翌月延滞分"]].map(([v, l]) => `<button type="button" class="fchip3${S.filter === v ? " on" : ""}" data-f="${v}">${l}</button>`).join("")}<span class="fcnt">${its.length}件<b class="num">${yen(its.filter(i => S.filter === "deferred" || i.status !== "deferred").reduce((s, i) => s + amtOf(i), 0))}</b></span></div><div class="stlg"><span><i style="background:#3b5bdb"></i>未払</span><span><i style="background:#d0453a"></i>前月延滞分・期日超過</span><span><i style="background:#2e9a5e"></i>支払済</span><span><i style="background:#d98a1c"></i>翌月へ延滞</span></div>`;
     if (!its.length)
       $("cList").innerHTML =
         S.filter !== "all"
