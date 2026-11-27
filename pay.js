@@ -828,7 +828,7 @@
       return `<div class="td-row ${cls}"><span class="td-d"><b class="num">${md(i.date)}（${wd(i.date)}）</b><em>${when}</em></span><button type="button" class="td-n linkbtn" data-edit="${i.id}">${esc(i.name)}${i.kind === "late" ? '<span class="td-late">延滞分</span>' : ""}<small>${esc(i.method || "")}</small></button><b class="td-a num">${yen(i.amount)}</b><button class="primary sm" data-pay="${i.id}">支払う</button></div>`;
     };
     const sum = a => a.reduce((x, i) => x + (i.amount || 0), 0);
-    const grp = (cls, lb, a) => (a.length ? `<div class="td-g ${cls}"><span>${lb}</span><b class="num">${a.length}件・${yen(sum(a))}</b></div>${a.map(row).join("")}` : "");
+    const grp = (cls, lb, a) => (a.length ? `<div class="td-g ${cls} fh" data-f2="dash:${cls}" role="button" tabindex="0" aria-expanded="${!isF("dash:" + cls)}">${FIC(isF("dash:" + cls))}<span>${lb}</span><b class="num">${a.length}件・${yen(sum(a))}</b></div>${isF("dash:" + cls) ? "" : a.map(row).join("")}` : "");
     if (over.length || now.length || soon.length)
       return grp("over", "期日を過ぎています", over) + grp("now", "今日が期日", now) + grp("soon", `この7日（〜${md(wk)}）`, soon);
     const nx = up.find(i => i.date >= t);
@@ -844,6 +844,23 @@
   }
 
   /* ---------- 支払い：アラート・次の引き落とし・集計 ---------- */
+  /* 日付・年の見出しの折りたたみ（この端末に保存）。key は "pay:2026-11-27" "hist:s1:2026" "plan:2027" "dash:soon" など */
+  const FKEY = "okane.fold2";
+  const fset = (() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(FKEY) || "[]"));
+    } catch (_) {
+      return new Set();
+    }
+  })();
+  const isF = k => fset.has(k);
+  function togF(k) {
+    fset.has(k) ? fset.delete(k) : fset.add(k);
+    try {
+      localStorage.setItem(FKEY, JSON.stringify([...fset].slice(-600)));
+    } catch (_) {}
+  }
+  const FIC = f => `<svg class="fic2${f ? "" : " open"}" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   /* 支払いのいちばん上：この月度の支払いの進み具合（返済の目標と同じ形のカード） */
   function payHeroHTML(st) {
     const rate = st.t ? st.paid / st.t : 0;
@@ -1008,6 +1025,7 @@
           cur = k;
           h += wkm ? weekHeadHTML(its, k) : dayHeadHTML(its, cur);
         }
+        if (!wkm && isF("pay:" + i.date)) return; // たたんだ日の支払は出さない
         h += rowHTML(i, wkm);
       });
       $("cList").innerHTML = h;
@@ -1134,7 +1152,8 @@
       byM[m] = (byM[m] || 0) + (x.amount || 0);
     });
     const need = Object.entries(byM).sort((a, b) => b[1] - a[1]);
-    return `<div class="dayhead"><span class="dh-d">${md(cur)}（${wd(cur)}）</span><span class="dh-m">${need.length ? need.map(([m, v]) => `<span class="mtag">${esc(m)} <b>${yen(v)}</b></span>`).join("") : day.length ? `<span class="dh-done">✓ 支払済</span>` : ""}</span><span class="dh-t num">${yen(sum)}</span></div>`;
+    const fk = "pay:" + cur;
+    return `<div class="dayhead fh" data-f2="${fk}" role="button" tabindex="0" aria-expanded="${!isF(fk)}">${FIC(isF(fk))}<span class="dh-d">${md(cur)}（${wd(cur)}）</span><span class="dh-m">${need.length ? need.map(([m, v]) => `<span class="mtag">${esc(m)} <b>${yen(v)}</b></span>`).join("") : day.length ? `<span class="dh-done">✓ 支払済</span>` : ""}</span><span class="dh-t num">${yen(sum)}</span></div>`;
   }
   /* 状態の表示名（カード表示と表表示で共用） */
   function stLbl(i, over, late) {
@@ -1526,9 +1545,10 @@
       if (y !== yr) {
         yr = y;
         const ys = paid.filter(x => (x.paidDate || x.date).startsWith(y));
-        h += `<div class="hyr"><b>${y}年</b><span>${ys.length}件・<b class="num">${yen(ys.reduce((t, x) => t + amt(x), 0))}</b></span></div>`;
+        const fk = `hist:${acc ? acc.id : ""}:${y}`;
+        h += `<div class="hyr fh" data-f2="${fk}" role="button" tabindex="0" aria-expanded="${!isF(fk)}">${FIC(isF(fk))}<b>${y}年</b><span>${ys.length}件・<b class="num">${yen(ys.reduce((t, x) => t + amt(x), 0))}</b></span></div>`;
       }
-      h += rowOf(i);
+      if (!isF(`hist:${acc ? acc.id : ""}:${yr}`)) h += rowOf(i);
     });
     return `<div class="hsum"><div><span class="label">支払った合計</span><b class="num">${yen(sum("amount"))}</b></div><div><span class="label">うち元金</span><b class="num ok">${yen(sum("principal"))}</b></div><div><span class="label">うち利息</span><b class="num">${yen(sum("interest") + sum("lateFee"))}</b>${sum("lateFee") ? `<small>（通常 ${yen(sum("interest"))}・延滞 ${yen(sum("lateFee"))}）</small>` : ""}</div></div>
     <div class="hlist2">${h}</div>`;
@@ -2778,6 +2798,14 @@
       }
       return;
     }
+    /* 日付・年の見出しの折りたたみ（中のボタンを押したときは除く） */
+    const fh = e.target.closest("[data-f2]");
+    if (fh && !e.target.closest("button:not([data-f2]),a,input")) {
+      togF(fh.dataset.f2);
+      render();
+      if (S.ad && $("adBody")) renderAcc();
+      return;
+    }
     const t = e.target.closest("button,[data-editacc],[data-acc],.row[data-edit],.trow[data-edit]");
     if (!t) return;
     const d = t.dataset;
@@ -2792,6 +2820,10 @@
       S.period = v < FIN.MIN_PERIOD ? FIN.MIN_PERIOD : v;
       render();
       FIN.kb.render && FIN.kb.render(true);
+    } else if (d.f2) {
+      togF(d.f2);
+      render();
+      if (S.ad && $("adBody")) renderAcc();
     } else if (d.gfold) {
       S.fold.goal = !S.fold.goal;
       try {
@@ -2947,6 +2979,7 @@
     /* Notionからの取り込み（pay-import.js）で使う */
     imp: { S, accList, allItems, putItem, saveMonths, snapOf, render, uid, CAT, toast },
     /* 計画（plan.js）で使う */
+    fold: { isF, togF, FIC },
     plan: { S, accList, schedule, saveCfg, nextStart, interestFor, incomeOf, CAT, toast, putItem, saveMonth, uid, render, isDebt },
   });
 

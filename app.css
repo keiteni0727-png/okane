@@ -3379,3 +3379,13 @@ body[data-tab="home"] .kb .fab{background:linear-gradient(135deg,var(--g-a),colo
 .pay .hrow2:focus-visible,.pay .acc:focus-visible,.pay .row:focus-visible{outline:2px solid var(--u-strong);outline-offset:-2px}
 
 /* マウスを乗せても色や形を変えない（全画面）。上の :hover の指定はすべて外した */
+/* 日付・年の見出しの折りたたみ（印は「›」、開いていると下向き） */
+.fh{cursor:pointer;user-select:none;-webkit-user-select:none}
+.fic2{flex:none;transition:transform .15s;color:var(--u-sub);vertical-align:-1px}
+.fic2.open{transform:rotate(90deg)}
+.pay .dayhead.fh{grid-template-columns:auto auto minmax(0,1fr) auto}
+.pay .hyr.fh{justify-content:flex-start;gap:8px}
+.pay .hyr.fh>span{margin-left:auto}
+.pay .td-g.fh{justify-content:flex-start;gap:8px}
+.pay .td-g.fh b{margin-left:auto}
+.pay .pl-yr.fh td{cursor:pointer}

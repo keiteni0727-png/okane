@@ -229,7 +229,12 @@
           const tot = now.cols.reduce((t, c) => t + (c.by[ym]?.pay || 0), 0);
           const left = inc - tot - (plan.living || 0);
           const yr = k === 0 || ym.endsWith("-01");
-          return `${yr ? `<tr class="pl-yr"><td colspan="${now.cols.length + 3}">${ym.slice(0, 4)}年</td></tr>` : ""}<tr><td class="pl-m">${ymShort(ym)}</td>${now.cols
+          const F = FIN.pay.fold,
+            fk = "plan:" + ym.slice(0, 4),
+            ff = F.isF(fk);
+          const head = yr ? `<tr class="pl-yr fh" data-plyr="${fk}" role="button" tabindex="0" aria-expanded="${!ff}"><td colspan="${now.cols.length + 3}">${F.FIC(ff)} ${ym.slice(0, 4)}年</td></tr>` : "";
+          if (ff) return head;
+          return `${head}<tr><td class="pl-m">${ymShort(ym)}</td>${now.cols
             .map(c => {
               const v = c.by[ym];
               if (!v) return `<td class="pl-done"></td>`;
@@ -328,6 +333,13 @@
   }
 
   document.addEventListener("click", e => {
+    const yh = e.target.closest("[data-plyr]");
+    if (yh) {
+      FIN.pay.fold.togF(yh.dataset.plyr);
+      st.tbl = true;
+      render();
+      return;
+    }
     const t = e.target.closest("[data-plc],[data-plclose],[data-plq],[data-plev],[data-plsave],[data-pldelcell],[data-pldel],[data-plclear],[data-pladd],[data-placc],[data-plmon],[data-plpick],[data-pldelcur]");
     if (!t) return;
     const d = t.dataset;
